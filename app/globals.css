@@ -1,26 +1,224 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── Skynet global theme (Gold/Amber — premium luxury tone) ───────────────── */
+@theme {
+  --color-bg: #FDFAF4;
+  --color-bg-soft: #F7F1E3;
+  --color-surface: rgba(255, 252, 244, 0.92);
+  --color-primary: #1A1208;
+  --color-primary-mid: #2C1E0A;
+  --color-primary-light: #4A3218;
+  --color-accent: #C89B3C;
+  --color-accent-hover: #A87C2A;
+  --color-accent-soft: #FEF9EC;
+  --color-accent-light: #F0D080;
+  --color-muted: #7D6E5A;
+  --color-border: #E8D9B8;
+  --color-border-light: rgba(255, 246, 220, 0.75);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cormorant), Georgia, serif;
+
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  --animate-fade-in: fade-in 0.25s ease;
+  --animate-slide-in-left: slide-in-left 0.3s ease;
+  --animate-slide-in-right: slide-in-right 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --animate-marquee: marquee 28s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-spin: spin 1s linear infinite;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(32px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(3deg); }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply min-h-full font-sans text-primary antialiased;
+  background-color: var(--color-bg);
+  background-image: linear-gradient(180deg, #FFFDF6 0%, #F7F1E3 50%, #FDFAF4 100%);
+  background-attachment: fixed;
+}
+
+/* thin scrollbar utility */
+.scrollbar-thin::-webkit-scrollbar { width: 5px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: var(--color-bg-soft); }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #D4B878; border-radius: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Product page CTA buttons — equal height & width ─────────────────────── */
+.product-cta-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.product-cta-row > button,
+.cta-row > button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 20px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 100px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+
+/* ─── Product grid — perfect equal-height cards ─────────────────────────────── */
+.product-grid-equal {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .product-grid-equal {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-grid-equal {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .product-grid-equal {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+/* ─── Image Viewer Toolbar ─────────────────────────────────────────────────── */
+.img-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(26, 18, 8, 0.82);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 155, 60, 0.3);
+  border-radius: 14px;
+  padding: 6px 8px;
+}
+
+.img-toolbar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: unset;
+  width: 42px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(200, 155, 60, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.85);
+  transition: all 0.18s;
+  padding: 0 4px;
+}
+
+.img-toolbar-btn:hover {
+  background: rgba(200, 155, 60, 0.22);
+  border-color: rgba(200, 155, 60, 0.5);
+  color: #F0D080;
+  transform: scale(1.04);
+}
+
+.img-toolbar-btn.active {
+  background: rgba(200, 155, 60, 0.30);
+  border-color: rgba(200, 155, 60, 0.7);
+  color: #F0D080;
+}
+
+.img-toolbar-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.img-toolbar-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0.75;
+}
+
+.img-toolbar-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(200, 155, 60, 0.2);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.img-zoom-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 46px;
+  color: #F0D080;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid rgba(200, 155, 60, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  transition: all 0.18s;
+  font-family: 'Inter', sans-serif;
+}
+
+.img-zoom-display:hover {
+  background: rgba(200, 155, 60, 0.15);
+  border-color: rgba(200, 155, 60, 0.4);
 }
