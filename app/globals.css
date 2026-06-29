@@ -95,17 +95,26 @@ body {
 }
 
 .product-cta-row {
-  @apply flex gap-3 items-stretch;
+  @apply flex flex-col gap-3 items-stretch;
 }
 
-@media (max-width: 639px) {
-  .product-cta-row { @apply flex-col; }
-  .product-cta-row > button { @apply w-full; }
+@media (min-width: 640px) {
+  .product-cta-row {
+    @apply flex-row;
+  }
 }
 
 .product-cta-row > button,
 .cta-row > button {
-  @apply flex-1 inline-flex items-center justify-center gap-2 h-[52px] px-5 text-[15px] font-bold rounded-full border-0 cursor-pointer transition-all whitespace-nowrap;
+  @apply inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-full border-0 cursor-pointer font-bold transition-all;
+  @apply h-12 px-4 text-sm sm:h-[52px] sm:px-5 sm:text-[15px];
+}
+
+@media (min-width: 640px) {
+  .product-cta-row > button,
+  .cta-row > button {
+    @apply flex-1;
+  }
 }
 
 .product-grid-equal {

@@ -3,7 +3,7 @@ export const tw = {
   btnPrimary:
     "inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-primary-mid to-accent shadow-[0_4px_20px_color-mix(in_srgb,var(--color-accent)_35%,transparent)] hover:from-accent-hover hover:to-primary-light",
   btnPrimarySm:
-    "inline-flex items-center justify-center gap-1 rounded-full px-3.5 py-1.5 text-[10px] font-semibold text-white transition-all duration-300 bg-gradient-to-br from-primary-mid to-accent",
+    "inline-flex items-center justify-center gap-1 rounded-full px-3.5 py-1.5 text-[10px] font-semibold text-white whitespace-nowrap transition-all duration-300 bg-gradient-to-br from-primary-mid to-accent max-w-full",
   btnDark:
     "inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white bg-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-mid",
   btnOutline:

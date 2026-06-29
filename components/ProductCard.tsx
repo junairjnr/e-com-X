@@ -139,18 +139,18 @@ export default function ProductCard({ product, onAddToCart, onWishlistToggle, is
           </div>
         </div>
 
-        {/* Price + Add button — always at bottom */}
-        <div className="flex items-center justify-between gap-2 border-t border-border/40 pt-2.5">
-          <div className="flex flex-col leading-none">
-            <span className="text-[15px] font-extrabold text-primary">{fmt(product.price)}</span>
+        {/* Price + Add button — stack on narrow cards */}
+        <div className="mt-auto flex flex-col gap-2 border-t border-border/40 pt-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+          <div className="min-w-0 flex flex-col leading-none">
+            <span className="truncate text-sm font-extrabold text-primary sm:text-[15px]">{fmt(product.price)}</span>
             {product.originalPrice && (
-              <span className="mt-0.5 text-[10px] text-muted line-through">{fmt(product.originalPrice)}</span>
+              <span className="mt-0.5 truncate text-[10px] text-muted line-through">{fmt(product.originalPrice)}</span>
             )}
           </div>
           <button
             type="button"
             onClick={handleAddToCart}
-            className={`${tw.btnPrimarySm} shrink-0 ${addedAnim ? "!bg-emerald-600 !text-white" : ""}`}
+            className={`${tw.btnPrimarySm} w-full min-w-0 whitespace-nowrap px-3 py-2 text-[10px] sm:w-auto sm:shrink-0 sm:px-3.5 sm:py-1.5 ${addedAnim ? "!bg-emerald-600 !text-white" : ""}`}
           >
             {addedAnim ? <><Icons.Check /> Added!</> : showSizes ? "Pick Size" : <><Icons.Plus /> Add</>}
           </button>

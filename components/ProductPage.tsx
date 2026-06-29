@@ -508,11 +508,11 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
             </div>
 
             {/* CTAs */}
-            <div className="product-cta-row flex-col sm:flex-row">
+            <div className="product-cta-row">
               <button
                 type="button"
                 onClick={handleAdd}
-                className={`${added ? "!bg-emerald-600" : "!bg-gradient-to-br !from-primary-mid !to-accent hover:!from-accent-hover hover:!to-primary-light"} !text-white shadow-[0_4px_20px_color-mix(in_srgb,var(--color-accent)_30%,transparent)] tracking-wide`}
+                className={`${added ? "!bg-emerald-600" : tw.btnPrimary} !font-bold !shadow-none sm:!shadow-[0_4px_20px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]`}
               >
                 {added ? <><Icons.Check /> Added to Cart!</> : <><Icons.Bag /> Add to Cart</>}
               </button>

@@ -48,14 +48,14 @@ export default function WishlistDrawer({ wishlist, open, onClose, onRemove, onAd
               <div className="flex-1">
                 <div className="mb-1 text-sm font-semibold text-primary">{item.name}</div>
                 <div className="mb-2.5 text-[13px] font-bold text-accent">{fmt(item.price)}</div>
-                <div className="flex gap-2">
-                  <button type="button" className={`${tw.btnPrimarySm} px-3.5 py-2`} onClick={() => onAddToCart(item)}>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <button type="button" className={`${tw.btnPrimarySm} w-full min-w-0 justify-center px-3 py-2 sm:flex-1 sm:px-3.5`} onClick={() => onAddToCart(item)}>
                     Add to Cart
                   </button>
                   <button
                     type="button"
                     onClick={() => onRemove(item.id)}
-                    className="rounded-full border border-border bg-transparent px-2.5 py-2 text-xs text-muted cursor-pointer hover:border-red-300 hover:text-red-500"
+                    className="shrink-0 rounded-full border border-border bg-transparent px-3 py-2 text-xs text-muted cursor-pointer hover:border-red-300 hover:text-red-500 sm:px-2.5"
                   >
                     Remove
                   </button>

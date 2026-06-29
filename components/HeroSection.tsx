@@ -164,35 +164,38 @@ export default function HeroSection({
         🎉 MEGA SALE: Up to 50% OFF on selected items! Free shipping on orders over QAR 299
       </div>
 
-      {/* Categories Section - Flipkart Style at the top */}
-      <div className="max-w-[1400px] mx-auto px-4 py-4 md:py-6 border-b border-border/50">
-        <div className="relative">
+      {/* Categories — horizontal scroll; arrows desktop only */}
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 md:py-6 border-b border-border/50">
+        <div className="relative md:mx-5 md:px-11">
           <button
+            type="button"
+            aria-label="Scroll categories left"
             onClick={() => scrollCat("l")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white shadow-[0_4px_12px_color-mix(in_srgb,var(--color-primary)_10%,transparent)] border border-border flex items-center justify-center text-xl text-primary hover:bg-bg-soft transition-all opacity-90 hover:opacity-100"
+            className="absolute left-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-xl text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft md:flex"
           >
             ‹
           </button>
-          
+
           <div
             ref={catRef}
-            className="flex gap-6 md:gap-10 overflow-x-auto px-6 py-2 snap-x snap-mandatory scrollbar-hide items-start"
+            className="flex items-start gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide py-1 sm:gap-5 md:gap-8"
+            style={{ scrollPaddingInline: "12px" }}
           >
             {CATEGORIES.map((c, idx) => (
               <button
                 key={`${c.label}-${idx}`}
                 type="button"
                 onClick={() => onCategoryClick?.(c.shopCategory)}
-                className="flex w-[72px] md:w-20 shrink-0 flex-col items-center gap-2 md:gap-2.5 cursor-pointer group snap-start border-0 bg-transparent p-0"
+                className="flex w-[68px] shrink-0 snap-start flex-col items-center gap-1.5 border-0 bg-transparent p-0 cursor-pointer group sm:w-[72px] md:w-20 md:gap-2"
               >
-                <div className="h-16 w-16 md:h-[84px] md:w-[84px] overflow-hidden rounded-full border border-border bg-white shadow-[0_4px_12px_color-mix(in_srgb,var(--color-primary)_8%,transparent)] transition-all duration-300 group-hover:-translate-y-1 group-hover:border-accent/40 group-hover:shadow-[0_8px_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-accent/40 sm:h-16 sm:w-16 md:h-[84px] md:w-[84px]">
                   <StoreImage
                     src={c.img}
                     alt={c.label}
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <span className="text-[11px] md:text-[12px] font-semibold text-primary text-center group-hover:text-accent transition-colors leading-tight line-clamp-2 max-w-[72px] md:max-w-[80px]">
+                <span className="flex min-h-[2rem] w-full items-start justify-center text-center text-[10px] font-semibold leading-tight text-primary group-hover:text-accent sm:min-h-[2.25rem] sm:text-[11px] md:text-[12px] line-clamp-2">
                   {c.label}
                 </span>
               </button>
@@ -200,8 +203,10 @@ export default function HeroSection({
           </div>
 
           <button
+            type="button"
+            aria-label="Scroll categories right"
             onClick={() => scrollCat("r")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white shadow-[0_4px_12px_color-mix(in_srgb,var(--color-primary)_10%,transparent)] border border-border flex items-center justify-center text-xl text-primary hover:bg-bg-soft transition-all opacity-90 hover:opacity-100"
+            className="absolute right-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-xl text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft md:flex"
           >
             ›
           </button>
