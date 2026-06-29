@@ -40,7 +40,7 @@ export default function NewsletterSection() {
               onChange={e => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
-              className="min-w-[200px] flex-1 rounded-full border-2 border-border bg-white px-5 py-3.5 text-sm text-primary shadow-[0_4px_20px_rgba(15,40,71,0.06)] outline-none transition-colors focus:border-accent"
+              className="min-w-[200px] flex-1 rounded-full border-2 border-border bg-white px-5 py-3.5 text-sm text-primary shadow-[0_4px_20px_color-mix(in_srgb,var(--color-primary)_6%,transparent)] outline-none transition-colors focus:border-accent"
             />
             <button type="submit" className={`${tw.btnPrimary} ${loading ? "opacity-70" : ""}`} disabled={loading}>
               {loading ? (
@@ -51,7 +51,7 @@ export default function NewsletterSection() {
             </button>
           </form>
         ) : (
-          <div className="inline-block animate-fade-up rounded-[20px] border-2 border-accent bg-white px-8 py-6 shadow-[0_8px_32px_rgba(37,99,235,0.15)]">
+          <div className="inline-block animate-fade-up rounded-[20px] border-2 border-accent bg-white px-8 py-6 shadow-[0_8px_32px_color-mix(in_srgb,var(--color-accent)_15%,transparent)]">
             <div className="mb-2 text-2xl">🎉</div>
             <div className="text-base font-bold text-primary">You&apos;re in!</div>
             <div className="mt-1 text-[13px] text-muted">Check your inbox for a welcome gift.</div>

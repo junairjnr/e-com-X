@@ -2,14 +2,17 @@
 import { useState, useEffect, useRef } from "react";
 import { PRODUCTS, fmt } from "@/lib/data";
 import { tw } from "@/lib/theme";
+import StoreImage from "./StoreImage";
+import type { Product } from "@/lib/types";
 import * as Icons from "./Icons";
 
 interface SearchModalProps {
   open: boolean;
   onClose: () => void;
+  onProductSelect?: (product: Product) => void;
 }
 
-export default function SearchModal({ open, onClose }: SearchModalProps) {
+export default function SearchModal({ open, onClose, onProductSelect }: SearchModalProps) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -62,18 +65,19 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                 No results for &ldquo;{query}&rdquo;
               </div>
             ) : results.map(p => (
-              <div
+              <button
                 key={p.id}
-                className="flex gap-4 border-b border-black/5 px-6 py-4 cursor-pointer transition-colors hover:bg-black/3"
+                type="button"
+                onClick={() => onProductSelect?.(p)}
+                className="flex w-full gap-4 border-b border-black/5 px-6 py-4 text-left cursor-pointer transition-colors hover:bg-accent-soft/50"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.images[0]} alt={p.name} className="h-14 w-14 rounded-xl object-cover bg-bg-soft" />
+                <StoreImage src={p.images[0]} alt={p.name} className="h-14 w-14 shrink-0 rounded-xl object-cover bg-bg-soft" />
                 <div>
                   <div className="text-[15px] font-semibold text-primary">{p.name}</div>
                   <div className="mt-0.5 text-[13px] text-muted">{p.tags.join(" · ")}</div>
                   <div className="mt-1 text-sm font-bold text-accent">{fmt(p.price)}</div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -89,7 +93,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   key={s}
                   type="button"
                   onClick={() => setQuery(s)}
-                  className="rounded-full border border-border bg-bg px-4 py-2 text-[13px] font-medium text-primary cursor-pointer shadow-[2px_2px_6px_rgba(15,40,71,0.06),-2px_-2px_6px_rgba(255,255,255,0.9)] hover:border-accent hover:text-accent transition-colors"
+                  className="rounded-full border border-border bg-bg px-4 py-2 text-[13px] font-medium text-primary cursor-pointer shadow-[0_2px_8px_color-mix(in_srgb,var(--color-primary)_6%,transparent)] hover:border-accent hover:text-accent transition-colors"
                 >
                   {s}
                 </button>

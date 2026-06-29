@@ -1,5 +1,6 @@
 "use client";
 import * as Icons from "./Icons";
+import { tw } from "@/lib/theme";
 
 const FEATURES = [
   { icon: <Icons.Shield />, title: "Qatar VAT Certified", desc: "All hardware and software solutions are fully Qatar VAT compliant. Generate VAT returns in minutes — not days." },
@@ -12,7 +13,7 @@ const FEATURES = [
 
 export default function FeaturesSection() {
   return (
-    <section className="py-24 bg-bg">
+    <section className={`py-24 ${tw.sectionBg}`}>
       <div className="mx-auto max-w-[1200px] px-6">
         <div className="mb-16 text-center">
           <div className="mb-4 text-[11px] font-bold uppercase tracking-[0.15em] text-accent">
@@ -37,10 +38,9 @@ export default function FeaturesSection() {
 function FeatureCard({ feature, delay }: { feature: typeof FEATURES[number]; delay: number }) {
   return (
     <div
-      className="rounded-3xl border border-border bg-white p-7 shadow-[0_4px_24px_rgba(15,40,71,0.04)] transition-transform duration-300 hover:-translate-y-1 animate-fade-up"
-      style={{ animationDelay: `${delay}s` }}
+      className={`rounded-3xl border border-border bg-white p-7 shadow-[0_4px_24px_color-mix(in_srgb,var(--color-primary)_5%,transparent)] transition-transform duration-300 hover:-translate-y-1 animate-fade-up [animation-delay:${delay}s]`}
     >
-      <div className="mb-5 flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-accent-soft to-blue-100 text-accent shadow-[0_4px_16px_rgba(37,99,235,0.2)]">
+      <div className="mb-5 flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-accent-soft to-accent-light/40 text-accent shadow-[0_4px_16px_color-mix(in_srgb,var(--color-accent)_20%,transparent)]">
         {feature.icon}
       </div>
       <h3 className="mb-2.5 text-[17px] font-bold text-primary">{feature.title}</h3>

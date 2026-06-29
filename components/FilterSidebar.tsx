@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { SHOP_CATEGORIES, getCategoryCount, PRICE_MAX, fmt } from "@/lib/data";
 import type { FilterState } from "@/lib/types";
+import { swatchBgClass } from "@/lib/theme";
 import * as Icons from "./Icons";
 
 interface FilterSidebarProps {
@@ -55,7 +56,7 @@ export default function FilterSidebar({ filters, onChange, onClear, resultCount,
   return (
     <aside className={wrapperClass}>
       <div className={stickyClass}>
-        <div className="rounded-[20px] border border-border bg-white p-4 shadow-[0_4px_24px_rgba(15,40,71,0.04)]">
+        <div className="rounded-[20px] border border-border bg-white p-4 shadow-[0_4px_24px_color-mix(in_srgb,var(--color-primary)_5%,transparent)]">
           <div className="mb-4 flex items-center justify-between border-b border-bg-soft pb-3.5">
             <div>
               <div className="text-[15px] font-bold text-primary">Filters</div>
@@ -109,7 +110,7 @@ export default function FilterSidebar({ filters, onChange, onClear, resultCount,
                         onClick={() => onChange({ ...filters, priceRange: [min, max] })}
                         className={`rounded-lg border-[1.5px] px-2 py-1.5 text-[10px] font-semibold cursor-pointer transition-colors ${
                           active
-                            ? "border-accent bg-accent-soft text-blue-800"
+                            ? "border-accent bg-accent-soft text-primary"
                             : "border-border bg-bg text-primary"
                         }`}
                       >
@@ -154,10 +155,9 @@ export default function FilterSidebar({ filters, onChange, onClear, resultCount,
                     type="button"
                     title={c.name}
                     onClick={() => toggleArr("colors", c.name)}
-                    className={`h-[26px] w-[26px] rounded-full border-0 cursor-pointer transition-all ${
+                    className={`h-[26px] w-[26px] rounded-full border-0 cursor-pointer transition-all ${swatchBgClass(c.hex)} ${
                       filters.colors.includes(c.name) ? "ring-2 ring-primary ring-offset-2" : ""
                     }`}
-                    style={{ background: c.hex }}
                   />
                 ))}
               </div>

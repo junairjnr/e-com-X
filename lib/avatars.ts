@@ -1,4 +1,15 @@
-export const AVATAR_COLORS = ["#A16207", "#1C1917", "#059669", "#B85C38", "#7C3AED", "#0891B2", "#92400E", "#BE123C"];
+export const AVATAR_COLORS = ["#8B6B1F", "#B88A2A", "#A16207", "#92400E", "#D4A63A", "#6B7280", "#1A1208", "#BE123C"];
+
+export const AVATAR_BG_CLASSES = [
+  "bg-yellow-700",
+  "bg-stone-900",
+  "bg-emerald-600",
+  "bg-orange-700",
+  "bg-violet-600",
+  "bg-cyan-600",
+  "bg-amber-800",
+  "bg-rose-700",
+] as const;
 
 export function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -6,8 +17,16 @@ export function getInitials(name: string): string {
   return (parts[0]?.slice(0, 2) ?? "?").toUpperCase();
 }
 
-export function getAvatarColor(seed: string): string {
+function hashSeed(seed: string): number {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  return Math.abs(hash);
+}
+
+export function getAvatarColor(seed: string): string {
+  return AVATAR_COLORS[hashSeed(seed) % AVATAR_COLORS.length];
+}
+
+export function getAvatarBgClass(seed: string): string {
+  return AVATAR_BG_CLASSES[hashSeed(seed) % AVATAR_BG_CLASSES.length];
 }

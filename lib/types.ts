@@ -85,6 +85,8 @@ export interface Category {
   count: number;
   img: string;
   color: string;
+  /** Shop filter category when different from display name */
+  shopCategory?: string;
 }
 
 export interface Testimonial {
@@ -105,6 +107,12 @@ export interface HeroSlide {
   cta: string;
   cta2: string;
   img: string;
+  tag?: string;
+  badge?: string;
+  accentColor?: string;
+  bg?: string;
+  headline:string
+  sub:string
   // accent2: string;
 }
 

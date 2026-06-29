@@ -154,7 +154,7 @@ export const Truck = () => (
 
 // ─── STAR ROW ────────────────────────────────────────────────────────────────
 export const StarRow = ({ rating }: { rating: number }) => (
-  <div style={{ display: "flex", gap: 2 }}>
+  <div className="flex gap-0.5">
     {[1,2,3,4,5].map(i => <Star key={i} filled={i <= Math.round(rating)} />)}
   </div>
 );

@@ -25,8 +25,10 @@ import FeaturesSection from "@/components/FeaturesSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import ProductCard from "@/components/ProductCard";
+import StoreImage from "@/components/StoreImage";
 import * as Icons from "@/components/Icons";
 import { tw } from "@/lib/theme";
+import { categoryImage } from "@/lib/images";
 import OrdersPage from "./Orders";
 
 type Page =
@@ -91,9 +93,10 @@ export default function NestStore() {
     if (p === "home") setPage({ type: "home" });
     else if (p === "shop") setPage({ type: "shop" });
     else if (p === "checkout") setPage({ type: "checkout" });
-    else if (p === "cart") setPage({ type: "cart" });
+    else if (p === "cart") setCartOpen(true);
     else if (p === "orders") setPage({ type: "orders" });
     else if (p === "login") setLoginOpen(true);
+    else if (p === "support") setPage({ type: "shop" });
   }, []);
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -114,6 +117,7 @@ export default function NestStore() {
       case "product":
         return (
           <ProductPage
+            key={page.product.id}
             product={page.product}
             onAddToCart={addToCart}
             onWishlistToggle={toggleWishlist}
@@ -164,7 +168,15 @@ export default function NestStore() {
       <Footer />
 
       {/* Overlays */}
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onProductSelect={(p) => {
+          setSearchOpen(false);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          setPage({ type: "product", product: p });
+        }}
+      />
       <LoginModal
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
@@ -198,21 +210,33 @@ function HomePage({ addToCart, toggleWishlist, wishlist, setPage }: {
   wishlist: WishlistItem[];
   setPage: (p: { type: string; product?: Product; category?: string }) => void;
 }) {
-  const [filter, setFilter] = useState<"all" | "new" | "bestseller">("all");
+  // const [filter, setFilter] = useState<"all" | "new" | "bestseller">("all");
 
-  const filtered = PRODUCTS.filter(p => {
-    if (filter === "new") return p.isNew;
-    if (filter === "bestseller") return p.isBestSeller;
-    return true;
-  });
+  // const filtered = PRODUCTS.filter(p => {
+  //   if (filter === "new") return p.isNew;
+  //   if (filter === "bestseller") return p.isBestSeller;
+  //   return true;
+  // });
 
   return (
     <>
-      <HeroSection />
-      <MarqueeSection />
+      <HeroSection
+        onAddToCart={addToCart}
+        onWishlistToggle={toggleWishlist}
+        wishlist={wishlist}
+        onProductClick={(p) => setPage({ type: "product", product: p })}
+        onViewAllDeals={() => setPage({ type: "shop" })}
+        onCategoryClick={(cat) => setPage({ type: "shop", category: cat })}
+      />
+      {/* <MarqueeSection /> */}
 
-      {/* Products */}
-      <section id="shop" className="py-24">
+      <CategoriesSection
+        onCategoryClick={(cat) => setPage({ type: "shop", category: cat })}
+        onViewAll={() => setPage({ type: "shop" })}
+      />
+
+      {/* Featured products */}
+      {/* <section id="shop" className={`${tw.sectionBg} py-24`}>
         <div className="mx-auto max-w-[1280px] px-6">
           <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
             <div>
@@ -231,8 +255,8 @@ function HomePage({ addToCart, toggleWishlist, wishlist, setPage }: {
                   type="button"
                   onClick={() => setFilter(f)}
                   className={`rounded-full border-0 px-5 py-2.5 text-[13px] font-semibold cursor-pointer transition-all ${filter === f
-                      ? "bg-primary text-white shadow-[0_4px_16px_rgba(15,40,71,0.25)]"
-                      : "bg-bg-soft text-primary/80"
+                      ? "bg-gradient-to-br from-primary-mid to-accent text-white shadow-[0_4px_16px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]"
+                      : "bg-accent-soft text-primary/80 hover:bg-accent-light/40"
                     }`}
                 >
                   {f === "all" ? "All" : f === "new" ? "New Arrivals" : "Bestsellers"}
@@ -241,7 +265,7 @@ function HomePage({ addToCart, toggleWishlist, wishlist, setPage }: {
             </div>
           </div>
 
-          <div className={"grid grid-cols-2 md:grid-cols-4 gap-5"}>
+          <div className={tw.productGrid}>
             {filtered.map(product => (
               <ProductCard key={product.id} product={product}
                 onAddToCart={addToCart} onWishlistToggle={toggleWishlist}
@@ -256,25 +280,20 @@ function HomePage({ addToCart, toggleWishlist, wishlist, setPage }: {
             </button>
           </div>
         </div>
-      </section>
+      </section> */}
 
-      <CategoriesSection
-        onCategoryClick={(cat) => setPage({ type: "shop", category: cat })}
-        onViewAll={() => setPage({ type: "shop" })}
-      />
       {/* <FeaturesSection /> */}
       {/* <TestimonialsSection /> */}
 
       {/* Trust banner */}
-      <section className="relative overflow-hidden py-24">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=85" alt="" className="absolute inset-0 h-full w-full object-cover opacity-12" />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary-mid" />
+      {/* <section className="relative overflow-hidden py-24">
+        <StoreImage src={categoryImage("servers")} alt="" className="absolute inset-0 h-full w-full object-cover opacity-15" aria-hidden />
+        <div className="absolute inset-0 bg-footer/88" />
         <div className="relative z-[1] mx-auto max-w-[760px] px-6 text-center">
           <div className="mb-6 text-[56px]">📊</div>
           <h2 className="mb-5 font-display text-[clamp(36px,4vw,56px)] font-bold leading-tight text-white">
             1,300+ Businesses Trust<br />
-            <span className="italic text-accent">Skynet Solution Qatar.</span>
+            <span className="italic text-accent-light">Skynet Solution Qatar.</span>
           </h2>
           <p className="mb-10 text-base leading-relaxed text-white/65">
             From single-shop retail to large enterprise chains — complete POS systems, ERP software, and 24/7 local support. Qatar VAT certified and ISO 9001 compliant.
@@ -288,7 +307,7 @@ function HomePage({ addToCart, toggleWishlist, wishlist, setPage }: {
             </button>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <NewsletterSection />
     </>
@@ -304,7 +323,7 @@ function CheckoutPage({ onBack, cart }: { onBack: () => void; cart: CartItem[] }
   const labelClass = "mb-1.5 block text-xs font-bold text-primary/80";
 
   return (
-    <div className="min-h-screen bg-bg pt-[100px] pb-20">
+    <div className={`min-h-screen ${tw.sectionBg} pt-[100px] pb-20`}>
       <div className="mx-auto max-w-[900px] px-6">
         <button type="button" onClick={onBack} className="mb-8 flex items-center gap-1 border-0 bg-transparent text-[13px] font-semibold text-accent cursor-pointer">
           <Icons.ChevronLeft /> Continue Shopping

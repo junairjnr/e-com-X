@@ -1,9 +1,11 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import MegaMenu from "./MegaMenu";
 import * as Icons from "./Icons";
 import type { CartItem, WishlistItem, StoreUser } from "@/lib/types";
 import Avatar from "./Avatar";
+import { useClientTheme } from "./ThemeProvider";
 
 interface HeaderProps {
   cart: CartItem[];
@@ -19,475 +21,235 @@ interface HeaderProps {
 }
 
 const NAV = [
-  { label: "Products",  page: "shop",    hasMenu: true  },
-  { label: "Solutions", page: "shop",    hasMenu: true  },
-  { label: "Deals",     page: "shop",    hasMenu: true  },
-  { label: "Support",   page: "support", hasMenu: false },
-  { label: "Orders",    page: "orders",  hasMenu: false },
+  { label: "Products", page: "shop", hasMenu: true },
+  { label: "Solutions", page: "shop", hasMenu: true },
+  { label: "Deals", page: "shop", hasMenu: true },
+  { label: "Support", page: "support", hasMenu: false },
+  { label: "Orders", page: "orders", hasMenu: false },
 ];
 
+function NavIconBtn({
+  label,
+  onClick,
+  children,
+  className = "",
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className={`nav-icon-btn h-[38px] w-[38px] md:h-[38px] md:w-[38px] max-md:h-[34px] max-md:w-[34px] ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function Header({
-  cart, wishlist, onCartOpen, onWishlistOpen, onSearchOpen,
-  onLoginOpen, onLogout, user, page, setPage,
+  cart,
+  wishlist,
+  onCartOpen,
+  onWishlistOpen,
+  onSearchOpen,
+  onLoginOpen,
+  onLogout,
+  user,
+  page,
+  setPage,
 }: HeaderProps) {
-  const [scrolled,        setScrolled]       = useState(false);
-  const [activeMenu,      setActiveMenu]     = useState<string | null>(null);
-  const [mobileOpen,      setMobileOpen]     = useState(false);
+  const { client } = useClientTheme();
+  const [scrolled, setScrolled] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAccordion, setMobileAccordion] = useState<string | null>(null);
-  const [activeNavLabel,  setActiveNavLabel] = useState<string | null>(null);
-  // JS-side viewport width for responsive logic
-  const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+  const [activeNavLabel, setActiveNavLabel] = useState<string | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
-  const isMobile = vw < 768;   // < md
-  const isTablet = vw >= 768 && vw < 1024; // md → lg
-
-  /* ── Viewport width tracker ────────────────────────────────────────── */
-  useEffect(() => {
-    const fn = () => setVw(window.innerWidth);
-    window.addEventListener("resize", fn, { passive: true });
-    return () => window.removeEventListener("resize", fn);
-  }, []);
-
-  /* ── Scroll detection ──────────────────────────────────────────────── */
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  /* ── Close mega-menu when clicking outside ─────────────────────────── */
   useEffect(() => {
     const fn = (e: MouseEvent) => {
-      if (headerRef.current && !headerRef.current.contains(e.target as Node))
-        setActiveMenu(null);
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) setActiveMenu(null);
     };
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
 
-  /* ── Reset active label on home ────────────────────────────────────── */
   useEffect(() => {
     if (page === "home") setActiveNavLabel(null);
   }, [page]);
 
-  /* ── Close mobile drawer on resize to desktop ──────────────────────── */
   useEffect(() => {
-    if (!isMobile) setMobileOpen(false);
-  }, [isMobile]);
+    document.body.classList.toggle("overflow-hidden", mobileOpen);
+    return () => document.body.classList.remove("overflow-hidden");
+  }, [mobileOpen]);
 
-  const handleNav = (item: typeof NAV[0]) => {
+  const handleNav = (item: (typeof NAV)[0]) => {
     setPage(item.page);
     setActiveNavLabel(item.label);
     setActiveMenu(null);
     setMobileOpen(false);
   };
 
-  const isActive = (item: typeof NAV[0]) => {
+  const isActive = (item: (typeof NAV)[0]) => {
     if (activeNavLabel !== null) return activeNavLabel === item.label;
     if (item.label === "Support" && page === "support") return true;
-    if (item.label === "Orders"  && page === "orders")  return true;
+    if (item.label === "Orders" && page === "orders") return true;
     return false;
   };
 
-  /* ── Announcement bar height ────────────────────────────────────────── */
-  const barH = vw < 480 ? 28 : 34;
-  const navTop = scrolled ? barH + 6 : barH + 8;
-
   return (
     <>
-      {/* ══════════════════════════════════════════════════════════════════
-          ANNOUNCEMENT BAR
-      ══════════════════════════════════════════════════════════════════ */}
-      <div style={{
-        background: "#1A1208",
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 110,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        height: barH, gap: 6,
-        borderBottom: "1px solid rgba(200,155,60,0.15)",
-        overflow: "hidden",
-        padding: "0 12px",
-      }}>
-        <div style={{
-          position: "absolute", inset: 0, pointerEvents: "none",
-          background: "linear-gradient(105deg, transparent 35%, rgba(200,155,60,0.07) 50%, transparent 65%)",
-          animation: "shimmerBar 3.5s ease-in-out infinite",
-        }} />
-        {vw >= 480 && (
-          <span style={{ fontSize: 10.5, color: "rgba(240,208,128,0.7)", fontFamily: "'Inter',sans-serif", fontWeight: 500, letterSpacing: "0.03em", whiteSpace: "nowrap" }}>
-            🎁 Free installation on all POS systems &nbsp;·&nbsp; Qatar VAT Compliant &nbsp;·&nbsp;
-          </span>
-        )}
-        {vw < 480 && (
-          <span style={{ fontSize: 10, color: "rgba(240,208,128,0.7)", fontFamily: "'Inter',sans-serif", fontWeight: 500 }}>
-            🎁 Free installation · Qatar VAT Compliant
-          </span>
-        )}
+      {/* Announcement bar */}
+      <div className="fixed top-0 left-0 right-0 z-[160] flex h-8 sm:h-[34px] items-center justify-center gap-1.5 overflow-hidden border-b border-white/10 bg-footer px-3">
+        <div className="pointer-events-none absolute inset-0 animate-shimmer-bar bg-gradient-to-r from-transparent via-accent/15 to-transparent" />
+        <span className="hidden text-[10.5px] font-medium tracking-wide text-white/70 sm:inline">
+          🎁 Free installation on all POS systems · Qatar VAT Compliant ·
+        </span>
+        <span className="text-[10px] font-medium text-white/70 sm:hidden">
+          🎁 Free installation · Qatar VAT Compliant
+        </span>
         <a
-          href="https://www.skynetqatar.com/"
-          target="_blank" rel="noreferrer"
-          style={{
-            color: "#C89B3C", fontSize: vw < 480 ? 9.5 : 10.5, fontWeight: 700,
-            fontFamily: "'Inter',sans-serif", textDecoration: "none",
-            letterSpacing: "0.02em", transition: "color 0.2s",
-            borderBottom: "1px solid rgba(200,155,60,0.35)",
-            whiteSpace: "nowrap", flexShrink: 0,
-          }}
-          onMouseEnter={e => (e.currentTarget.style.color = "#F0D080")}
-          onMouseLeave={e => (e.currentTarget.style.color = "#C89B3C")}
+          href={client.siteUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="shrink-0 border-b border-accent/50 text-[9.5px] sm:text-[10.5px] font-bold tracking-wide text-accent transition-colors hover:text-accent-light"
         >
-          {vw < 480 ? "Free Demo →" : "Book a Free Demo →"}
+          <span className="sm:hidden">Free Demo →</span>
+          <span className="hidden sm:inline">Book a Free Demo →</span>
         </a>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          FLOATING NAVBAR WRAPPER
-      ══════════════════════════════════════════════════════════════════ */}
+      {/* Floating navbar */}
       <div
         ref={headerRef}
-        style={{
-          position: "fixed",
-          top: navTop,
-          left: 0, right: 0,
-          zIndex: 100,
-          display: "flex",
-          justifyContent: "center",
-          padding: isMobile ? "0 8px" : "0 14px",
-          transition: "top 0.3s ease",
-          pointerEvents: "none",
-        }}
+        className={`pointer-events-none fixed left-0 right-0 z-[150] flex justify-center px-2 md:px-3.5 transition-[top] duration-300 ${scrolled ? "top-[38px] sm:top-[40px]" : "top-9 sm:top-[42px]"}`}
       >
         <header
-          style={{
-            width: "100%",
-            maxWidth: 1350,
-            pointerEvents: "auto",
-            background: scrolled ? "rgba(255,253,248,0.97)" : "rgba(255,253,248,0.90)",
-            backdropFilter: "blur(28px)",
-            WebkitBackdropFilter: "blur(28px)",
-            borderRadius: isMobile ? 14 : 10,
-            border: "1px solid rgba(200,155,60,0.22)",
-            boxShadow: scrolled
-              ? "0 8px 40px rgba(26,18,8,0.12), 0 2px 0 rgba(200,155,60,0.1), inset 0 1px 0 rgba(255,255,255,0.9)"
-              : "0 2px 24px rgba(26,18,8,0.07), inset 0 1px 0 rgba(255,255,255,0.8)",
-            transition: "all 0.3s cubic-bezier(0.4,0,0.2,1)",
-            display: "flex",
-            alignItems: "center",
-            height: isMobile ? 52 : 58,
-            padding: isMobile ? "0 6px 0 14px" : "0 10px 0 20px",
-            position: "relative",
-            overflow: "visible",
-          }}
+          className={`pointer-events-auto relative flex h-[52px] md:h-[58px] w-full max-w-[1350px] items-center overflow-visible rounded-[14px] md:rounded-[10px] border border-border bg-bg-soft/95 pl-3.5 pr-1.5 md:pl-5 md:pr-2.5 backdrop-blur-[28px] transition-all duration-300 ${
+            scrolled
+              ? "shadow-[0_10px_44px_rgba(0,0,0,0.08)]"
+              : "shadow-[0_4px_28px_rgba(0,0,0,0.06)]"
+          }`}
           onMouseLeave={() => setActiveMenu(null)}
         >
-          {/* ── Logo ─────────────────────────────────────────────────── */}
+          {/* Logo */}
           <button
             type="button"
             onClick={() => { setPage("home"); setActiveNavLabel(null); }}
-            style={{
-              border: "none", background: "none", cursor: "pointer",
-              display: "flex", alignItems: "center",
-              gap: vw < 380 ? 0 : 8,
-              padding: "4px 6px 4px 0", flexShrink: 0,
-              borderRadius: 10, transition: "opacity 0.2s",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = "0.72")}
-            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+            className="flex shrink-0 items-center gap-2 rounded-[10px] border-0 bg-transparent p-1 pr-1.5 cursor-pointer transition-opacity hover:opacity-75"
           >
-            <div style={{
-              width: vw < 380 ? 28 : 32,
-              height: vw < 380 ? 28 : 32,
-              borderRadius: 8,
-              background: "linear-gradient(135deg, #1A1208 0%, #3C2A0A 55%, #C89B3C 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 3px 10px rgba(200,155,60,0.32)",
-              flexShrink: 0,
-            }}>
-              <span style={{ fontSize: 13, fontWeight: 900, color: "#F0D080", fontFamily: "'Cormorant',serif" }}>S</span>
+            <div className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent-hover via-accent to-primary-light shadow-[0_3px_10px_color-mix(in_srgb,var(--color-accent)_32%,transparent)]">
+              <span className="font-display text-[13px] font-black text-white">S</span>
             </div>
-            {/* Hide text on tiny phones, show on >= 380 */}
-            {vw >= 380 && (
-              <div style={{ lineHeight: 1 }}>
-                <span style={{ fontFamily: "'Cormorant',serif", fontSize: vw < 500 ? 18 : 21, fontWeight: 800, color: "#1A1208", letterSpacing: "-0.03em", display: "block" }}>
-                  Skynet<span style={{ color: "#C89B3C", fontSize: 11, fontWeight: 900 }}>™</span>
-                </span>
-                {vw >= 500 && (
-                  <span style={{ fontSize: 8, fontWeight: 600, color: "#9D8B6E", letterSpacing: "0.16em", textTransform: "uppercase", fontFamily: "'Inter',sans-serif" }}>
-                    Qatar
+            <div className="hidden min-[380px]:block leading-none text-left">
+              <span className="font-display block text-lg md:text-[21px] font-extrabold tracking-tight text-primary">
+                {client.name.split(" ")[0]}
+                <span className="text-[11px] font-black text-accent">™</span>
+              </span>
+              <span className="hidden min-[500px]:block mt-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-muted">
+                {client.tagline}
+              </span>
+            </div>
+          </button>
+
+          {/* Desktop nav */}
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-0.5 md:flex">
+            {NAV.map((item) => {
+              const active = isActive(item);
+              return (
+                <div
+                  key={item.label}
+                  className="relative"
+                  onMouseEnter={() => (item.hasMenu ? setActiveMenu(item.label) : setActiveMenu(null))}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleNav(item)}
+                    className={`relative whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] transition-all lg:px-3.5 lg:text-[13px] md:px-2.5 md:text-xs ${
+                      active
+                        ? "border-accent/40 bg-accent-soft/80 font-bold text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
+                        : "border-transparent bg-transparent font-medium text-primary hover:border-accent/25 hover:bg-accent-soft/50"
+                    }`}
+                  >
+                    {item.label}
+                    {active && (
+                      <span className="absolute bottom-1 left-1/2 h-0.5 w-[55%] -translate-x-1/2 rounded-full bg-gradient-to-r from-accent via-accent-light to-accent" />
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </nav>
+
+          <div className="flex-1" />
+
+          {/* Actions */}
+          <div className="flex items-center gap-0.5 md:gap-1">
+            <NavIconBtn label="Search" onClick={onSearchOpen} className="max-[359px]:hidden">
+              <Icons.Search />
+            </NavIconBtn>
+            <NavIconBtn label={user ? user.name : "Sign in"} onClick={onLoginOpen}>
+              {user ? <Avatar name={user.name} size={22} imageUrl={user.avatarUrl} className="border-0 shadow-none" /> : <Icons.User />}
+            </NavIconBtn>
+            <NavIconBtn label={`Wishlist (${wishlist.length})`} onClick={onWishlistOpen} className="hidden min-[480px]:flex">
+              <div className="relative">
+                <Icons.Heart filled={wishlist.length > 0} />
+                {wishlist.length > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[8px] font-black text-white">
+                    {wishlist.length > 9 ? "9+" : wishlist.length}
                   </span>
                 )}
               </div>
-            )}
-          </button>
+            </NavIconBtn>
 
-          {/* ── Center Desktop Nav (hidden on mobile/tablet) ──────────── */}
-          {!isMobile && (
-            <nav style={{
-              position: "absolute",
-              left: "50%", transform: "translateX(-50%)",
-              display: "flex", alignItems: "center",
-              gap: isTablet ? 0 : 2,
-            }}>
-              {NAV.map(item => {
-                const active = isActive(item);
-                return (
-                  <div
-                    key={item.label}
-                    style={{ position: "relative" }}
-                    onMouseEnter={() => item.hasMenu ? setActiveMenu(item.label) : setActiveMenu(null)}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleNav(item)}
-                      style={{
-                        border: active
-                          ? "1px solid rgba(200,155,60,0.38)"
-                          : "1px solid transparent",
-                        background: active
-                          ? "linear-gradient(135deg, rgba(200,155,60,0.14) 0%, rgba(240,208,128,0.07) 100%)"
-                          : "transparent",
-                        cursor: "pointer",
-                        padding: isTablet ? "5px 10px" : "6px 14px",
-                        fontSize: isTablet ? 12 : 13,
-                        fontWeight: active ? 700 : 500,
-                        color: active ? "#9A6F10" : "#2C1E08",
-                        fontFamily: "'Inter',sans-serif",
-                        letterSpacing: "0.01em",
-                        borderRadius: 999,
-                        transition: "all 0.2s ease",
-                        position: "relative",
-                        whiteSpace: "nowrap",
-                        boxShadow: active
-                          ? "inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 6px rgba(200,155,60,0.14)"
-                          : "none",
-                      }}
-                      onMouseEnter={e => {
-                        if (!active) {
-                          const btn = e.currentTarget as HTMLButtonElement;
-                          btn.style.background = "rgba(200,155,60,0.08)";
-                          btn.style.border = "1px solid rgba(200,155,60,0.22)";
-                          btn.style.color = "#1A1208";
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        if (!active) {
-                          const btn = e.currentTarget as HTMLButtonElement;
-                          btn.style.background = "transparent";
-                          btn.style.border = "1px solid transparent";
-                          btn.style.color = "#2C1E08";
-                        }
-                      }}
-                    >
-                      {item.label}
-                      {active && (
-                        <span style={{
-                          position: "absolute", bottom: 4, left: "50%",
-                          transform: "translateX(-50%)",
-                          width: "55%", height: 2, borderRadius: 2,
-                          background: "linear-gradient(90deg, #C89B3C, #F0D080, #C89B3C)",
-                          boxShadow: "0 0 6px rgba(200,155,60,0.5)",
-                        }} />
-                      )}
-                    </button>
-                  </div>
-                );
-              })}
-            </nav>
-          )}
+            {/* Cart */}
+            <button
+              type="button"
+              onClick={onCartOpen}
+              aria-label={`Cart (${cartCount})`}
+              className={`relative ml-0.5 flex items-center justify-center rounded-full border transition-all md:ml-1.5 md:gap-1.5 md:px-4 md:py-0 md:h-[38px] max-md:h-9 max-md:w-9 ${
+                cartCount > 0
+                  ? "border-accent/50 bg-gradient-to-br from-accent to-primary-light text-white shadow-[0_4px_16px_color-mix(in_srgb,var(--color-accent)_38%,transparent)]"
+                  : "border-accent/25 bg-accent-soft/40 text-muted hover:border-accent/40"
+              }`}
+            >
+              <Icons.Bag />
+              <span className="hidden md:inline text-[13px] font-bold">Cart</span>
+              {cartCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-accent-light md:static md:h-auto md:w-auto md:rounded-full md:bg-primary/85 md:px-2 md:py-0 md:text-[10.5px]">
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </button>
 
-          {/* ── Spacer ───────────────────────────────────────────────── */}
-          <div style={{ flex: 1 }} />
-
-          {/* ── Right Action Icons ────────────────────────────────────── */}
-          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 1 : 2 }}>
-
-            {/* Search — always visible */}
-            <GoldIconBtn label="Search" onClick={onSearchOpen} size={isMobile ? 34 : 38}>
-              <Icons.Search />
-            </GoldIconBtn>
-
-            {/* User — hide on tiny phones */}
-            {vw >= 360 && (
-              <GoldIconBtn label={user ? user.name : "Sign in"} onClick={onLoginOpen} size={isMobile ? 34 : 38}>
-                {user
-                  ? <Avatar name={user.name} size={22} imageUrl={user.avatarUrl} className="border-0 shadow-none" />
-                  : <Icons.User />
-                }
-              </GoldIconBtn>
-            )}
-
-            {/* Wishlist — hide on small mobile */}
-            {vw >= 480 && (
-              <GoldIconBtn label={`Wishlist (${wishlist.length})`} onClick={onWishlistOpen} size={isMobile ? 34 : 38}>
-                <div style={{ position: "relative" }}>
-                  <Icons.Heart filled={wishlist.length > 0} />
-                  {wishlist.length > 0 && (
-                    <span style={{
-                      position: "absolute", top: -5, right: -5,
-                      background: "linear-gradient(135deg, #C89B3C, #E8BB5C)",
-                      color: "#1A1208",
-                      borderRadius: "50%", width: 14, height: 14,
-                      fontSize: 8, fontWeight: 900,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      boxShadow: "0 1px 4px rgba(200,155,60,0.5)",
-                    }}>
-                      {wishlist.length > 9 ? "9+" : wishlist.length}
-                    </span>
-                  )}
-                </div>
-              </GoldIconBtn>
-            )}
-
-            {/* Cart — icon-only on mobile, pill with text on desktop */}
-            {isMobile ? (
-              /* Mobile: compact icon button */
-              <button
-                type="button"
-                onClick={onCartOpen}
-                aria-label={`Cart (${cartCount})`}
-                style={{
-                  position: "relative",
-                  width: 36, height: 36, borderRadius: "50%",
-                  border: cartCount > 0 ? "1px solid rgba(200,155,60,0.5)" : "1px solid rgba(200,155,60,0.22)",
-                  background: cartCount > 0
-                    ? "linear-gradient(135deg, #C89B3C 0%, #F0D080 50%, #C89B3C 100%)"
-                    : "linear-gradient(135deg, rgba(200,155,60,0.08), rgba(240,208,128,0.04))",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer",
-                  color: cartCount > 0 ? "#1A1208" : "#7A5D0A",
-                  boxShadow: cartCount > 0
-                    ? "0 3px 12px rgba(200,155,60,0.4), inset 0 1px 0 rgba(255,255,255,0.5)"
-                    : "inset 0 1px 0 rgba(255,255,255,0.5)",
-                  transition: "all 0.2s ease",
-                  marginLeft: 2,
-                }}
-              >
-                <Icons.Bag />
-                {cartCount > 0 && (
-                  <span style={{
-                    position: "absolute", top: -3, right: -3,
-                    background: "#1A1208", color: "#F0D080",
-                    borderRadius: "50%", width: 16, height: 16,
-                    fontSize: 8, fontWeight: 900,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
-                  }}>
-                    {cartCount > 9 ? "9+" : cartCount}
-                  </span>
-                )}
-              </button>
-            ) : (
-              /* Desktop: full pill */
-              <button
-                type="button"
-                onClick={onCartOpen}
-                aria-label={`Cart (${cartCount})`}
-                style={{
-                  display: "flex", alignItems: "center",
-                  gap: isTablet ? 5 : 7,
-                  height: 38,
-                  padding: isTablet ? "0 12px" : "0 16px",
-                  borderRadius: 999,
-                  border: cartCount > 0
-                    ? "1px solid rgba(200,155,60,0.55)"
-                    : "1px solid rgba(200,155,60,0.28)",
-                  background: cartCount > 0
-                    ? "linear-gradient(135deg, #C89B3C 0%, #F0D080 45%, #D4A849 75%, #C89B3C 100%)"
-                    : "linear-gradient(135deg, rgba(200,155,60,0.10) 0%, rgba(240,208,128,0.05) 100%)",
-                  cursor: "pointer",
-                  color: cartCount > 0 ? "#1A1208" : "#7A5D0A",
-                  fontSize: isTablet ? 12 : 13, fontWeight: 700,
-                  fontFamily: "'Inter',sans-serif",
-                  letterSpacing: "0.01em",
-                  boxShadow: cartCount > 0
-                    ? "0 4px 16px rgba(200,155,60,0.38), inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.08)"
-                    : "inset 0 1px 0 rgba(255,255,255,0.55)",
-                  transition: "all 0.22s cubic-bezier(0.34,1.56,0.64,1)",
-                  marginLeft: 6,
-                }}
-                onMouseEnter={e => {
-                  const btn = e.currentTarget as HTMLButtonElement;
-                  btn.style.transform = "scale(1.04)";
-                  btn.style.boxShadow = cartCount > 0
-                    ? "0 6px 24px rgba(200,155,60,0.55), inset 0 1px 0 rgba(255,255,255,0.55)"
-                    : "0 4px 14px rgba(200,155,60,0.22), inset 0 1px 0 rgba(255,255,255,0.55)";
-                }}
-                onMouseLeave={e => {
-                  const btn = e.currentTarget as HTMLButtonElement;
-                  btn.style.transform = "scale(1)";
-                  btn.style.boxShadow = cartCount > 0
-                    ? "0 4px 16px rgba(200,155,60,0.38), inset 0 1px 0 rgba(255,255,255,0.5)"
-                    : "inset 0 1px 0 rgba(255,255,255,0.55)";
-                }}
-              >
-                <Icons.Bag />
-                <span>Cart</span>
-                {cartCount > 0 && (
-                  <span style={{
-                    background: "rgba(26,18,8,0.85)", color: "#F0D080",
-                    borderRadius: 999, padding: "1px 8px",
-                    fontSize: 10.5, fontWeight: 900, lineHeight: "17px",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)",
-                  }}>
-                    {cartCount > 9 ? "9+" : cartCount}
-                  </span>
-                )}
-              </button>
-            )}
-
-            {/* Mobile burger — only on mobile */}
-            {isMobile && (
-              <button
-                type="button"
-                onClick={() => setMobileOpen(true)}
-                aria-label="Menu"
-                style={{
-                  width: 34, height: 34, borderRadius: "50%",
-                  border: "1px solid rgba(200,155,60,0.25)",
-                  background: "linear-gradient(135deg, rgba(200,155,60,0.08) 0%, rgba(240,208,128,0.03) 100%)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", color: "#2C1E08", marginLeft: 3,
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-                  transition: "all 0.18s ease",
-                  flexShrink: 0,
-                }}
-              >
-                <Icons.Menu />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Menu"
+              className="nav-icon-btn ml-0.5 h-9 w-9 md:hidden"
+            >
+              <Icons.Menu />
+            </button>
           </div>
 
-          {/* ── Mega Menu dropdown (desktop only) ────────────────────── */}
-          {!isMobile && activeMenu && (
-            <div
-              style={{
-                position: "absolute",
-                top: "calc(100% + 10px)",
-                left: "50%", transform: "translateX(-50%)",
-                width: isTablet ? "min(700px, 95vw)" : "min(940px, 90vw)",
-                zIndex: 200,
-                animation: "megaFadeIn 0.18s ease",
-                pointerEvents: "auto",
-              }}
-            >
-              <div style={{
-                background: "rgba(255,253,248,0.98)",
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
-                borderRadius: 20,
-                border: "1px solid rgba(200,155,60,0.18)",
-                boxShadow: "0 20px 60px rgba(26,18,8,0.13), 0 4px 16px rgba(200,155,60,0.08), inset 0 1px 0 rgba(255,255,255,0.7)",
-                padding: isTablet ? "18px 20px" : "24px 28px",
-                overflow: "hidden",
-              }}>
-                <div style={{
-                  fontFamily: "'Inter',sans-serif",
-                  fontSize: 9.5, fontWeight: 700, letterSpacing: "0.15em",
-                  textTransform: "uppercase", color: "#C89B3C",
-                  marginBottom: 16, paddingBottom: 10,
-                  borderBottom: "1px solid rgba(200,155,60,0.12)",
-                }}>
+          {/* Mega menu */}
+          {activeMenu && (
+            <div className="absolute left-1/2 top-[calc(100%+10px)] z-[200] hidden w-[min(940px,90vw)] -translate-x-1/2 animate-mega-fade-in md:block lg:w-[min(940px,90vw)]">
+              <div className="overflow-hidden rounded-[20px] border border-accent/20 bg-white/98 p-6 backdrop-blur-2xl shadow-[0_20px_60px_color-mix(in_srgb,var(--color-primary)_13%,transparent)] lg:px-7 lg:py-6">
+                <div className="mb-4 border-b border-accent/15 pb-2.5 text-[9.5px] font-bold uppercase tracking-[0.15em] text-accent">
                   {activeMenu}
                 </div>
                 <MegaMenu section={activeMenu} onClose={() => setActiveMenu(null)} />
@@ -497,159 +259,77 @@ export default function Header({
         </header>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          MOBILE DRAWER (slide-in from left)
-      ══════════════════════════════════════════════════════════════════ */}
+      {/* Mobile drawer */}
       {mobileOpen && (
         <>
-          {/* Backdrop */}
-          <div
+          <button
+            type="button"
+            aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
-            style={{
-              position: "fixed", inset: 0, zIndex: 300,
-              background: "rgba(26,18,8,0.5)",
-              backdropFilter: "blur(6px)",
-              WebkitBackdropFilter: "blur(6px)",
-              animation: "fadeIn 0.2s ease",
-            }}
+            className="fixed inset-0 z-[300] animate-fade-in bg-primary/50 backdrop-blur-sm"
           />
-          {/* Drawer panel */}
-          <div style={{
-            position: "fixed", top: 0, left: 0, bottom: 0,
-            width: "min(320px, 85vw)",
-            zIndex: 310,
-            background: "#FDFAF5",
-            overflowY: "auto",
-            overflowX: "hidden",
-            animation: "slideInLeft 0.26s cubic-bezier(0.34,1.56,0.64,1)",
-            display: "flex", flexDirection: "column",
-            boxShadow: "4px 0 40px rgba(26,18,8,0.18)",
-          }}>
-            {/* Drawer header */}
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "18px 16px",
-              background: "#1A1208",
-              flexShrink: 0,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                <div style={{
-                  width: 30, height: 30, borderRadius: 8,
-                  background: "rgba(240,208,128,0.12)",
-                  border: "1px solid rgba(240,208,128,0.28)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <span style={{ fontSize: 13, fontWeight: 900, color: "#F0D080", fontFamily: "'Cormorant',serif" }}>S</span>
+          <div className="fixed bottom-0 left-0 top-0 z-[310] flex w-[min(320px,85vw)] animate-slide-in-left flex-col overflow-y-auto overflow-x-hidden bg-bg shadow-[4px_0_40px_color-mix(in_srgb,var(--color-primary)_18%,transparent)]">
+            <div className="flex shrink-0 items-center justify-between bg-primary px-4 py-[18px]">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-accent-light/30 bg-accent-light/10">
+                  <span className="font-display text-[13px] font-black text-accent-light">S</span>
                 </div>
                 <div>
-                  <span style={{ fontFamily: "'Cormorant',serif", fontSize: 18, fontWeight: 800, color: "#F0D080", letterSpacing: "-0.02em", display: "block" }}>
-                    Skynet™
-                  </span>
-                  <span style={{ fontSize: 8, color: "rgba(240,208,128,0.5)", letterSpacing: "0.14em", textTransform: "uppercase", fontFamily: "'Inter',sans-serif" }}>Qatar</span>
+                  <span className="font-display block text-lg font-extrabold text-accent-light">{client.name.split(" ")[0]}™</span>
+                  <span className="text-[8px] uppercase tracking-[0.14em] text-accent-light/50">{client.tagline}</span>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                style={{
-                  border: "1px solid rgba(240,208,128,0.2)",
-                  background: "rgba(255,255,255,0.07)", cursor: "pointer",
-                  width: 32, height: 32, borderRadius: 9,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  color: "#F0D080",
-                }}
-              >
+              <button type="button" onClick={() => setMobileOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-accent-light/20 bg-white/10 text-accent-light">
                 <Icons.X />
               </button>
             </div>
 
-            {/* Quick actions row */}
-            <div style={{
-              display: "flex", gap: 8, padding: "12px 14px",
-              background: "rgba(200,155,60,0.04)",
-              borderBottom: "1px solid rgba(200,155,60,0.1)",
-            }}>
-              <MobileQuickBtn icon={<Icons.Search />} label="Search" onClick={() => { onSearchOpen(); setMobileOpen(false); }} />
-              <MobileQuickBtn icon={<Icons.User />} label={user ? "Account" : "Sign In"} onClick={() => { onLoginOpen(); setMobileOpen(false); }} />
-              <MobileQuickBtn
-                icon={
-                  <div style={{ position: "relative" }}>
-                    <Icons.Heart filled={wishlist.length > 0} />
-                    {wishlist.length > 0 && (
-                      <span style={{
-                        position: "absolute", top: -4, right: -4,
-                        background: "#C89B3C", color: "#1A1208",
-                        borderRadius: "50%", width: 12, height: 12,
-                        fontSize: 7, fontWeight: 900,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>{wishlist.length}</span>
-                    )}
-                  </div>
-                }
-                label="Wishlist"
-                onClick={() => { onWishlistOpen(); setMobileOpen(false); }}
-              />
+            <div className="flex gap-2 border-b border-accent/10 bg-accent-soft/40 px-3.5 py-3">
+              {[
+                { icon: <Icons.Search />, label: "Search", action: () => { onSearchOpen(); setMobileOpen(false); } },
+                { icon: <Icons.User />, label: user ? "Account" : "Sign In", action: () => { onLoginOpen(); setMobileOpen(false); } },
+                { icon: <Icons.Heart filled={wishlist.length > 0} />, label: "Wishlist", action: () => { onWishlistOpen(); setMobileOpen(false); } },
+              ].map(({ icon, label, action }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={action}
+                  className="flex flex-1 flex-col items-center gap-1 rounded-[10px] border border-accent/20 bg-white/80 py-2 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
+                >
+                  <span className="text-base">{icon}</span>
+                  <span className="text-[9.5px] font-semibold tracking-wide text-muted">{label}</span>
+                </button>
+              ))}
             </div>
 
-            {/* Nav links */}
-            <nav style={{ padding: "8px 10px", flex: 1 }}>
-              {NAV.map(item => (
+            <nav className="flex-1 p-2.5">
+              {NAV.map((item) => (
                 <div key={item.label}>
                   <button
                     type="button"
                     onClick={() => {
-                      if (item.hasMenu) {
-                        setMobileAccordion(mobileAccordion === item.label ? null : item.label);
-                      } else {
-                        handleNav(item);
-                      }
+                      if (item.hasMenu) setMobileAccordion(mobileAccordion === item.label ? null : item.label);
+                      else handleNav(item);
                     }}
-                    style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      width: "100%",
-                      border: isActive(item) ? "1px solid rgba(200,155,60,0.28)" : "1px solid transparent",
-                      background: isActive(item)
-                        ? "linear-gradient(135deg, rgba(200,155,60,0.1), rgba(240,208,128,0.04))"
-                        : "transparent",
-                      cursor: "pointer", padding: "12px 14px",
-                      borderRadius: 12,
-                      fontFamily: "'Cormorant',serif",
-                      fontSize: 20, fontWeight: 700,
-                      color: isActive(item) ? "#B8821E" : "#1A1208",
-                      transition: "all 0.15s",
-                      marginBottom: 2,
-                    }}
+                    className={`mb-0.5 flex w-full items-center justify-between rounded-xl border px-3.5 py-3 font-display text-xl font-bold transition-all ${
+                      isActive(item)
+                        ? "border-accent/30 bg-accent-soft/60 text-accent"
+                        : "border-transparent bg-transparent text-primary"
+                    }`}
                   >
                     {item.label}
-                    <span style={{
-                      fontSize: 14, color: "#C89B3C", opacity: 0.7,
-                      transition: "transform 0.2s",
-                      transform: mobileAccordion === item.label ? "rotate(90deg)" : "none",
-                      display: "inline-block",
-                    }}>
+                    <span className={`text-sm text-accent/70 transition-transform ${mobileAccordion === item.label ? "rotate-90" : ""}`}>
                       {item.hasMenu ? "›" : "→"}
                     </span>
                   </button>
-                  {/* Mini sub-links when accordion open */}
                   {item.hasMenu && mobileAccordion === item.label && (
-                    <div style={{
-                      padding: "4px 14px 8px 24px",
-                      animation: "fadeIn 0.15s ease",
-                    }}>
-                      {["New Arrivals", "Bestsellers", "Shop All", "Bundles"].map(sub => (
+                    <div className="animate-fade-in px-3.5 pb-2 pl-6">
+                      {["New Arrivals", "Bestsellers", "Shop All", "Bundles"].map((sub) => (
                         <button
                           key={sub}
                           type="button"
                           onClick={() => handleNav(item)}
-                          style={{
-                            display: "block", width: "100%",
-                            border: "none", background: "none", cursor: "pointer",
-                            textAlign: "left", padding: "7px 0",
-                            fontSize: 13, fontWeight: 500,
-                            color: "#6B5A44", fontFamily: "'Inter',sans-serif",
-                            transition: "color 0.15s",
-                            borderBottom: "1px solid rgba(200,155,60,0.06)",
-                          }}
+                          className="block w-full border-b border-accent/10 py-1.5 text-left text-[13px] font-medium text-muted"
                         >
                           {sub}
                         </button>
@@ -660,32 +340,17 @@ export default function Header({
               ))}
             </nav>
 
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(200,155,60,0.12)", margin: "0 14px" }} />
+            <div className="mx-3.5 h-px bg-accent/15" />
 
-            {/* User section */}
-            <div style={{ padding: "14px 14px 28px", flexShrink: 0 }}>
+            <div className="shrink-0 p-3.5 pb-7">
               {user ? (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 10,
-                  background: "#F7F1E3", borderRadius: 14, padding: "12px 14px",
-                  border: "1px solid rgba(200,155,60,0.2)",
-                }}>
+                <div className="flex items-center gap-2.5 rounded-[14px] border border-accent/20 bg-accent-soft p-3">
                   <Avatar name={user.name} size={38} imageUrl={user.avatarUrl} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1208", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</div>
-                    <div style={{ fontSize: 10.5, color: "#9D8B6E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[13px] font-bold text-primary">{user.name}</div>
+                    <div className="truncate text-[10.5px] text-muted">{user.email}</div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => { onLogout?.(); setMobileOpen(false); }}
-                    style={{
-                      border: "1px solid rgba(200,155,60,0.4)",
-                      background: "transparent", cursor: "pointer",
-                      fontSize: 10.5, fontWeight: 700, color: "#C89B3C",
-                      borderRadius: 8, padding: "5px 10px", flexShrink: 0,
-                    }}
-                  >
+                  <button type="button" onClick={() => { onLogout?.(); setMobileOpen(false); }} className="shrink-0 rounded-lg border border-accent/40 px-2.5 py-1 text-[10.5px] font-bold text-accent">
                     Sign Out
                   </button>
                 </div>
@@ -693,16 +358,7 @@ export default function Header({
                 <button
                   type="button"
                   onClick={() => { onLoginOpen(); setMobileOpen(false); }}
-                  style={{
-                    width: "100%", border: "none", borderRadius: 12,
-                    padding: "13px 18px",
-                    background: "linear-gradient(135deg, #1A1208, #3C2A0A 60%, #C89B3C)",
-                    color: "#F0D080", fontSize: 13.5, fontWeight: 700,
-                    fontFamily: "'Inter',sans-serif", cursor: "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    letterSpacing: "0.02em",
-                    boxShadow: "0 4px 16px rgba(200,155,60,0.25)",
-                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border-0 bg-gradient-to-br from-accent-hover via-accent to-primary-light py-3.5 text-[13.5px] font-bold text-white shadow-[0_4px_16px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]"
                 >
                   <Icons.LogIn />
                   Sign In / Register
@@ -712,100 +368,6 @@ export default function Header({
           </div>
         </>
       )}
-
-      {/* ── Global Keyframes ──────────────────────────────────────────────── */}
-      <style>{`
-        @keyframes shimmerBar {
-          0%   { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-        @keyframes slideInLeft {
-          from { transform: translateX(-100%); opacity: 0.6; }
-          to   { transform: translateX(0);     opacity: 1; }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        @keyframes megaFadeIn {
-          from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-      `}</style>
     </>
-  );
-}
-
-/* ── Golden glassy round icon button ─────────────────────────────────── */
-function GoldIconBtn({
-  children, label, onClick, size = 38,
-}: { children: React.ReactNode; label: string; onClick: () => void; size?: number }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      style={{
-        width: size, height: size, borderRadius: "50%",
-        border: "1px solid transparent",
-        background: "transparent",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        cursor: "pointer", color: "#2C1E08",
-        transition: "all 0.18s ease",
-        position: "relative",
-        flexShrink: 0,
-      }}
-      onMouseEnter={e => {
-        const btn = e.currentTarget as HTMLButtonElement;
-        btn.style.background = "linear-gradient(135deg, rgba(200,155,60,0.13) 0%, rgba(240,208,128,0.06) 100%)";
-        btn.style.border = "1px solid rgba(200,155,60,0.32)";
-        btn.style.color = "#8A6820";
-        btn.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.7), 0 2px 8px rgba(200,155,60,0.14)";
-      }}
-      onMouseLeave={e => {
-        const btn = e.currentTarget as HTMLButtonElement;
-        btn.style.background = "transparent";
-        btn.style.border = "1px solid transparent";
-        btn.style.color = "#2C1E08";
-        btn.style.boxShadow = "none";
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
-/* ── Mobile drawer quick-action button ──────────────────────────────── */
-function MobileQuickBtn({
-  icon, label, onClick,
-}: { icon: React.ReactNode; label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        flex: 1, border: "1px solid rgba(200,155,60,0.2)",
-        background: "rgba(255,253,248,0.8)", cursor: "pointer",
-        borderRadius: 10, padding: "8px 4px",
-        display: "flex", flexDirection: "column",
-        alignItems: "center", gap: 4,
-        color: "#2C1E08", transition: "all 0.15s ease",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-      }}
-      onMouseEnter={e => {
-        const btn = e.currentTarget as HTMLButtonElement;
-        btn.style.background = "linear-gradient(135deg, rgba(200,155,60,0.12), rgba(240,208,128,0.06))";
-        btn.style.borderColor = "rgba(200,155,60,0.4)";
-      }}
-      onMouseLeave={e => {
-        const btn = e.currentTarget as HTMLButtonElement;
-        btn.style.background = "rgba(255,253,248,0.8)";
-        btn.style.borderColor = "rgba(200,155,60,0.2)";
-      }}
-    >
-      <span style={{ fontSize: 16, color: "#2C1E08" }}>{icon}</span>
-      <span style={{ fontSize: 9.5, fontWeight: 600, color: "#7A6040", fontFamily: "'Inter',sans-serif", letterSpacing: "0.03em" }}>{label}</span>
-    </button>
   );
 }

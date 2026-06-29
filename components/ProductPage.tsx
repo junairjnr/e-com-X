@@ -1,10 +1,11 @@
 "use client";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { PRODUCTS, fmt } from "@/lib/data";
 import type { Product, WishlistItem } from "@/lib/types";
 import ReviewsSection from "./ReviewsSection";
 import ProductCard from "./ProductCard";
-import { tw } from "@/lib/theme";
+import StoreImage from "./StoreImage";
+import { tw, badgeBgClass, swatchBgClass } from "@/lib/theme";
 import * as Icons from "./Icons";
 
 
@@ -34,11 +35,12 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
   const [rotation, setRotation] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [is360Mode, setIs360Mode] = useState(false);
   const [rotate360, setRotate360] = useState(0);
   const imgRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
+  const rotate360Ref = useRef<{ startX: number; startRot: number } | null>(null);
 
   const similar = PRODUCTS.filter(p => p.id !== product.id).slice(0, 4);
 
@@ -51,270 +53,247 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
   };
 
   const handleZoom = (dir: "in" | "out" | "reset") => {
+    if (is360Mode) return;
     if (dir === "reset") { setZoom(1); setPan({ x: 0, y: 0 }); }
     else setZoom(z => Math.min(3, Math.max(0.5, z + (dir === "in" ? 0.25 : -0.25))));
   };
 
+  const handleWheel = (e: React.WheelEvent) => {
+    if (is360Mode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = e.deltaY > 0 ? -0.12 : 0.12;
+    setZoom(z => {
+      const next = Math.min(3, Math.max(0.5, z + delta));
+      if (next <= 1) setPan({ x: 0, y: 0 });
+      return next;
+    });
+  };
+
   const handleRotate = () => setRotation(r => (r + 90) % 360);
-  const handleRotateReset = () => { setRotation(0); };
+  const handleRotateReset = () => setRotation(0);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (zoom === 1) return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  const isControlTarget = (target: EventTarget | null) =>
+    !!(target as HTMLElement)?.closest?.("[data-viewer-control]");
+
+  const handleViewerPointerDown = (e: React.PointerEvent) => {
+    if (isControlTarget(e.target)) return;
+
+    if (is360Mode) {
+      e.preventDefault();
+      rotate360Ref.current = { startX: e.clientX, startRot: rotate360 };
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      return;
+    }
+
+    if (zoom > 1) {
+      e.preventDefault();
+      dragRef.current = { startX: e.clientX, startY: e.clientY, panX: pan.x, panY: pan.y };
+      setIsDragging(true);
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
   };
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging) return;
-    setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-  }, [isDragging, dragStart]);
-
-  const handleMouseUp = () => setIsDragging(false);
-
-  // 360° drag
-  const handle360Down = (e: React.MouseEvent) => {
-    const startX = e.clientX;
-    const startRot = rotate360;
-    const move = (me: MouseEvent) => setRotate360(startRot + (me.clientX - startX) * 0.5);
-    const up = () => { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up); };
-    window.addEventListener("mousemove", move);
-    window.addEventListener("mouseup", up);
+  const handleViewerPointerMove = (e: React.PointerEvent) => {
+    if (rotate360Ref.current) {
+      const { startX, startRot } = rotate360Ref.current;
+      setRotate360(startRot + (e.clientX - startX) * 0.5);
+      return;
+    }
+    if (dragRef.current && isDragging) {
+      const { startX, startY, panX, panY } = dragRef.current;
+      setPan({ x: panX + (e.clientX - startX), y: panY + (e.clientY - startY) });
+    }
   };
 
-  // ── Image viewer JSX ──────────────────────────────────────────────────────
-
-  const premiumToolBtn: React.CSSProperties = {
-    width: 40, height: 40, background: "transparent", border: "none",
-    color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex",
-    alignItems: "center", justifyContent: "center", transition: "all 0.2s",
+  const handleViewerPointerUp = (e: React.PointerEvent) => {
+    rotate360Ref.current = null;
+    dragRef.current = null;
+    setIsDragging(false);
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      /* pointer may already be released */
+    }
   };
-  const applyPremiumHover = (el: HTMLButtonElement) => { el.style.color = "#C89B3C"; el.style.transform = "scale(1.15)"; };
-  const removePremiumHover = (el: HTMLButtonElement) => { el.style.color = "rgba(255,255,255,0.75)"; el.style.transform = "scale(1)"; };
+
+  const stopControl = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+  };
+
+  const toolBtnClass =
+    "viewer-toolbar-btn flex h-10 w-10 lg:h-11 lg:w-11 items-center justify-center rounded-lg border-0 bg-white/10 text-white cursor-pointer transition-all active:scale-95 active:bg-accent/30 hover:bg-white/20 hover:text-accent-light";
+
+  const viewerCursorClass = is360Mode
+    ? "cursor-grab active:cursor-grabbing"
+    : zoom > 1
+      ? isDragging
+        ? "cursor-grabbing"
+        : "cursor-grab"
+      : "cursor-zoom-in";
+
+  const viewerTouchClass = is360Mode || zoom > 1 ? "touch-none" : "";
+
+  const imageTransformStyle: React.CSSProperties = is360Mode
+    ? { transform: `perspective(900px) rotateY(${rotate360}deg)`, transformStyle: "preserve-3d" }
+    : { transform: `scale(${zoom}) rotate(${rotation}deg) translate(${pan.x / zoom}px, ${pan.y / zoom}px)` };
+
+  const imageTransitionStyle: React.CSSProperties =
+    isDragging || is360Mode
+      ? {}
+      : { transition: "transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1)" };
 
   const imageViewer = (
     <div
       ref={imgRef}
-      onMouseDown={is360Mode ? handle360Down : handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      style={{
-        flex: 1,
-        borderRadius: isFullscreen ? 0 : 28,
-        overflow: "hidden",
-        position: "relative",
-        minHeight: isFullscreen ? "100vh" : 500,
-        /* Premium warm pearl background */
-        background: "radial-gradient(ellipse 90% 80% at 50% 44%, #F8F6F0 0%, #F0EDE4 35%, #E8E3D8 70%, #DDD8CC 100%)",
-        boxShadow: isFullscreen ? "none" : "0 8px 60px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9)",
-        border: isFullscreen ? "none" : "1px solid rgba(200,190,170,0.5)",
-        cursor: zoom > 1 ? (isDragging ? "grabbing" : "grab") : is360Mode ? "ew-resize" : "default",
-      }}
+      onPointerDown={handleViewerPointerDown}
+      onPointerMove={handleViewerPointerMove}
+      onPointerUp={handleViewerPointerUp}
+      onPointerCancel={handleViewerPointerUp}
+      onWheel={handleWheel}
+      className={`relative w-full overflow-hidden bg-white select-none ${viewerCursorClass} ${viewerTouchClass} ${
+        isFullscreen
+          ? "h-full min-h-screen rounded-none border-0 shadow-none"
+          : "h-[340px] sm:h-[420px] lg:h-[520px] rounded-2xl lg:rounded-[28px] border border-border shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
+      }`}
     >
-      {/* Premium vignette overlay — darkens edges for depth */}
-      <div style={{
-        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 70% 65% at 50% 48%, transparent 40%, rgba(0,0,0,0.04) 100%)",
-      }} />
+      {/* Soft spotlight behind product */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,var(--color-bg-soft)_0%,transparent_70%)]" />
 
-      {/* Soft glowing circle behind product */}
-      <div style={{
-        position: "absolute", top: "50%", left: "50%",
-        transform: "translate(-50%, -52%)",
-        width: "62%", paddingBottom: "62%", borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(255,252,240,0.7) 0%, rgba(240,235,220,0.3) 50%, transparent 75%)",
-        pointerEvents: "none", zIndex: 0,
-      }} />
-
-      {/* Product drop-shadow reflection */}
-      <div style={{
-        position: "absolute", bottom: "12%", left: "50%",
-        transform: "translateX(-50%)",
-        width: "55%", height: 24,
-        background: "radial-gradient(ellipse 100% 100%, rgba(0,0,0,0.14) 0%, transparent 75%)",
-        pointerEvents: "none", zIndex: 0, filter: "blur(6px)",
-      }} />
-
-      {/* Product image */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={product.images[imgIdx] || product.images[0]}
-        alt={product.name}
-        draggable={false}
-        style={{
-          position: "absolute", inset: 0,
-          width: "100%", height: "100%",
-          objectFit: "contain", padding: "40px 80px 48px 40px",
-          transform: is360Mode
-            ? `perspective(800px) rotateY(${rotate360}deg)`
-            : `scale(${zoom}) rotate(${rotation}deg) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
-          transition: isDragging || is360Mode ? "none" : "transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1)",
-          userSelect: "none", zIndex: 1,
-          filter: "drop-shadow(0 16px 32px rgba(0,0,0,0.18))",
-        }}
-      />
-
-      {/* ── SALE badge — top left ────hided for the % to the top─────────────────────────────────────── */}
-      {/* <div style={{ position: "absolute", top: 18, left: 18, zIndex: 6 }}>
-        <span style={{
-          background: product.badgeColor,
-          color: "#fff", borderRadius: 100,
-          padding: "6px 16px",
-          fontSize: 10, fontWeight: 900, letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          boxShadow: `0 4px 16px ${product.badgeColor}60`,
-          fontFamily: "'Inter',sans-serif",
-          display: "inline-flex", alignItems: "center", gap: 5,
-        }}>
-          <span style={{ fontSize: 8 }}>●</span>
-          {product.badge}
-        </span>
-      </div> */}
-
-      {/* ── Discount % — top left below badge ────────────────────────────── */}
-      {product.originalPrice && (
-        <div style={{ position: "absolute", top: 18, left: 18, zIndex: 6 }}>
-          <span style={{
-            background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-            color: "#fff", borderRadius: 10,
-            padding: "7px 14px",
-            fontSize: 13, fontWeight: 900,
-            fontFamily: "'Inter',sans-serif",
-            boxShadow: "0 4px 18px rgba(239,68,68,0.4)",
-            display: "inline-block",
-            letterSpacing: "-0.02em",
-          }}>
-            −{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-          </span>
-        </div>
-      )}
-
-      {/* ── Wishlist heart — top right ────────────────────────────────────── */}
-      <button
-        onClick={() => onWishlistToggle({ id: product.id, name: product.name, brand: product.brand, price: product.price, img: product.images[0] })}
-        style={{
-          position: "absolute", top: 18, right: 18, zIndex: 6,
-          width: 42, height: 42, borderRadius: 21,
-          background: "rgba(255,255,255,0.88)",
-          border: "1.5px solid rgba(200,190,170,0.6)",
-          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-          color: isWishlisted ? "#ef4444" : "#9CA3AF",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-          transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-        }}
-        onMouseEnter={e => { (e.currentTarget).style.transform = "scale(1.12)"; (e.currentTarget).style.boxShadow = "0 6px 20px rgba(239,68,68,0.25)"; }}
-        onMouseLeave={e => { (e.currentTarget).style.transform = "scale(1)"; (e.currentTarget).style.boxShadow = "0 4px 16px rgba(0,0,0,0.12)"; }}
-        aria-label="Wishlist"
+      {/* Product image — inline transform so zoom/360 work at runtime */}
+      <div
+        className="absolute inset-0 z-[1] flex items-center justify-center p-14 pb-20 lg:p-12 lg:pr-16"
+        style={{ ...imageTransformStyle, ...imageTransitionStyle }}
       >
-        <Icons.Heart filled={isWishlisted} />
-      </button>
+        <StoreImage
+          src={product.images[imgIdx] || product.images[0]}
+          alt={product.name}
+          draggable={false}
+          className="max-h-full max-w-full object-contain select-none drop-shadow-[0_16px_32px_rgba(0,0,0,0.12)]"
+        />
+      </div>
 
-      {/* ── Premium grouped toolbar — dark glass pill, right side center ─── */}
-      <div style={{
-        position: "absolute", right: 16, top: "50%",
-        transform: "translateY(-50%)",
-        zIndex: 6,
-        display: "flex", flexDirection: "column", alignItems: "center",
-        gap: 0,
-        /* Single grouped dark glass pill */
-        background: "rgba(16, 12, 6, 0.78)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        borderRadius: 10,
-        border: "1px solid rgba(200,155,60,0.28)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.28), 0 1px 0 rgba(255,255,255,0.06) inset",
-        padding: "6px 0",
-        overflow: "hidden",
-      }}>
+      {/* ── Top action bar: discount + wishlist ── */}
+      <div className="absolute top-0 left-0 right-0 z-30 flex items-start justify-between p-3 sm:p-4 pointer-events-none">
+        <div className="pointer-events-auto flex flex-wrap gap-2">
+          {product.originalPrice && (
+            <span className={tw.saleBadge}>
+              −{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+            </span>
+          )}
+          {product.badge && (
+            <span
+              className={`inline-flex items-center rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-md ${badgeBgClass(product.badge)}`}
+            >
+              {product.badge}
+            </span>
+          )}
+        </div>
 
-        {/* Zoom In */}
-        <button onClick={() => handleZoom("in")} title="Zoom In" style={premiumToolBtn}
-          onMouseEnter={e => applyPremiumHover(e.currentTarget as HTMLButtonElement)}
-          onMouseLeave={e => removePremiumHover(e.currentTarget as HTMLButtonElement)}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onWishlistToggle({ id: product.id, name: product.name, brand: product.brand, price: product.price, img: product.images[0] });
+          }}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          className={`pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 shadow-[0_4px_20px_rgba(0,0,0,0.15)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${
+            isWishlisted
+              ? "border-red-400 bg-red-50 text-red-500"
+              : "border-white bg-white/95 text-muted hover:border-red-200 hover:text-red-500"
+          }`}
+        >
+          <Icons.Heart filled={isWishlisted} />
+        </button>
+      </div>
+
+      {/* ── Toolbar — touch-safe controls ── */}
+      <div
+        data-viewer-control
+        className="pointer-events-auto absolute z-40 flex touch-manipulation items-center gap-1 overflow-hidden rounded-xl border border-white/10 bg-[#131921]/95 px-1.5 py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-xl bottom-3 left-1/2 -translate-x-1/2 lg:bottom-auto lg:left-auto lg:right-3 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-0 lg:flex-col lg:gap-0.5 lg:px-1 lg:py-2"
+      >
+        <button
+          type="button"
+          data-viewer-control
+          onClick={(e) => { stopControl(e); handleZoom("in"); }}
+          title="Zoom In"
+          className={toolBtnClass}
+        >
           <Icons.ZoomIn />
         </button>
 
-        {/* Zoom % label */}
-        <div style={{
-          color: zoom !== 1 ? "#C89B3C" : "rgba(255,255,255,0.45)",
-          fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
-          fontFamily: "'Inter',sans-serif",
-          padding: "2px 0 4px",
-          cursor: "default",
-          textAlign: "center", width: "100%",
-          transition: "color 0.2s",
-        }}>{Math.round(zoom * 100)}%</div>
+        <button
+          type="button"
+          data-viewer-control
+          onClick={(e) => { stopControl(e); handleZoom("reset"); }}
+          title="Reset zoom"
+          className={`${toolBtnClass} text-[10px] font-bold tabular-nums !w-auto min-w-[40px] px-1 ${zoom !== 1 ? "!text-accent-light" : ""}`}
+        >
+          {Math.round(zoom * 100)}%
+        </button>
 
-        {/* Zoom Out */}
-        <button onClick={() => handleZoom("out")} title="Zoom Out" style={premiumToolBtn}
-          onMouseEnter={e => applyPremiumHover(e.currentTarget as HTMLButtonElement)}
-          onMouseLeave={e => removePremiumHover(e.currentTarget as HTMLButtonElement)}>
+        <button
+          type="button"
+          data-viewer-control
+          onClick={(e) => { stopControl(e); handleZoom("out"); }}
+          title="Zoom Out"
+          className={toolBtnClass}
+        >
           <Icons.ZoomOut />
         </button>
 
-        {/* Divider */}
-        <div style={{ width: 28, height: "1px", background: "rgba(200,155,60,0.22)", margin: "4px 0" }} />
+        <div className="mx-0.5 h-px w-5 bg-white/20 lg:mx-0 lg:my-0.5 lg:h-px lg:w-8" />
 
-        {/* Rotate */}
         <button
-          onClick={handleRotate}
-          onContextMenu={e => { e.preventDefault(); handleRotateReset(); }}
-          title="Rotate 90° · right-click to reset"
-          style={{ ...premiumToolBtn, color: rotation !== 0 ? "#C89B3C" : "rgba(255,255,255,0.75)" }}
-          onMouseEnter={e => applyPremiumHover(e.currentTarget as HTMLButtonElement)}
-          onMouseLeave={e => { removePremiumHover(e.currentTarget as HTMLButtonElement); if (rotation !== 0) (e.currentTarget as HTMLButtonElement).style.color = "#C89B3C"; }}>
+          type="button"
+          data-viewer-control
+          onClick={(e) => { stopControl(e); handleRotate(); }}
+          onContextMenu={(e) => { e.preventDefault(); handleRotateReset(); }}
+          title="Rotate 90° (right-click to reset)"
+          className={`${toolBtnClass} ${rotation !== 0 ? "!bg-accent/30 !text-accent-light" : ""}`}
+        >
           <Icons.RotateCw />
         </button>
 
-        {/* Divider */}
-        <div style={{ width: 28, height: "1px", background: "rgba(200,155,60,0.22)", margin: "4px 0" }} />
+        <div className="mx-0.5 h-px w-5 bg-white/20 lg:mx-0 lg:my-0.5 lg:h-px lg:w-8" />
 
-        {/* Fullscreen */}
-        <button onClick={() => setIsFullscreen(fs => !fs)} title="Fullscreen" style={premiumToolBtn}
-          onMouseEnter={e => applyPremiumHover(e.currentTarget as HTMLButtonElement)}
-          onMouseLeave={e => removePremiumHover(e.currentTarget as HTMLButtonElement)}>
+        <button
+          type="button"
+          data-viewer-control
+          onClick={(e) => { stopControl(e); setIsFullscreen((fs) => !fs); }}
+          title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+          className={toolBtnClass}
+        >
           {isFullscreen ? <Icons.Minimize /> : <Icons.Maximize />}
         </button>
 
-        {/* Divider */}
-        <div style={{ width: 28, height: "1px", background: "rgba(200,155,60,0.22)", margin: "4px 0" }} />
+        <div className="mx-0.5 h-px w-5 bg-white/20 lg:mx-0 lg:my-0.5 lg:h-px lg:w-8" />
 
-        {/* 360° */}
         <button
-          onClick={() => { setIs360Mode(m => !m); setRotate360(0); }}
-          title="360° drag view"
-          style={{
-            ...premiumToolBtn,
-            background: is360Mode ? "rgba(200,155,60,0.22)" : "transparent",
-            color: is360Mode ? "#F0D080" : "rgba(255,255,255,0.75)",
-            fontSize: 9, fontWeight: 900, letterSpacing: "0.06em",
+          type="button"
+          data-viewer-control
+          onClick={(e) => {
+            stopControl(e);
+            setIs360Mode((m) => !m);
+            setRotate360(0);
+            setZoom(1);
+            setPan({ x: 0, y: 0 });
           }}
-          onMouseEnter={e => { if (!is360Mode) applyPremiumHover(e.currentTarget as HTMLButtonElement); }}
-          onMouseLeave={e => { if (!is360Mode) removePremiumHover(e.currentTarget as HTMLButtonElement); }}>
+          title="360° view — drag to spin"
+          className={`${toolBtnClass} text-[9px] font-black tracking-wide ${is360Mode ? "!bg-accent/35 !text-accent-light" : ""}`}
+        >
           360°
         </button>
       </div>
 
-      {/* ── Bottom hint bar — premium gold-tinted ────────────────────────── */}
-      {is360Mode && <div style={{ position: "absolute", bottom: 18, left: "50%", transform: "translateX(-50%)", zIndex: 5, pointerEvents: "none" }}>
-        <div style={{
-          background: "rgba(16, 12, 6, 0.72)",
-          backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-          borderRadius: 100, padding: "8px 20px",
-          fontSize: 11, fontWeight: 500,
-          color: "rgba(240, 225, 180, 0.85)",
-          fontFamily: "'Inter',sans-serif", whiteSpace: "nowrap",
-          border: "1px solid rgba(200,155,60,0.25)",
-          display: "flex", alignItems: "center", gap: 8,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-          letterSpacing: "0.02em",
-        }}>
-          <span style={{ fontSize: 13, opacity: 0.7 }}>↔</span>
-          {is360Mode && "Drag to rotate 360°"}
+      {/* 360° hint */}
+      {is360Mode && (
+        <div className="pointer-events-none absolute bottom-16 left-1/2 z-10 -translate-x-1/2 lg:bottom-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-footer/90 px-4 py-2 text-[11px] font-medium text-white/90 backdrop-blur-md shadow-lg">
+            ↔ Drag to rotate 360°
+          </span>
         </div>
-      </div>}
+      )}
     </div>
   );
 
@@ -322,22 +301,21 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
   // Fullscreen overlay
   if (isFullscreen) {
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 600, background: "#0F0E0C", display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-          <div style={{ fontFamily: "'Cormorant', serif", fontSize: 20, color: "#FAFAF9", fontWeight: 700 }}>{product.name}</div>
-          <div style={{ display: "flex", gap: 8 }}>
+      <div className="fixed inset-0 z-[600] flex flex-col bg-footer">
+        <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+          <div className="font-display text-xl font-bold text-white">{product.name}</div>
+          <div className="flex gap-2">
             {product.images.map((img, i) => (
-              <button key={i} onClick={() => setImgIdx(i)} style={{ width: 44, height: 44, borderRadius: 8, overflow: "hidden", border: imgIdx === i ? "2px solid #C89B3C" : "2px solid transparent", background: "none", cursor: "pointer", padding: 0 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <button key={i} type="button" onClick={() => setImgIdx(i)} className={`h-11 w-11 overflow-hidden rounded-lg border-2 p-0 cursor-pointer ${imgIdx === i ? "border-accent" : "border-transparent"}`}>
+                <StoreImage src={img} alt="" aria-hidden className="h-full w-full object-cover" />
               </button>
             ))}
           </div>
-          <button onClick={() => setIsFullscreen(false)} style={{ background: "rgba(255,255,255,0.1)", border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+          <button type="button" onClick={() => setIsFullscreen(false)} className="flex h-9 w-9 items-center justify-center rounded-full border-0 bg-white/10 text-white cursor-pointer">
             <Icons.X />
           </button>
         </div>
-        <div style={{ flex: 1, position: "relative", display: "flex" }}>
+        <div className="relative flex flex-1">
           {imageViewer}
         </div>
       </div>
@@ -345,107 +323,106 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FDFAF4", paddingTop: 108 }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px 80px" }}>
+    <div className={`min-h-screen ${tw.sectionBg} pt-24 md:pt-[108px]`}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-6 pb-16 md:pb-20">
 
         {/* Breadcrumb */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 24, fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#7D6E5A" }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", color: "#C89B3C", fontWeight: 600, fontFamily: "'Inter', sans-serif", fontSize: 13, display: "flex", alignItems: "center", gap: 4 }}>
-            <Icons.ChevronLeft /> Back to Shop
+        <div className="mb-4 md:mb-6 flex flex-wrap items-center gap-1.5 text-xs md:text-[13px] text-muted">
+          <button type="button" onClick={onBack} className="flex items-center gap-1 border-0 bg-transparent cursor-pointer text-accent font-semibold">
+            <Icons.ChevronLeft /> Back
           </button>
-          <Icons.ChevronRight />
-          <span>{product.category || "Products"}</span>
-          <Icons.ChevronRight />
-          <span style={{ fontWeight: 600, color: "#1A1208" }}>{product.name}</span>
+          <span className="hidden sm:inline"><Icons.ChevronRight /></span>
+          <span className="hidden sm:inline">{product.category || "Products"}</span>
+          <span className="hidden sm:inline"><Icons.ChevronRight /></span>
+          <span className="font-semibold text-primary line-clamp-1">{product.name}</span>
         </div>
 
-        {/* Main layout — left image fills full height of right panel */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "stretch" }} className="max-lg:grid-cols-1">
+        {/* Main layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
 
-          {/* ── LEFT: Image Gallery — sticky, full height ── */}
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", gap: 10, height: "100%", minHeight: 520 }}>
+          {/* ── LEFT: Image Gallery ── */}
+          <div className="lg:sticky lg:top-24 w-full">
+            <div className="flex flex-col lg:flex-row gap-3 lg:gap-2.5 w-full">
 
-              {/* Vertical thumbnails strip */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
+              {/* Thumbnails — below viewer on mobile, left strip on desktop */}
+              <div className="order-2 lg:order-1 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 shrink-0 scrollbar-thin">
                 {product.images.map((img, i) => (
                   <button
                     key={i}
+                    type="button"
                     onClick={() => { setImgIdx(i); setZoom(1); setPan({ x: 0, y: 0 }); setRotation(0); setIs360Mode(false); }}
-                    style={{
-                      width: 68, height: 68, borderRadius: 12, overflow: "hidden",
-                      border: "none", cursor: "pointer", padding: 0, flexShrink: 0,
-                      outline: imgIdx === i ? "2.5px solid #C89B3C" : "2px solid #E8D9B8",
-                      outlineOffset: 2, transition: "all 0.18s",
-                      boxShadow: imgIdx === i ? "0 4px 18px rgba(200,155,60,0.30)" : "none",
-                    }}
+                    className={`shrink-0 w-14 h-14 lg:w-[68px] lg:h-[68px] rounded-xl overflow-hidden border-0 cursor-pointer p-0 transition-all ${
+                      imgIdx === i
+                        ? "outline outline-2 outline-accent outline-offset-2 shadow-[0_4px_18px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]"
+                        : "outline outline-2 outline-border outline-offset-2"
+                    }`}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <StoreImage src={img} alt="" aria-hidden className="h-full w-full object-cover" />
                   </button>
                 ))}
                 <button
-                  style={{ width: 68, height: 36, borderRadius: 10, border: "1.5px solid #E8D9B8", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#7D6E5A" }}
+                  type="button"
+                  className="hidden lg:flex shrink-0 w-[68px] h-9 rounded-[10px] border border-border bg-white cursor-pointer items-center justify-center text-muted"
                   title="Share"
                 >
                   <Icons.Share />
                 </button>
               </div>
 
-              {/* Main image viewer — flex:1 takes all remaining width + full height */}
-              {imageViewer}
+              {/* Main image viewer */}
+              <div className="order-1 lg:order-2 flex-1 min-w-0 w-full">
+                {imageViewer}
+              </div>
             </div>
           </div>
 
           {/* ── RIGHT: Product Info — scroll-linked, same height ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          <div className="flex flex-col gap-[18px]">
             {/* Brand + SKU */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#C89B3C", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "'Inter', sans-serif" }}>
-                {product.brand} · <span style={{ color: "#7D6E5A", textTransform: "none", letterSpacing: 0 }}>Skynet Solution Qatar</span>
+            <div className="flex justify-between items-start">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-accent">
+                {product.brand} · <span className="normal-case tracking-normal text-muted">Skynet Solution Qatar</span>
               </div>
               {product.sku && (
-                <div style={{ fontSize: 11, color: "#9E8E78", fontFamily: "'Inter', sans-serif" }}>SKU: {product.sku}</div>
+                <div className="text-[11px] text-muted">SKU: {product.sku}</div>
               )}
             </div>
 
-            {/* Name */}
-            <h1 style={{ fontFamily: "'Cormorant', serif", fontSize: 38, fontWeight: 700, color: "#1A1208", lineHeight: 1.1 }}>
+            <h1 className="font-display text-[32px] md:text-[38px] font-bold leading-tight text-primary">
               {product.name}
             </h1>
 
-            {/* Rating row */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <div style={{ display: "flex", gap: 2 }}>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex gap-0.5 text-accent">
                 {[1, 2, 3, 4, 5].map(i => <Icons.Star key={i} filled={i <= Math.round(product.rating)} />)}
               </div>
-              <span style={{ fontSize: 14, color: "#C89B3C", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>{product.rating}</span>
-              <span style={{ fontSize: 13, color: "#7D6E5A", fontFamily: "'Inter', sans-serif" }}>({product.reviews.toLocaleString()} reviews)</span>
-              <span style={{ fontSize: 12, color: "#059669", fontWeight: 600, background: "#D1FAE5", borderRadius: 100, padding: "2px 8px" }}>
+              <span className="text-sm font-bold text-accent">{product.rating}</span>
+              <span className="text-[13px] text-muted">({product.reviews.toLocaleString()} reviews)</span>
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-600">
                 {Math.round(product.rating * 20)}% recommended
               </span>
               {product.stock !== undefined && product.stock < 20 && (
-                <span style={{ fontSize: 12, color: "#dc2626", fontWeight: 600, background: "#FEE2E2", borderRadius: 100, padding: "2px 8px" }}>
+                <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">
                   Only {product.stock} left!
                 </span>
               )}
             </div>
 
             {/* Price block */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", background: "#F7F1E3", borderRadius: 16 }}>
-              <span style={{ fontSize: 30, fontWeight: 800, color: "#1A1208", fontFamily: "'Inter', sans-serif" }}>{fmt(product.price)}</span>
+            <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-accent-soft px-5 py-4">
+              <span className="text-[30px] font-extrabold text-primary">{fmt(product.price)}</span>
               {product.originalPrice && <>
-                <span style={{ fontSize: 16, color: "#7D6E5A", textDecoration: "line-through", fontFamily: "'Inter', sans-serif" }}>{fmt(product.originalPrice)}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", background: "#ef4444", borderRadius: 100, padding: "3px 10px" }}>
+                <span className="text-base text-muted line-through">{fmt(product.originalPrice)}</span>
+                <span className={tw.saleBadge}>
                   {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                 </span>
               </>}
             </div>
 
             {/* Spec tags */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            <div className="flex flex-wrap gap-1.5">
               {product.tags.map(t => (
-                <span key={t} style={{ fontSize: 11, fontWeight: 600, color: "#C89B3C", background: "#FEF3C7", borderRadius: 100, padding: "4px 12px", fontFamily: "'Inter', sans-serif" }}>
+                <span key={t} className="rounded-full bg-accent-soft px-3 py-1 text-[11px] font-semibold text-accent">
                   ✓ {t}
                 </span>
               ))}
@@ -454,13 +431,22 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
             {/* Color/Variant */}
             {product.colors.length > 1 && (
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#44403C", marginBottom: 8, fontFamily: "'Inter', sans-serif" }}>
-                  Color: <span style={{ color: "#1A1208", fontWeight: 700 }}>{selectedColor.name}</span>
+                <div className="mb-2 text-[13px] font-semibold text-primary/80">
+                  Color: <span className="font-bold text-primary">{selectedColor.name}</span>
                 </div>
-                <div style={{ display: "flex", gap: 10 }}>
+                <div className="flex gap-2.5">
                   {product.colors.map(c => (
-                    <button key={c.name} onClick={() => setSelectedColor(c)} title={c.name}
-                      style={{ width: 30, height: 30, borderRadius: 15, background: c.hex, border: "none", cursor: "pointer", outline: selectedColor.name === c.name ? "2.5px solid #1A1208" : "2px solid transparent", outlineOffset: 3, transition: "outline 0.15s" }} />
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => setSelectedColor(c)}
+                      title={c.name}
+                      className={`h-[30px] w-[30px] rounded-full border-0 cursor-pointer transition-all ${swatchBgClass(c.hex)} ${
+                        selectedColor.name === c.name
+                          ? "outline outline-[2.5px] outline-primary outline-offset-[3px]"
+                          : "outline outline-2 outline-transparent outline-offset-[3px]"
+                      }`}
+                    />
                   ))}
                 </div>
               </div>
@@ -468,16 +454,26 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
 
             {/* Size / Variant picker */}
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#44403C", fontFamily: "'Inter', sans-serif" }}>
+              <div className="mb-2 flex justify-between">
+                <span className="text-[13px] font-semibold text-primary/80">
                   Select Variant:
-                  {sizeError && <span style={{ color: "#ef4444", marginLeft: 8 }}>Please select</span>}
+                  {sizeError && <span className="ml-2 text-red-500">Please select</span>}
                 </span>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <div className="flex flex-wrap gap-2">
                 {product.sizes.map(s => (
-                  <button key={s} onClick={() => { setSelectedSize(s); setSizeError(false); }}
-                    style={{ minWidth: 52, height: 40, borderRadius: 10, padding: "0 14px", border: `2px solid ${selectedSize === s ? "#1A1208" : sizeError ? "#ef4444" : "#E8D9B8"}`, background: selectedSize === s ? "#1A1208" : "#fff", color: selectedSize === s ? "#fff" : "#44403C", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s" }}>
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => { setSelectedSize(s); setSizeError(false); }}
+                    className={`min-w-[52px] h-10 rounded-[10px] px-3.5 text-[13px] font-semibold cursor-pointer transition-all ${
+                      selectedSize === s
+                        ? "border-2 border-primary bg-primary text-white"
+                        : sizeError
+                          ? "border-2 border-red-500 bg-white text-primary/80"
+                          : "border-2 border-border bg-white text-primary/80"
+                    }`}
+                  >
                     {s}
                   </button>
                 ))}
@@ -485,75 +481,77 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
             </div>
 
             {/* Quantity */}
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#44403C", fontFamily: "'Inter', sans-serif" }}>Qty:</span>
-              <div style={{ display: "flex", alignItems: "center", border: "1.5px solid #E8D9B8", borderRadius: 100 }}>
-                <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ background: "none", border: "none", cursor: "pointer", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#7D6E5A" }}><Icons.Minus /></button>
-                <span style={{ width: 32, textAlign: "center", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>{qty}</span>
-                <button onClick={() => setQty(q => q + 1)} style={{ background: "none", border: "none", cursor: "pointer", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#1A1208" }}><Icons.Plus /></button>
+            <div className="flex items-center gap-4">
+              <span className="text-[13px] font-semibold text-primary/80">Qty:</span>
+              <div className="flex items-center rounded-full border border-border">
+                <button
+                  type="button"
+                  onClick={() => setQty(q => Math.max(1, q - 1))}
+                  className="flex h-9 w-9 items-center justify-center border-0 bg-transparent cursor-pointer text-muted"
+                >
+                  <Icons.Minus />
+                </button>
+                <span className="w-8 text-center font-bold">{qty}</span>
+                <button
+                  type="button"
+                  onClick={() => setQty(q => q + 1)}
+                  className="flex h-9 w-9 items-center justify-center border-0 bg-transparent cursor-pointer text-primary"
+                >
+                  <Icons.Plus />
+                </button>
               </div>
               {product.stock !== undefined && (
-                <span style={{ fontSize: 12, color: product.stock > 20 ? "#059669" : "#dc2626", fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>
+                <span className={`text-xs font-medium ${product.stock > 20 ? "text-emerald-600" : "text-red-600"}`}>
                   {product.stock > 20 ? `✓ In Stock (${product.stock})` : `⚡ Only ${product.stock} left`}
                 </span>
               )}
             </div>
 
             {/* CTAs */}
-            <div className="product-cta-row">
+            <div className="product-cta-row flex-col sm:flex-row">
               <button
+                type="button"
                 onClick={handleAdd}
-                style={{
-                  background: added ? "#059669" : "var(--color-primary)",
-                  color: "#fff",
-                  boxShadow: "0 4px 20px rgba(26,18,8,0.28)",
-                  letterSpacing: "0.01em",
-                }}
-                onMouseEnter={e => { if (!added) (e.currentTarget as HTMLButtonElement).style.background = "var(--color-primary-mid)"; }}
-                onMouseLeave={e => { if (!added) (e.currentTarget as HTMLButtonElement).style.background = "var(--color-primary)"; }}
+                className={`${added ? "!bg-emerald-600" : "!bg-gradient-to-br !from-primary-mid !to-accent hover:!from-accent-hover hover:!to-primary-light"} !text-white shadow-[0_4px_20px_color-mix(in_srgb,var(--color-accent)_30%,transparent)] tracking-wide`}
               >
                 {added ? <><Icons.Check /> Added to Cart!</> : <><Icons.Bag /> Add to Cart</>}
               </button>
               <button
+                type="button"
                 onClick={handleAdd}
-                style={{
-                  background: "linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 50%, var(--color-accent-light) 100%)",
-                  color: "var(--color-primary)",
-                  boxShadow: "0 4px 20px rgba(200,155,60,0.38)",
-                  letterSpacing: "0.01em",
-                  fontWeight: 800,
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 28px rgba(200,155,60,0.5)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(200,155,60,0.38)"; }}
+                className={`${tw.btnPrimary} !font-extrabold`}
               >
                 ⚡ Buy Now
               </button>
             </div>
 
             {/* Delivery check */}
-            <div style={{ background: "#F5F5F4", borderRadius: 16, padding: "14px 18px" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#1A1208", marginBottom: 8, fontFamily: "'Inter', sans-serif" }}>📦 Check Delivery to Qatar</div>
-              <div className="delivery-row" style={{ display: "flex", gap: 8 }}>
-                <input value={pincode} onChange={e => setPincode(e.target.value.slice(0, 8))}
+            <div className="rounded-2xl bg-stone-100 px-[18px] py-3.5">
+              <div className="mb-2 text-xs font-bold text-primary">📦 Check Delivery to Qatar</div>
+              <div className="delivery-row flex flex-col sm:flex-row gap-2 sm:gap-2">
+                <input
+                  value={pincode}
+                  onChange={e => setPincode(e.target.value.slice(0, 8))}
                   placeholder="Area (e.g., Lusail, West Bay)"
-                  style={{ flex: 1, padding: "10px 14px", border: "1.5px solid #E8D9B8", borderRadius: 100, fontSize: 12, fontFamily: "'Inter', sans-serif", outline: "none", background: "#fff" }} />
-                <button className={tw.btnPrimary} style={{ padding: "10px 16px", fontSize: 12 }}>Check</button>
+                  className="flex-1 rounded-full border-[1.5px] border-border bg-white px-3.5 py-2.5 text-xs outline-none"
+                />
+                <button type="button" className={`${tw.btnPrimarySm} px-4 py-2.5`}>Check</button>
               </div>
               {pincode.length > 4 && (
-                <div style={{ marginTop: 8, fontSize: 12, color: "#059669", fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>
+                <div className="mt-2 text-xs font-medium text-emerald-600">
                   ✓ Delivery in 1–2 business days · Free installation included
                 </div>
               )}
             </div>
 
             {/* Trust badges */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5">
               {[["🚚", "Free Installation", "All POS systems"], ["↩️", "1-Year Warranty", "Parts & labour"], ["🔒", "Qatar VAT Ready", "Auto-compliance"], ["📞", "24/7 Support", "Local Doha team"]].map(([icon, title, sub]) => (
-                <div key={title} style={{ display: "flex", gap: 10, padding: "10px 12px", background: "#fff", borderRadius: 12, border: "1px solid #E8D9B8" }}>
-                  <span style={{ fontSize: 18 }}>{icon}</span>
+                <div key={title} className="flex gap-2.5 rounded-xl border border-border bg-white p-3">
+                  <span className="text-lg">{icon}</span>
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#1A1208", fontFamily: "'Inter', sans-serif" }}>{title}</div>
-                    <div style={{ fontSize: 10, color: "#7D6E5A", fontFamily: "'Inter', sans-serif" }}>{sub}</div>
+                    <div className="text-[11px] font-bold text-primary">{title}</div>
+                    <div className="text-[10px] text-muted">{sub}</div>
                   </div>
                 </div>
               ))}
@@ -562,41 +560,45 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
         </div>
 
         {/* Description Tabs */}
-        <div style={{ marginTop: 56, border: "1.5px solid #E8D9B8", borderRadius: 24, overflow: "hidden", background: "#fff" }}>
-          <div className="tab-row" style={{ display: "flex", borderBottom: "1.5px solid #E8D9B8" }}>
+        <div className="mt-14 rounded-3xl border border-border overflow-hidden bg-white">
+          <div className="tab-row flex overflow-x-auto border-b border-border">
             {(["desc", "details", "care"] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                style={{ flex: 1, padding: "16px 20px", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", fontWeight: tab === t ? 700 : 500, fontSize: 14, color: tab === t ? "#1A1208" : "#7D6E5A", background: tab === t ? "#F7F1E3" : "#fff", borderBottom: tab === t ? "2.5px solid #C89B3C" : "2.5px solid transparent", transition: "all 0.2s" }}>
-                {t === "desc" ? "Description" : t === "details" ? "Specifications" : "Support"}
+              <button key={t} type="button" onClick={() => setTab(t)}
+                className={`shrink-0 flex-1 min-w-[110px] px-4 py-4 border-0 cursor-pointer text-sm transition-all ${
+                  tab === t
+                    ? "font-bold text-primary bg-accent-soft border-b-2 border-accent"
+                    : "font-medium text-muted bg-white border-b-2 border-transparent"
+                }`}>
+                {t === "desc" ? "Description" : t === "details" ? "Specs" : "Support"}
               </button>
             ))}
           </div>
-          <div style={{ padding: "28px 32px" }}>
+          <div className="p-5 md:p-8">
             {tab === "desc" && (
-              <p style={{ fontSize: 15, color: "#44403C", lineHeight: 1.8, fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-[15px] leading-[1.8] text-primary/80">
                 {product.description}<br /><br />
                 This product is backed by Skynet Solution Qatar&apos;s full implementation and support service. Includes professional installation, software configuration, staff training, and one year of priority technical support. All products are Qatar VAT compliant and integrate seamlessly with atACC ERP.
               </p>
             )}
             {tab === "details" && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
                 {[["SKU", product.sku || "—"], ["Category", product.category || "—"], ["In Stock", `${product.stock || "—"} units`], ["Warranty", "1 Year (Parts & Labour)"], ["Certification", "Qatar VAT Compliant"], ["Support", "24/7 Local Doha Team"], ["Interface", product.tags[2] || "USB"], ["Origin", "Commercial Grade"]].map(([label, val]) => (
-                  <div key={label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#7D6E5A", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'Inter', sans-serif" }}>{label}</span>
-                    <span style={{ fontSize: 14, color: "#1A1208", fontFamily: "'Inter', sans-serif" }}>{val}</span>
+                  <div key={label} className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted">{label}</span>
+                    <span className="text-sm text-primary">{val}</span>
                   </div>
                 ))}
               </div>
             )}
             {tab === "care" && (
               <div>
-                <p style={{ fontSize: 14, color: "#44403C", lineHeight: 1.8, fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>
+                <p className="mb-4 text-sm leading-[1.8] text-primary/80">
                   Skynet provides full support for all hardware and software products:
                 </p>
-                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
+                <ul className="flex list-none flex-col gap-2.5">
                   {["Call +974 4431 1525 for 24/7 technical support", "Remote desktop support available for software issues", "On-site engineer visits for hardware faults (Doha)", "Replacement units provided within 24 hours under warranty", "Annual Maintenance Contracts (AMC) available", "Visit skynetqatar.com/support for knowledge base"].map(tip => (
-                    <li key={tip} style={{ display: "flex", gap: 10, fontSize: 14, color: "#44403C", fontFamily: "'Inter', sans-serif" }}>
-                      <span style={{ color: "#C89B3C", fontWeight: 700, flexShrink: 0 }}>✓</span> {tip}
+                    <li key={tip} className="flex gap-2.5 text-sm text-primary/80">
+                      <span className="text-accent font-bold shrink-0">✓</span> {tip}
                     </li>
                   ))}
                 </ul>
@@ -609,11 +611,11 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
         <ReviewsSection productId={product.id} rating={product.rating} reviewCount={product.reviews} />
 
         {/* Similar products */}
-        <div style={{ marginTop: 60 }}>
-          <h2 style={{ fontFamily: "'Cormorant', serif", fontSize: 32, fontWeight: 700, color: "#1A1208", marginBottom: 28 }}>
-            You Might Also <span style={{ fontStyle: "italic", color: "#C89B3C" }}>Like</span>
+        <div className="mt-[60px]">
+          <h2 className="font-display text-2xl md:text-[32px] font-bold text-primary mb-6 md:mb-7">
+            You Might Also <span className="italic text-accent">Like</span>
           </h2>
-          <div className={"product-grid-equal"}>
+          <div className="product-grid-equal">
             {similar.map(p => (
               <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} onWishlistToggle={onWishlistToggle}
                 isWishlisted={wishlist.some(w => w.id === p.id)} onClick={onProductClick} />

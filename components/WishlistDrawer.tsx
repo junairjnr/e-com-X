@@ -42,7 +42,7 @@ export default function WishlistDrawer({ wishlist, open, onClose, onRemove, onAd
               <p className="text-[13px] text-muted">Heart items you love to save them here</p>
             </div>
           ) : wishlist.map(item => (
-            <div key={item.id} className="mb-4 flex gap-4 rounded-[20px] border border-border bg-white p-4 shadow-[0_4px_16px_rgba(15,40,71,0.06)]">
+            <div key={item.id} className={`mb-4 flex gap-4 ${tw.card} p-4`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={item.img} alt={item.name} className="h-[72px] w-[72px] shrink-0 rounded-xl object-cover" />
               <div className="flex-1">

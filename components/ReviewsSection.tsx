@@ -80,7 +80,7 @@ export default function ReviewsSection({ productId, rating, reviewCount }: Revie
 
         <div>
           {filterRating && (
-            <div className="mb-5 rounded-xl bg-accent-soft px-4 py-2.5 text-[13px] text-blue-800">
+            <div className="mb-5 rounded-xl bg-accent-soft px-4 py-2.5 text-[13px] text-primary">
               Showing {displayed.length} review{displayed.length !== 1 ? "s" : ""} with {filterRating} star{filterRating !== 1 ? "s" : ""}
             </div>
           )}
@@ -120,7 +120,7 @@ export default function ReviewsSection({ productId, rating, reviewCount }: Revie
 
 function ReviewCard({ review, isHelpfulClicked, onHelpful }: { review: Review; isHelpfulClicked: boolean; onHelpful: () => void }) {
   return (
-    <div className="rounded-[20px] border border-border bg-white p-6 shadow-[0_2px_12px_rgba(15,40,71,0.04)]">
+    <div className={`rounded-[20px] border border-border bg-white p-6 shadow-[0_2px_12px_color-mix(in_srgb,var(--color-primary)_5%,transparent)]`}>
       <div className="mb-3 flex items-start justify-between">
         <div className="flex items-center gap-2">
           <Avatar name={review.name} size={36} />

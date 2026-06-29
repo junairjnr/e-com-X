@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { fmt } from "@/lib/data";
-import { tw } from "@/lib/theme";
+import { tw, swatchBgClass } from "@/lib/theme";
+import StoreImage from "./StoreImage";
 import type { Product, WishlistItem } from "@/lib/types";
 import * as Icons from "./Icons";
 
@@ -40,24 +41,20 @@ export default function ProductCard({ product, onAddToCart, onWishlistToggle, is
 
   return (
     <div
-      className={`group relative flex flex-col rounded-[20px] overflow-hidden cursor-pointer ${tw.glassCard} transition-all duration-400 hover:-translate-y-1.5 hover:shadow-[0_20px_60px_rgba(200,155,60,0.18)] ${showSizes ? "pick-size" : ""}`}
+      className={`group relative flex flex-col rounded-2xl overflow-hidden cursor-pointer bg-white border border-border ${tw.card} ${tw.cardHover} ${showSizes ? "pick-size" : ""}`}
       onMouseLeave={() => setShowSizes(false)}
       onClick={() => onClick(product)}
     >
       {/* ── Image area ───────────────────────────────────────────────────── */}
-      <div className="relative w-full overflow-hidden bg-bg-soft" style={{ aspectRatio: "4/3" }}>
-
-        {/* Main / Alt images */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-bg-soft">
         <div className="absolute inset-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <StoreImage
             src={product.images[0]}
             alt={product.name}
             className={`absolute inset-0 h-full w-full object-cover transition-all duration-500 group-hover:scale-[1.07] ${hasAltImage ? "group-hover:opacity-0" : ""}`}
           />
           {hasAltImage && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <StoreImage
               src={product.images[1]}
               alt=""
               aria-hidden
@@ -72,8 +69,7 @@ export default function ProductCard({ product, onAddToCart, onWishlistToggle, is
         {/* Top-left: badge */}
         <div className="absolute top-2.5 left-2.5 z-[4]">
           <span
-            className="rounded-full px-2.5 py-[3px] text-[9px] font-bold tracking-wider text-white shadow-md"
-            style={{ background: product.badgeColor }}
+            className="rounded-full px-2.5 py-[3px] text-[9px] font-bold tracking-wider text-white shadow-md bg-primary-mid"
           >
             {product.badge}
           </span>
@@ -82,8 +78,8 @@ export default function ProductCard({ product, onAddToCart, onWishlistToggle, is
         {/* Top-right: DISCOUNT % badge + wishlist stacked */}
         <div className="absolute top-2.5 right-2.5 z-[4] flex flex-col items-end gap-1.5">
           {discountPct && (
-            <div className="flex items-center justify-center rounded-lg bg-gradient-to-br from-[#C89B3C] to-[#F0D080] px-2 py-1 shadow-lg">
-              <span className="text-[11px] font-black leading-none text-[#1A1208]">−{discountPct}%</span>
+            <div className={tw.saleBadge}>
+              <span>−{discountPct}%</span>
             </div>
           )}
           <button
@@ -137,8 +133,7 @@ export default function ProductCard({ product, onAddToCart, onWishlistToggle, is
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setSelectedColor(c); }}
                 title={c.name}
-                className={`h-4 w-4 rounded-full border-0 cursor-pointer transition-all ${selectedColor.name === c.name ? "ring-2 ring-accent ring-offset-1" : ""}`}
-                style={{ background: c.hex }}
+                className={`h-4 w-4 rounded-full border-0 cursor-pointer transition-all ${swatchBgClass(c.hex)} ${selectedColor.name === c.name ? "ring-2 ring-accent ring-offset-1" : ""}`}
               />
             ))}
           </div>

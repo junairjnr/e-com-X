@@ -101,7 +101,7 @@ export default function ShopPage({ onAddToCart, onWishlistToggle, wishlist, onPr
   }
 
   return (
-    <div className="min-h-screen pt-[120px]">
+    <div className={`min-h-screen ${tw.sectionBg} pt-[120px]`}>
       <div className="mx-auto max-w-[1400px] px-4 pb-20 md:px-6">
         <div className="mb-6 flex items-center gap-1.5 text-[13px] text-muted">
           <button type="button" onClick={onHomeClick} className="font-medium text-accent hover:text-accent-hover bg-transparent border-0 cursor-pointer p-0">
@@ -129,7 +129,7 @@ export default function ShopPage({ onAddToCart, onWishlistToggle, wishlist, onPr
             <button
               type="button"
               onClick={() => setMobileFilterOpen(true)}
-              className="flex md:hidden items-center gap-1.5 rounded-full bg-gradient-to-br from-primary-mid to-accent px-4 py-2.5 text-[13px] font-semibold text-primary shadow-[0_4px_16px_rgba(200,155,60,0.3)]"
+              className="flex md:hidden items-center gap-1.5 rounded-full bg-gradient-to-br from-primary-mid to-accent px-4 py-2.5 text-[13px] font-semibold text-primary shadow-[0_4px_16px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]"
             >
               <Icons.SlidersH />
               Filters {activeChips.length > 0 && `(${activeChips.length})`}

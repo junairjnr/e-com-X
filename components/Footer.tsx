@@ -17,11 +17,11 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-primary pt-20 text-white/90">
+    <footer className="bg-footer pt-16 text-white/90">
       <div className="mx-auto max-w-[1200px] px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div className="mb-12 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="mb-1.5 font-display text-[32px] font-bold tracking-wide">
+            <div className="mb-1.5 font-display text-[32px] font-bold tracking-wide text-white">
               Skynet<span className="text-xl text-accent">™</span>
             </div>
             <div className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em] text-accent">
@@ -37,7 +37,7 @@ export default function Footer() {
               <a href="mailto:info@skynetqatar.com" className="text-[13px] text-white/70 no-underline hover:text-white">
                 ✉️ info@skynetqatar.com
               </a>
-              <span className="text-[13px] text-white/55">📍 Doha, Qatar</span>
+              <span className="text-[13px] text-white/50">📍 Doha, Qatar</span>
             </div>
             <div className="flex gap-2.5">
               {["LI", "TW", "FB", "YT"].map(s => (
@@ -54,7 +54,7 @@ export default function Footer() {
 
           {cols.map(col => (
             <div key={col.title}>
-              <div className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em] text-accent">
+              <div className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em] text-white/40">
                 {col.title}
               </div>
               {col.links.map(link => (
@@ -68,7 +68,7 @@ export default function Footer() {
 
         <div className="flex flex-wrap items-center gap-6 border-b border-white/10 pb-7">
           {["🏆 Qatar VAT Certified", "✅ ISO 9001:2015", "🔒 PCI-DSS Compliant", "🌐 atACC Authorized Reseller"].map(cert => (
-            <span key={cert} className="flex items-center gap-1.5 text-xs text-white/50">
+            <span key={cert} className="flex items-center gap-1.5 text-xs text-white/45">
               {cert}
             </span>
           ))}

@@ -16,24 +16,11 @@ const ALL_ITEMS = [...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS];
 
 export default function MarqueeSection() {
   return (
-    <div
-      className="relative overflow-hidden py-4"
-      style={{
-        background: "linear-gradient(90deg, #1A1208 0%, #2C1E0A 30%, #3C2A0A 60%, #2C1E0A 80%, #1A1208 100%)",
-        borderTop: "1px solid rgba(200,155,60,0.25)",
-        borderBottom: "1px solid rgba(200,155,60,0.25)",
-      }}
-    >
+    <div className="relative overflow-hidden border-y border-border bg-footer py-4">
       {/* Left fade */}
-      <div
-        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24"
-        style={{ background: "linear-gradient(to right, #1A1208 0%, transparent 100%)" }}
-      />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-footer to-transparent" />
       {/* Right fade */}
-      <div
-        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24"
-        style={{ background: "linear-gradient(to left, #1A1208 0%, transparent 100%)" }}
-      />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-footer to-transparent" />
 
       {/* Scrolling strip */}
       <div className="flex w-max animate-marquee items-center">
@@ -42,20 +29,11 @@ export default function MarqueeSection() {
             key={i}
             className="inline-flex items-center gap-2.5 whitespace-nowrap px-8"
           >
-            {/* Icon */}
             <span className="text-base leading-none">{item.icon}</span>
-            {/* Text */}
-            <span
-              className="text-[12px] font-semibold tracking-[0.06em] uppercase"
-              style={{ color: "#F0D080", letterSpacing: "0.08em" }}
-            >
+            <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-accent">
               {item.text}
             </span>
-            {/* Dot separator */}
-            <span
-              className="text-xs"
-              style={{ color: "rgba(200,155,60,0.4)", marginLeft: 8 }}
-            >
+            <span className="ml-2 text-xs text-accent/40">
               ◆
             </span>
           </span>

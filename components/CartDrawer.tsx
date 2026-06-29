@@ -46,7 +46,7 @@ export default function CartDrawer({ cart, open, onClose, onUpdate, onRemove, se
         <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
           {cart.length === 0 ? (
             <div className="px-6 py-15 text-center">
-              <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-bg-soft shadow-[inset_2px_2px_6px_rgba(15,40,71,0.08),inset_-2px_-2px_6px_rgba(255,255,255,0.9)]">
+              <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-accent-soft shadow-[inset_2px_2px_6px_color-mix(in_srgb,var(--color-primary)_8%,transparent)]">
                 <Icons.Bag />
               </div>
               <p className="mb-2 font-semibold text-primary">Your cart is empty</p>
@@ -54,7 +54,7 @@ export default function CartDrawer({ cart, open, onClose, onUpdate, onRemove, se
               <button type="button" className={tw.btnPrimary} onClick={onClose}>Browse Shop</button>
             </div>
           ) : cart.map(item => (
-            <div key={item.id} className="mb-5 flex gap-4 rounded-[20px] border border-border bg-white p-4 shadow-[0_4px_16px_rgba(15,40,71,0.06)]">
+            <div key={item.id} className={`mb-5 flex gap-4 ${tw.card} p-4`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={item.img} alt={item.name} className="h-20 w-20 shrink-0 rounded-[14px] object-cover bg-bg-soft" />
               <div className="min-w-0 flex-1">
@@ -85,7 +85,7 @@ export default function CartDrawer({ cart, open, onClose, onUpdate, onRemove, se
 
         {cart.length > 0 && (
           <div className="border-t border-border p-6">
-            <div className="mb-4 rounded-xl bg-accent-soft px-3.5 py-2.5 text-xs text-blue-800">
+            <div className="mb-4 rounded-xl bg-accent-soft px-3.5 py-2.5 text-xs text-primary">
               🎉 Free installation &amp; delivery included on all orders!
             </div>
             <div className="mb-4">

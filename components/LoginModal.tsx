@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import Avatar from "./Avatar";
-import { getAvatarColor } from "@/lib/avatars";
 import type { StoreUser } from "@/lib/types";
 import { tw } from "@/lib/theme";
 import * as Icons from "./Icons";
@@ -14,6 +13,15 @@ interface LoginModalProps {
   user?: StoreUser | null;
 }
 
+const inputClass =
+  "w-full rounded-xl border-[1.5px] border-border bg-bg-soft px-3.5 py-3 text-sm text-primary outline-none transition-[border-color] focus:border-accent";
+
+const iconBtnClass =
+  "absolute top-4 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-0 bg-white/12 text-white/85";
+
+const linkBtnClass =
+  "cursor-pointer border-0 bg-transparent font-bold text-accent";
+
 export default function LoginModal({ open, onClose, onSuccess, onLogout, user }: LoginModalProps) {
   const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
   const [showPass, setShowPass] = useState(false);
@@ -25,7 +33,6 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
   if (!open) return null;
 
   const displayName = form.name || user?.name || "Guest";
-  const headerAvatarColor = getAvatarColor(displayName);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,108 +67,74 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
   return (
     <div
       onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 500,
-        background: "rgba(0,0,0,0.6)",
-        backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 24, animation: "fadeIn 0.25s ease",
-      }}
+      className="fixed inset-0 z-[500] flex items-center justify-center bg-black/60 p-6 backdrop-blur-md animate-fade-in"
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{
-          background: "#fff", borderRadius: 28, width: "100%", maxWidth: 440,
-          overflow: "hidden", animation: "fadeUp 0.3s cubic-bezier(0.25,0.46,0.45,0.94)",
-          boxShadow: "0 32px 80px rgba(0,0,0,0.2)",
-        }}
+        className="w-full max-w-[440px] overflow-hidden rounded-[28px] bg-white shadow-[0_32px_80px_rgba(0,0,0,0.2)] animate-fade-up"
       >
         {/* Header with avatar */}
-        <div style={{
-          background: "linear-gradient(135deg, #1A1208 0%, #3C2A0A 50%, #C89B3C 100%)",
-          padding: "28px 32px 24px",
-          position: "relative",
-          textAlign: "center",
-        }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-            <div style={{ position: "relative" }}>
+        <div className="relative bg-gradient-to-br from-primary via-primary-mid to-accent px-8 pb-6 pt-7 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
               <Avatar
                 name={displayName}
                 size={72}
-                color={headerAvatarColor}
                 imageUrl={avatarPreview || user?.avatarUrl}
                 className="border-[3px] border-white/25 shadow-[0_8px_24px_rgba(0,0,0,0.3)]"
               />
               {mode === "register" && (
                 <label
                   htmlFor="avatar-upload"
-                  style={{
-                    position: "absolute", bottom: -2, right: -2,
-                    width: 28, height: 28, borderRadius: 14,
-                    background: "#C89B3C", border: "2px solid #1A1208",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    cursor: "pointer", color: "#fff",
-                  }}
+                  className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-primary bg-accent text-white"
                   title="Upload photo"
                 >
                   <Icons.Plus />
-                  <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: "none" }} />
+                  <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
                 </label>
               )}
             </div>
             <div>
-              <div style={{ fontFamily: "'Cormorant', serif", fontSize: 26, fontWeight: 700, color: "#FDFAF4", marginBottom: 4 }}>
+              <div className="mb-1 font-display text-[26px] font-bold text-white">
                 {user && !success ? "My Account" : mode === "login" ? "Welcome Back" : mode === "register" ? "Create Account" : "Reset Password"}
               </div>
-              <div style={{ fontSize: 13, color: "rgba(250,250,249,0.6)", fontFamily: "'Inter', sans-serif" }}>
+              <div className="text-[13px] text-white/60">
                 {user && !success ? "Manage your Skynet store account" : mode === "login" ? "Sign in to your Skynet account" : mode === "register" ? "Join 1,300+ businesses using Skynet" : "We'll send you a reset link"}
               </div>
             </div>
           </div>
-        {/* ── Back / Close buttons ─────────────────────────────────────── */}
           {mode === "forgot" && (
             <button
+              type="button"
               onClick={() => setMode("login")}
-              style={{
-                position: "absolute", top: 16, left: 16,
-                background: "rgba(255,255,255,0.12)", border: "none", cursor: "pointer",
-                width: 36, height: 36, borderRadius: 18,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "rgba(250,250,249,0.85)", fontSize: 18, fontFamily: "'Inter', sans-serif",
-              }}
+              className={`${iconBtnClass} left-4 text-lg`}
               title="Back to Sign In"
             >
               ←
             </button>
           )}
           <button
+            type="button"
             onClick={onClose}
-            style={{
-              position: "absolute", top: 16, right: 16,
-              background: "rgba(255,255,255,0.12)", border: "none", cursor: "pointer",
-              width: 36, height: 36, borderRadius: 18,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "rgba(250,250,249,0.85)",
-            }}
+            className={`${iconBtnClass} right-4`}
             title="Close"
           >
             <Icons.X />
           </button>
         </div>
 
-        <div style={{ padding: "24px 32px 32px" }}>
+        <div className="px-8 pb-8 pt-6">
           {user && !success ? (
-            <div style={{ textAlign: "center" }}>
+            <div className="text-center">
               <Avatar name={user.name} size={80} imageUrl={user.avatarUrl} className="mx-auto mb-4" />
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#1A1208", fontFamily: "'Cormorant', serif", marginBottom: 4 }}>{user.name}</div>
-              <div style={{ fontSize: 13, color: "#7D6E5A", fontFamily: "'Inter', sans-serif", marginBottom: 24 }}>{user.email}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <button className={tw.btnPrimary} style={{ width: "100%", justifyContent: "center" }} onClick={onClose}>
+              <div className="mb-1 font-display text-xl font-bold text-primary">{user.name}</div>
+              <div className="mb-6 text-[13px] text-muted">{user.email}</div>
+              <div className="flex flex-col gap-2.5">
+                <button className={`${tw.btnPrimary} w-full justify-center`} onClick={onClose}>
                   ← Continue Shopping <Icons.ArrowRight />
                 </button>
                 <button
-                  className={tw.btnOutline}
-                  style={{ width: "100%", justifyContent: "center" }}
+                  className={`${tw.btnOutline} w-full justify-center`}
                   onClick={() => { onLogout?.(); }}
                 >
                   Sign Out
@@ -169,18 +142,18 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
               </div>
             </div>
           ) : success ? (
-            <div style={{ textAlign: "center", padding: "20px 0" }}>
-              <Avatar name={displayName} size={64} color={headerAvatarColor} imageUrl={avatarPreview} className="mx-auto mb-4" />
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#1A1208", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>
+            <div className="py-5 text-center">
+              <Avatar name={displayName} size={64} imageUrl={avatarPreview} className="mx-auto mb-4" />
+              <div className="mb-2 text-lg font-bold text-primary">
                 {mode === "login" ? "Signed in!" : mode === "register" ? "Account created!" : "Email sent!"}
               </div>
-              <div style={{ fontSize: 13, color: "#7D6E5A", fontFamily: "'Inter', sans-serif" }}>
+              <div className="text-[13px] text-muted">
                 {mode === "forgot" ? "Check your inbox for the reset link." : "Welcome to Skynet Solution Qatar."}
               </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div className="flex flex-col gap-3.5">
                 {mode === "register" && (
                   <FormField label="Full Name" icon={<Icons.User />}>
                     <input
@@ -188,7 +161,7 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                       placeholder="Mohammed Al-Thani"
                       required
-                      style={inputStyle}
+                      className={inputClass}
                     />
                   </FormField>
                 )}
@@ -200,7 +173,7 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                     placeholder="you@company.com"
                     required
-                    style={inputStyle}
+                    className={inputClass}
                   />
                 </FormField>
 
@@ -210,26 +183,26 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
                       value={form.phone}
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                       placeholder="+974 XXXX XXXX"
-                      style={inputStyle}
+                      className={inputClass}
                     />
                   </FormField>
                 )}
 
                 {mode !== "forgot" && (
                   <FormField label="Password" icon={<Icons.Lock />}>
-                    <div style={{ position: "relative" }}>
+                    <div className="relative">
                       <input
                         type={showPass ? "text" : "password"}
                         value={form.password}
                         onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                         placeholder="••••••••"
                         required
-                        style={{ ...inputStyle, paddingRight: 44 }}
+                        className={`${inputClass} pr-11`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPass(p => !p)}
-                        style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#7D6E5A", display: "flex" }}
+                        className="absolute right-3.5 top-1/2 flex -translate-y-1/2 cursor-pointer items-center border-0 bg-transparent text-muted"
                       >
                         {showPass ? <Icons.EyeOff /> : <Icons.Eye />}
                       </button>
@@ -238,11 +211,11 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
                 )}
 
                 {mode === "login" && (
-                  <div style={{ textAlign: "right", marginTop: -4 }}>
+                  <div className="-mt-1 text-right">
                     <button
                       type="button"
                       onClick={() => setMode("forgot")}
-                      style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "#C89B3C", fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+                      className="cursor-pointer border-0 bg-transparent text-xs font-semibold text-accent"
                     >
                       Forgot password?
                     </button>
@@ -252,11 +225,10 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
                 <button
                   type="submit"
                   disabled={loading}
-                  className={tw.btnPrimary}
-                  style={{ width: "100%", justifyContent: "center", marginTop: 8, fontSize: 15, padding: "15px 20px", opacity: loading ? 0.7 : 1 }}
+                  className={`${tw.btnPrimary} mt-2 w-full justify-center px-5 py-[15px] text-[15px] disabled:opacity-70`}
                 >
                   {loading ? (
-                    <span className="spin" style={{ display: "inline-block", width: 18, height: 18, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%" }} />
+                    <span className="inline-block h-[18px] w-[18px] animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   ) : (
                     <>{mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Send Reset Link"} <Icons.ArrowRight /></>
                   )}
@@ -264,55 +236,45 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
 
                 {mode !== "forgot" && (
                   <>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0" }}>
-                      <div style={{ flex: 1, height: 1, background: "#E8D9B8" }} />
-                      <span style={{ fontSize: 12, color: "#9E8E78", fontFamily: "'Inter', sans-serif" }}>or continue with</span>
-                      <div style={{ flex: 1, height: 1, background: "#E8D9B8" }} />
+                    <div className="my-1 flex items-center gap-3">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-xs text-muted">or continue with</span>
+                      <div className="h-px flex-1 bg-border" />
                     </div>
-                    <div style={{ display: "flex", gap: 10 }}>
-                      {[
-                        { label: "Google", bg: "#fff", color: "#44403C", border: "#E8D9B8", icon: "G" },
-                        { label: "Microsoft", bg: "#F3F4F6", color: "#1A1208", border: "#D6D3D1", icon: "M" },
-                      ].map(({ label, bg, color, border, icon }) => (
-                        <button
-                          key={label}
-                          type="button"
-                          style={{
-                            flex: 1, padding: "11px 16px", border: `1.5px solid ${border}`, borderRadius: 100,
-                            background: bg, cursor: "pointer", fontSize: 13,
-                            fontFamily: "'Inter', sans-serif", fontWeight: 600, color,
-                            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                            transition: "border-color 0.2s, box-shadow 0.2s",
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = "#C89B3C"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(59,125,216,0.15)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.boxShadow = "none"; }}
-                        >
-                          <span style={{
-                            width: 22, height: 22, borderRadius: 11, background: label === "Google" ? "#4285F4" : "#0078D4",
-                            color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center",
-                          }}>{icon}</span>
-                          {label}
-                        </button>
-                      ))}
+                    <div className="flex gap-2.5">
+                      <button
+                        type="button"
+                        className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-[1.5px] border-border bg-white px-4 py-2.5 text-[13px] font-semibold text-primary/80 transition-[border-color,box-shadow] hover:border-accent hover:shadow-[0_2px_12px_color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+                      >
+                        <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#4285F4] text-[11px] font-extrabold text-white">G</span>
+                        Google
+                      </button>
+                      <button
+                        type="button"
+                        className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-[1.5px] border-border bg-bg px-4 py-2.5 text-[13px] font-semibold text-primary transition-[border-color,box-shadow] hover:border-accent hover:shadow-[0_2px_12px_color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+                      >
+                        <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#0078D4] text-[11px] font-extrabold text-white">M</span>
+                        Microsoft
+                      </button>
                     </div>
                   </>
                 )}
 
-                <div style={{ textAlign: "center", fontSize: 13, color: "#7D6E5A", fontFamily: "'Inter', sans-serif" }}>
+                <div className="text-center text-[13px] text-muted">
                   {mode === "login" ? (
                     <>Don&apos;t have an account?{" "}
-                      <button type="button" onClick={() => setMode("register")} style={{ background: "none", border: "none", cursor: "pointer", color: "#C89B3C", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
+                      <button type="button" onClick={() => setMode("register")} className={linkBtnClass}>
                         Register
                       </button>
                     </>
                   ) : mode === "register" ? (
                     <>Already have an account?{" "}
-                      <button type="button" onClick={() => setMode("login")} style={{ background: "none", border: "none", cursor: "pointer", color: "#C89B3C", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
+                      <button type="button" onClick={() => setMode("login")} className={linkBtnClass}>
                         Sign In
                       </button>
                     </>
                   ) : (
-                    <button type="button" onClick={() => setMode("login")} style={{ background: "none", border: "none", cursor: "pointer", color: "#C89B3C", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
+                    <button type="button" onClick={() => setMode("login")} className={linkBtnClass}>
                       ← Back to Sign In
                     </button>
                   )}
@@ -326,18 +288,11 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
   );
 }
 
-const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "12px 14px",
-  border: "1.5px solid #E8D9B8", borderRadius: 12,
-  fontSize: 14, fontFamily: "'Inter', sans-serif", color: "#1A1208",
-  background: "#FDFAF4", outline: "none", transition: "border-color 0.2s",
-};
-
 function FormField({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "#44403C", marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
-        <span style={{ color: "#C89B3C", display: "flex" }}>{icon}</span> {label}
+      <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-primary/80">
+        <span className="flex text-accent">{icon}</span> {label}
       </label>
       {children}
     </div>

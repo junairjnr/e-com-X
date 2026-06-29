@@ -1,5 +1,7 @@
 "use client";
+
 import { NAV_MENUS } from "@/lib/data";
+import StoreImage from "./StoreImage";
 
 interface MegaMenuProps {
   section: string;
@@ -11,99 +13,63 @@ export default function MegaMenu({ section, onClose }: MegaMenuProps) {
   if (!data) return null;
 
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr auto",
-      gap: 32,
-      fontFamily: "'Inter',sans-serif",
-    }}>
-      {/* ── Column 1 : Featured + Apparel ─────────────────── */}
+    <div className="grid grid-cols-1 gap-8 font-sans md:grid-cols-[1fr_1fr_1fr_auto]">
       <div>
         <ColLabel>Featured</ColLabel>
-        {data.featured.map(item => (
+        {data.featured.map((item) => (
           <MenuLink key={item} onClick={onClose}>{item}</MenuLink>
         ))}
         {data.apparel.length > 0 && (
           <>
-            <ColLabel style={{ marginTop: 20 }}>Services</ColLabel>
-            {data.apparel.map(item => (
+            <ColLabel className="mt-5">Services</ColLabel>
+            {data.apparel.map((item) => (
               <MenuLink key={item} onClick={onClose} muted>{item}</MenuLink>
             ))}
           </>
         )}
       </div>
 
-      {/* ── Column 2 : Categories ─────────────────────────── */}
       <div>
         <ColLabel>Categories</ColLabel>
-        {data.shoes.map(item => (
+        {data.shoes.map((item) => (
           <MenuLink key={item} onClick={onClose} muted>{item}</MenuLink>
         ))}
       </div>
 
-      {/* ── Column 3 : Customer Favorites ────────────────── */}
       <div>
         {data.favorites.length > 0 && (
           <>
             <ColLabel>Customer Favorites</ColLabel>
-            {data.favorites.map(item => (
+            {data.favorites.map((item) => (
               <MenuLink key={item} onClick={onClose} muted>{item}</MenuLink>
             ))}
           </>
         )}
       </div>
 
-      {/* ── Column 4 : Image cards ────────────────────────── */}
-      <div style={{ display: "flex", gap: 12 }}>
-        {data.imgs.map(img => (
-          <div
+      <div className="flex gap-3">
+        {data.imgs.map((img) => (
+          <button
             key={img.label}
+            type="button"
             onClick={onClose}
-            style={{
-              width: 148,
-              borderRadius: 16,
-              overflow: "hidden",
-              border: "1px solid rgba(200,155,60,0.14)",
-              background: "#F7F2E8",
-              cursor: "pointer",
-              transition: "transform 0.25s, box-shadow 0.25s",
-              boxShadow: "0 2px 8px rgba(26,18,8,0.06)",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)";
-              (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(26,18,8,0.12)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-              (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 8px rgba(26,18,8,0.06)";
-            }}
+            className="w-[148px] overflow-hidden rounded-2xl border border-accent/15 bg-accent-soft/30 text-left transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_24px_color-mix(in_srgb,var(--color-primary)_12%,transparent)]"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`https://images.unsplash.com/${img.url}?w=300&q=80`}
-              alt={img.label}
-              style={{ display: "block", width: "100%", height: 110, objectFit: "cover" }}
-            />
-            <div style={{ padding: "10px 12px 12px" }}>
-              <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1A1208" }}>{img.label}</div>
-              <div style={{ marginTop: 2, fontSize: 11, fontWeight: 700, color: "#C89B3C" }}>{img.price}</div>
+            <StoreImage src={img.url} alt={img.label} className="block h-[110px] w-full object-cover" />
+            <div className="px-3 pb-3 pt-2.5">
+              <div className="text-[12.5px] font-semibold text-primary">{img.label}</div>
+              <div className="mt-0.5 text-[11px] font-bold text-accent">{img.price}</div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>
   );
 }
 
-/* ── Helpers ─────────────────────────────────────────────────────────── */
-function ColLabel({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function ColLabel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div style={{
-      fontSize: 10, fontWeight: 700, letterSpacing: "0.13em",
-      textTransform: "uppercase", color: "#C89B3C",
-      marginBottom: 12,
-      ...style,
-    }}>
+    <div className={`mb-3 text-[10px] font-bold uppercase tracking-[0.13em] text-accent ${className}`}>
       {children}
     </div>
   );
@@ -113,20 +79,10 @@ function MenuLink({ children, onClick, muted }: { children: React.ReactNode; onC
   return (
     <a
       href="#"
-      onClick={e => { e.preventDefault(); onClick(); }}
-      style={{
-        display: "block",
-        padding: "5px 0",
-        fontSize: muted ? 13 : 13.5,
-        fontWeight: muted ? 400 : 600,
-        color: muted ? "#6B5A44" : "#1A1208",
-        textDecoration: "none",
-        letterSpacing: "0.01em",
-        transition: "color 0.15s",
-        lineHeight: 1.5,
-      }}
-      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "#C89B3C"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = muted ? "#6B5A44" : "#1A1208"; }}
+      onClick={(e) => { e.preventDefault(); onClick(); }}
+      className={`block py-1.5 text-[13px] leading-normal transition-colors hover:text-accent ${
+        muted ? "font-normal text-muted" : "font-semibold text-primary"
+      }`}
     >
       {children}
     </a>

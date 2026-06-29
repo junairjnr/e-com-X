@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { fmt } from "@/lib/data";
-import { tw } from "@/lib/theme";
+import { tw, badgeBgClass, swatchBgClass } from "@/lib/theme";
+import StoreImage from "./StoreImage";
 import type { Product, WishlistItem } from "@/lib/types";
 import * as Icons from "./Icons";
 
@@ -19,6 +20,15 @@ export default function ProductModal({ product, onClose, onAddToCart, onWishlist
   const [selectedSize, setSelectedSize] = useState("");
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState(false);
+
+  useEffect(() => {
+    if (!product) return;
+    setImgIdx(0);
+    setSelectedColor(product.colors[0]);
+    setSelectedSize("");
+    setAdded(false);
+    setSizeError(false);
+  }, [product]);
 
   if (!product) return null;
 
@@ -40,8 +50,7 @@ export default function ProductModal({ product, onClose, onAddToCart, onWishlist
         className={`${tw.glassCard} grid w-full max-w-[960px] max-h-[90vh] grid-cols-1 md:grid-cols-2 overflow-auto rounded-[32px] animate-fade-up scrollbar-thin`}
       >
         <div className="relative min-h-[480px] overflow-hidden rounded-t-[32px] md:rounded-l-[32px] md:rounded-tr-none bg-bg-soft">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.images[imgIdx] || product.images[0]} alt={product.name} className="block h-full w-full object-cover" />
+          <StoreImage src={product.images[imgIdx] || product.images[0]} alt={product.name} className="block h-full w-full object-cover" />
           <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
             {product.images.map((img, i) => (
               <button
@@ -52,13 +61,12 @@ export default function ProductModal({ product, onClose, onAddToCart, onWishlist
                   imgIdx === i ? "outline outline-2 outline-primary outline-offset-0" : "outline-none"
                 }`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img} alt="" className="h-full w-full object-cover" />
+                <StoreImage src={img} alt="" className="h-full w-full object-cover" />
               </button>
             ))}
           </div>
           <div className="absolute top-5 left-5">
-            <span className="rounded-full px-3.5 py-1 text-[11px] font-bold tracking-wide text-white" style={{ background: product.badgeColor }}>
+            <span className={`rounded-full px-3.5 py-1 text-[11px] font-bold tracking-wide text-white ${badgeBgClass(product.badge)}`}>
               {product.badge}
             </span>
           </div>
@@ -98,7 +106,7 @@ export default function ProductModal({ product, onClose, onAddToCart, onWishlist
 
           <div className="flex flex-wrap gap-1.5">
             {product.tags.map(t => (
-              <span key={t} className="rounded-full bg-accent-soft px-3 py-1 text-[11px] font-semibold text-blue-800">{t}</span>
+              <span key={t} className="rounded-full bg-accent-soft px-3 py-1 text-[11px] font-semibold text-primary">{t}</span>
             ))}
           </div>
 
@@ -113,10 +121,9 @@ export default function ProductModal({ product, onClose, onAddToCart, onWishlist
                   type="button"
                   onClick={() => setSelectedColor(c)}
                   title={c.name}
-                  className={`h-7 w-7 rounded-full border-0 cursor-pointer transition-all ${
+                  className={`h-7 w-7 rounded-full border-0 cursor-pointer transition-all ${swatchBgClass(c.hex)} ${
                     selectedColor.name === c.name ? "ring-2 ring-primary ring-offset-2" : ""
                   }`}
-                  style={{ background: c.hex }}
                 />
               ))}
             </div>
