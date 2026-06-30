@@ -72,7 +72,7 @@ export default function CartDrawer({ cart, open, onClose, onUpdate, onRemove, se
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-primary">{fmt(item.price * item.qty)}</span>
+                    <span className="font-price font-bold text-primary">{fmt(item.price * item.qty)}</span>
                     <button type="button" onClick={() => onRemove(item.id)} className="border-0 bg-transparent p-1 text-muted cursor-pointer hover:text-red-500 transition-colors">
                       <Icons.Trash />
                     </button>

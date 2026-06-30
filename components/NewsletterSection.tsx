@@ -21,7 +21,7 @@ export default function NewsletterSection() {
       <div className="pointer-events-none absolute -bottom-20 -left-10 h-[250px] w-[250px] rounded-full bg-accent/8" />
 
       <div className="relative z-[1] mx-auto max-w-[640px] px-6 text-center">
-        <div className="mb-4 text-[11px] font-bold uppercase tracking-[0.15em] text-accent">
+        <div className="mb-4 font-eyebrow text-[11px] text-accent">
           Stay in the Loop
         </div>
         <h2 className="mb-4 font-display text-[clamp(36px,4vw,52px)] font-bold leading-tight text-primary">

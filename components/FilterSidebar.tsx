@@ -59,7 +59,7 @@ export default function FilterSidebar({ filters, onChange, onClear, resultCount,
         <div className="rounded-[20px] border border-border bg-white p-4 shadow-[0_4px_24px_color-mix(in_srgb,var(--color-primary)_5%,transparent)]">
           <div className="mb-4 flex items-center justify-between border-b border-bg-soft pb-3.5">
             <div>
-              <div className="text-[15px] font-bold text-primary">Filters</div>
+              <div className="font-display text-[15px] font-bold text-primary">Filters</div>
               <div className="mt-0.5 text-xs text-muted">{resultCount} result{resultCount !== 1 ? "s" : ""}</div>
             </div>
             {activeCount > 0 && (
@@ -202,7 +202,7 @@ function FilterSection({ title, open, onToggle, children, last }: { title: strin
         onClick={onToggle}
         className="flex w-full items-center justify-between border-0 bg-transparent cursor-pointer p-0"
       >
-        <span className="text-xs font-bold tracking-wide text-primary">{title}</span>
+        <span className="font-eyebrow text-xs tracking-wide text-primary">{title}</span>
         <span className={`flex text-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
           <Icons.ChevronDown />
         </span>

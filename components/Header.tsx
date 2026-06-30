@@ -18,6 +18,7 @@ interface HeaderProps {
   user?: StoreUser | null;
   page: string;
   setPage: (p: string) => void;
+  onNavigateHome: () => void;
 }
 
 const NAV = [
@@ -52,6 +53,34 @@ function NavIconBtn({
   );
 }
 
+function HeaderSearch({
+  onOpen,
+  className = "",
+}: {
+  onOpen: () => void;
+  className?: string;
+}) {
+  return (
+    <div className={`relative min-w-0 ${className}`}>
+      <label htmlFor="header-search" className="sr-only">
+        Search products
+      </label>
+      <span className="pointer-events-none absolute left-3.5 top-1/2 z-[1] -translate-y-1/2 text-muted">
+        <Icons.Search />
+      </span>
+      <input
+        id="header-search"
+        type="search"
+        readOnly
+        placeholder="Search POS, printers, scanners, software…"
+        onFocus={onOpen}
+        onClick={onOpen}
+        className="h-10 w-full cursor-pointer rounded-full border border-border bg-white/90 py-0 pl-10 pr-4 text-sm text-primary shadow-[inset_0_1px_2px_color-mix(in_srgb,var(--color-primary)_4%,transparent)] outline-none transition-all placeholder:text-muted/80 hover:border-accent/35 focus:border-accent/50 focus:ring-2 focus:ring-accent/15 md:h-[38px] md:text-[13px]"
+      />
+    </div>
+  );
+}
+
 export default function Header({
   cart,
   wishlist,
@@ -63,6 +92,7 @@ export default function Header({
   user,
   page,
   setPage,
+  onNavigateHome,
 }: HeaderProps) {
   const { client } = useClientTheme();
   const [scrolled, setScrolled] = useState(false);
@@ -115,17 +145,17 @@ export default function Header({
       {/* Announcement bar */}
       <div className="fixed top-0 left-0 right-0 z-[160] flex h-8 sm:h-[34px] items-center justify-center gap-1.5 overflow-hidden border-b border-white/10 bg-footer px-3">
         <div className="pointer-events-none absolute inset-0 animate-shimmer-bar bg-gradient-to-r from-transparent via-accent/15 to-transparent" />
-        <span className="hidden text-[10.5px] font-medium tracking-wide text-white/70 sm:inline">
+        <span className="hidden font-label text-[10.5px] font-medium tracking-wide text-white/70 sm:inline">
           🎁 Free installation on all POS systems · Qatar VAT Compliant ·
         </span>
-        <span className="text-[10px] font-medium text-white/70 sm:hidden">
+        <span className="font-label text-[10px] font-medium text-white/70 sm:hidden">
           🎁 Free installation · Qatar VAT Compliant
         </span>
         <a
           href={client.siteUrl}
           target="_blank"
           rel="noreferrer"
-          className="shrink-0 border-b border-accent/50 text-[9.5px] sm:text-[10.5px] font-bold tracking-wide text-accent transition-colors hover:text-accent-light"
+          className="shrink-0 border-b border-accent/50 font-label text-[9.5px] sm:text-[10.5px] font-bold tracking-wide text-accent transition-colors hover:text-accent-light"
         >
           <span className="sm:hidden">Free Demo →</span>
           <span className="hidden sm:inline">Book a Free Demo →</span>
@@ -138,17 +168,18 @@ export default function Header({
         className={`pointer-events-none fixed left-0 right-0 z-[150] flex justify-center px-2 md:px-3.5 transition-[top] duration-300 ${scrolled ? "top-[38px] sm:top-[40px]" : "top-9 sm:top-[42px]"}`}
       >
         <header
-          className={`pointer-events-auto relative flex h-[52px] md:h-[58px] w-full max-w-[1350px] items-center overflow-visible rounded-[14px] md:rounded-[10px] border border-border bg-bg-soft/95 pl-3.5 pr-1.5 md:pl-5 md:pr-2.5 backdrop-blur-[28px] transition-all duration-300 ${
+          className={`pointer-events-auto relative flex w-full max-w-[1350px] flex-col gap-2 overflow-visible rounded-[14px] md:rounded-[10px] border border-border bg-bg-soft/95 px-3.5 py-2 md:flex-row md:items-center md:gap-3 md:px-4 md:py-0 md:h-[58px] backdrop-blur-[28px] transition-all duration-300 ${
             scrolled
               ? "shadow-[0_10px_44px_rgba(0,0,0,0.08)]"
               : "shadow-[0_4px_28px_rgba(0,0,0,0.06)]"
           }`}
           onMouseLeave={() => setActiveMenu(null)}
         >
+          <div className="flex h-[44px] w-full items-center gap-2 md:h-auto md:min-w-0 md:flex-1 md:gap-3">
           {/* Logo */}
           <button
             type="button"
-            onClick={() => { setPage("home"); setActiveNavLabel(null); }}
+            onClick={() => { onNavigateHome(); setActiveNavLabel(null); }}
             className="flex shrink-0 items-center gap-2 rounded-[10px] border-0 bg-transparent p-1 pr-1.5 cursor-pointer transition-opacity hover:opacity-75"
           >
             <div className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent-hover via-accent to-primary-light shadow-[0_3px_10px_color-mix(in_srgb,var(--color-accent)_32%,transparent)]">
@@ -159,14 +190,20 @@ export default function Header({
                 {client.name.split(" ")[0]}
                 <span className="text-[11px] font-black text-accent">™</span>
               </span>
-              <span className="hidden min-[500px]:block mt-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-muted">
+              <span className="font-eyebrow hidden min-[500px]:block mt-0.5 text-[8px] font-semibold tracking-[0.16em] text-muted">
                 {client.tagline}
               </span>
             </div>
           </button>
 
+          {/* Search — before nav, extra width */}
+          <HeaderSearch
+            onOpen={onSearchOpen}
+            className="hidden min-[520px]:block min-w-0 flex-1 max-w-[520px]"
+          />
+
           {/* Desktop nav */}
-          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-0.5 md:flex">
+          <nav className="hidden shrink-0 items-center gap-0.5 xl:flex">
             {NAV.map((item) => {
               const active = isActive(item);
               return (
@@ -178,7 +215,7 @@ export default function Header({
                   <button
                     type="button"
                     onClick={() => handleNav(item)}
-                    className={`relative whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] transition-all lg:px-3.5 lg:text-[13px] md:px-2.5 md:text-xs ${
+                    className={`relative whitespace-nowrap rounded-full border px-3 py-1.5 font-nav text-[13px] transition-all ${
                       active
                         ? "border-accent/40 bg-accent-soft/80 font-bold text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
                         : "border-transparent bg-transparent font-medium text-primary hover:border-accent/25 hover:bg-accent-soft/50"
@@ -194,11 +231,11 @@ export default function Header({
             })}
           </nav>
 
-          <div className="flex-1" />
+          <div className="flex-1 min-[520px]:hidden" />
 
           {/* Actions */}
           <div className="flex items-center gap-0.5 md:gap-1">
-            <NavIconBtn label="Search" onClick={onSearchOpen} className="max-[359px]:hidden">
+            <NavIconBtn label="Search" onClick={onSearchOpen} className="min-[520px]:hidden">
               <Icons.Search />
             </NavIconBtn>
             <NavIconBtn label={user ? user.name : "Sign in"} onClick={onLoginOpen}>
@@ -239,17 +276,21 @@ export default function Header({
               type="button"
               onClick={() => setMobileOpen(true)}
               aria-label="Menu"
-              className="nav-icon-btn ml-0.5 h-9 w-9 md:hidden"
+              className="nav-icon-btn ml-0.5 h-9 w-9 xl:hidden"
             >
               <Icons.Menu />
             </button>
           </div>
+          </div>
+
+          {/* Mobile / tablet full-width search row */}
+          <HeaderSearch onOpen={onSearchOpen} className="min-[520px]:hidden w-full pb-0.5" />
 
           {/* Mega menu */}
           {activeMenu && (
             <div className="absolute left-1/2 top-[calc(100%+10px)] z-[200] hidden w-[min(940px,90vw)] -translate-x-1/2 animate-mega-fade-in md:block lg:w-[min(940px,90vw)]">
               <div className="overflow-hidden rounded-[20px] border border-accent/20 bg-white/98 p-6 backdrop-blur-2xl shadow-[0_20px_60px_color-mix(in_srgb,var(--color-primary)_13%,transparent)] lg:px-7 lg:py-6">
-                <div className="mb-4 border-b border-accent/15 pb-2.5 text-[9.5px] font-bold uppercase tracking-[0.15em] text-accent">
+                <div className="mb-4 border-b border-accent/15 pb-2.5 font-eyebrow text-[9.5px] tracking-[0.15em] text-accent">
                   {activeMenu}
                 </div>
                 <MegaMenu section={activeMenu} onClose={() => setActiveMenu(null)} />
@@ -276,7 +317,7 @@ export default function Header({
                 </div>
                 <div>
                   <span className="font-display block text-lg font-extrabold text-accent-light">{client.name.split(" ")[0]}™</span>
-                  <span className="text-[8px] uppercase tracking-[0.14em] text-accent-light/50">{client.tagline}</span>
+                  <span className="font-eyebrow text-[8px] tracking-[0.14em] text-accent-light/50">{client.tagline}</span>
                 </div>
               </div>
               <button type="button" onClick={() => setMobileOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-accent-light/20 bg-white/10 text-accent-light">

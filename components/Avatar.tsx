@@ -38,7 +38,7 @@ export default function Avatar({ name, size = 36, imageUrl, className = "" }: Av
   return (
     <div
       aria-hidden
-      className={`flex items-center justify-center font-bold tracking-wide text-white ${baseClass} ${sizeClass} ${bgClass}`}
+      className={`flex items-center justify-center font-label font-bold tracking-wide text-white ${baseClass} ${sizeClass} ${bgClass}`}
     >
       {getInitials(name)}
     </div>

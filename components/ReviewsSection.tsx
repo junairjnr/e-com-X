@@ -34,7 +34,7 @@ export default function ReviewsSection({ productId, rating, reviewCount }: Revie
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
         <div className="rounded-3xl bg-bg-soft p-7">
           <div className="mb-6 text-center">
-            <div className="font-display text-[64px] font-bold leading-none text-primary">{rating}</div>
+            <div className="font-mono text-[64px] font-bold leading-none text-primary">{rating}</div>
             <div className="my-2 flex justify-center gap-0.5 text-accent">
               {[1, 2, 3, 4, 5].map(i => <Icons.Star key={i} filled={i <= Math.round(rating)} />)}
             </div>

@@ -183,7 +183,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
           )}
           {product.badge && (
             <span
-              className={`inline-flex items-center rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-md ${badgeBgClass(product.badge)}`}
+              className={`font-eyebrow inline-flex items-center rounded-lg px-3 py-1.5 text-[10px] tracking-wider text-white shadow-md ${badgeBgClass(product.badge)}`}
             >
               {product.badge}
             </span>
@@ -380,7 +380,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
           <div className="flex flex-col gap-[18px]">
             {/* Brand + SKU */}
             <div className="flex justify-between items-start">
-              <div className="text-[11px] font-bold uppercase tracking-widest text-accent">
+              <div className="font-eyebrow text-[11px] tracking-widest text-accent">
                 {product.brand} · <span className="normal-case tracking-normal text-muted">Skynet Solution Qatar</span>
               </div>
               {product.sku && (
@@ -410,7 +410,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
 
             {/* Price block */}
             <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-accent-soft px-5 py-4">
-              <span className="text-[30px] font-extrabold text-primary">{fmt(product.price)}</span>
+              <span className="font-price text-[30px] font-extrabold text-primary">{fmt(product.price)}</span>
               {product.originalPrice && <>
                 <span className="text-base text-muted line-through">{fmt(product.originalPrice)}</span>
                 <span className={tw.saleBadge}>
@@ -584,7 +584,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
                 {[["SKU", product.sku || "—"], ["Category", product.category || "—"], ["In Stock", `${product.stock || "—"} units`], ["Warranty", "1 Year (Parts & Labour)"], ["Certification", "Qatar VAT Compliant"], ["Support", "24/7 Local Doha Team"], ["Interface", product.tags[2] || "USB"], ["Origin", "Commercial Grade"]].map(([label, val]) => (
                   <div key={label} className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted">{label}</span>
+                    <span className="font-eyebrow text-[10px] tracking-wider text-muted">{label}</span>
                     <span className="text-sm text-primary">{val}</span>
                   </div>
                 ))}

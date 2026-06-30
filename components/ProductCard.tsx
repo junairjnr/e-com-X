@@ -69,7 +69,7 @@ export default function ProductCard({ product, onAddToCart, onWishlistToggle, is
         {/* Top-left: badge */}
         <div className="absolute top-2.5 left-2.5 z-[4]">
           <span
-            className="rounded-full px-2.5 py-[3px] text-[9px] font-bold tracking-wider text-white shadow-md bg-primary-mid"
+            className="rounded-full px-2.5 py-[3px] font-eyebrow text-[9px] tracking-wider text-white shadow-md bg-primary-mid"
           >
             {product.badge}
           </span>
@@ -113,10 +113,10 @@ export default function ProductCard({ product, onAddToCart, onWishlistToggle, is
       {/* ── Info area — fills remaining space so cards stay same height ── */}
       <div className="flex flex-1 flex-col px-3.5 pt-3 pb-3">
         {/* Brand */}
-        <div className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-accent">{product.brand}</div>
+        <div className="mb-0.5 font-eyebrow text-[9px] tracking-widest text-accent">{product.brand}</div>
 
         {/* Name — clamp 2 lines, takes flex space */}
-        <div className="mb-auto line-clamp-2 text-[13px] font-semibold leading-snug text-primary">{product.name}</div>
+        <div className="mb-auto line-clamp-2 font-display text-[13px] font-semibold leading-snug text-primary">{product.name}</div>
 
         {/* Rating + colors */}
         <div className="mt-2 mb-2.5 flex items-center justify-between">
@@ -142,9 +142,9 @@ export default function ProductCard({ product, onAddToCart, onWishlistToggle, is
         {/* Price + Add button — stack on narrow cards */}
         <div className="mt-auto flex flex-col gap-2 border-t border-border/40 pt-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
           <div className="min-w-0 flex flex-col leading-none">
-            <span className="truncate text-sm font-extrabold text-primary sm:text-[15px]">{fmt(product.price)}</span>
+            <span className="font-price truncate text-sm font-extrabold text-primary sm:text-[15px]">{fmt(product.price)}</span>
             {product.originalPrice && (
-              <span className="mt-0.5 truncate text-[10px] text-muted line-through">{fmt(product.originalPrice)}</span>
+              <span className="font-price mt-0.5 truncate text-[10px] text-muted line-through">{fmt(product.originalPrice)}</span>
             )}
           </div>
           <button

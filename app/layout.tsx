@@ -1,19 +1,32 @@
 import type { Metadata } from "next";
-import { Inter, Cormorant } from "next/font/google";
+import { Plus_Jakarta_Sans, Cormorant, Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import ThemeProvider from "@/components/ThemeProvider";
 import { getClientConfig } from "@/config/clients";
 import { themeToCssProperties } from "@/lib/theme-css";
 import "./globals.css";
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-jakarta",
   display: "swap",
 });
 
 const cormorant = Cormorant({
   subsets: ["latin"],
   variable: "--font-cormorant",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plex-mono",
   display: "swap",
 });
 
@@ -38,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`h-full ${inter.variable} ${cormorant.variable}`}
+      className={`h-full ${jakarta.variable} ${cormorant.variable} ${spaceGrotesk.variable} ${plexMono.variable}`}
       data-client={client.id}
       style={themeToCssProperties(client.theme)}
     >

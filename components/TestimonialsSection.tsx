@@ -11,7 +11,7 @@ export default function TestimonialsSection() {
 
       <div className="relative z-[1] mx-auto max-w-[1200px] px-6">
         <div className="mb-16 text-center">
-          <div className="mb-4 text-[11px] font-bold uppercase tracking-[0.15em] text-accent">
+          <div className="mb-4 font-eyebrow text-[11px] text-accent">
             Real Stories
           </div>
           <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold leading-tight text-primary">

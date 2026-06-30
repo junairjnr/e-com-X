@@ -210,7 +210,7 @@ export default function ShopPage({ onAddToCart, onWishlistToggle, wishlist, onPr
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileFilterOpen(false)} />
           <div className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-bg p-6 animate-fade-up scrollbar-thin">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-primary">Filters</h2>
+              <h2 className="font-display text-lg font-bold text-primary">Filters</h2>
               <button type="button" onClick={() => setMobileFilterOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-border text-muted">
                 <Icons.X />
               </button>

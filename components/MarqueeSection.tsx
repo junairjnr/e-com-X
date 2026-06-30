@@ -30,7 +30,7 @@ export default function MarqueeSection() {
             className="inline-flex items-center gap-2.5 whitespace-nowrap px-8"
           >
             <span className="text-base leading-none">{item.icon}</span>
-            <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-accent">
+            <span className="font-eyebrow text-[12px] font-semibold tracking-[0.08em] text-accent">
               {item.text}
             </span>
             <span className="ml-2 text-xs text-accent/40">

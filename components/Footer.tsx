@@ -24,7 +24,7 @@ export default function Footer() {
             <div className="mb-1.5 font-display text-[32px] font-bold tracking-wide text-white">
               Skynet<span className="text-xl text-accent">™</span>
             </div>
-            <div className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em] text-accent">
+            <div className="mb-5 font-eyebrow text-[11px] tracking-[0.12em] text-accent">
               POS Solutions Qatar
             </div>
             <p className="mb-7 max-w-[280px] text-[13px] leading-relaxed text-white/55">
@@ -44,7 +44,7 @@ export default function Footer() {
                 <a
                   key={s}
                   href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-[11px] font-bold text-white/60 no-underline transition-colors hover:border-accent hover:text-accent"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 font-label text-[11px] font-bold text-white/60 no-underline transition-colors hover:border-accent hover:text-accent"
                 >
                   {s}
                 </a>
@@ -54,7 +54,7 @@ export default function Footer() {
 
           {cols.map(col => (
             <div key={col.title}>
-              <div className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em] text-white/40">
+              <div className="mb-5 font-eyebrow text-[11px] tracking-[0.12em] text-white/40">
                 {col.title}
               </div>
               {col.links.map(link => (

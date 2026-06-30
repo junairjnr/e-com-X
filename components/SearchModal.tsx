@@ -75,7 +75,7 @@ export default function SearchModal({ open, onClose, onProductSelect }: SearchMo
                 <div>
                   <div className="text-[15px] font-semibold text-primary">{p.name}</div>
                   <div className="mt-0.5 text-[13px] text-muted">{p.tags.join(" · ")}</div>
-                  <div className="mt-1 text-sm font-bold text-accent">{fmt(p.price)}</div>
+                  <div className="font-price mt-1 text-sm font-bold text-accent">{fmt(p.price)}</div>
                 </div>
               </button>
             ))}
@@ -84,7 +84,7 @@ export default function SearchModal({ open, onClose, onProductSelect }: SearchMo
 
         {query.length === 0 && (
           <div className="px-6 py-5">
-            <div className="mb-4 text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
+            <div className="mb-4 font-eyebrow text-[11px] tracking-[0.12em] text-muted">
               Popular Searches
             </div>
             <div className="flex flex-wrap gap-2">

@@ -27,22 +27,22 @@ export default function DealCard({ product, onClick }: DealCardProps) {
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
         {discountPct && (
-          <span className={`absolute left-2 top-2 uppercase tracking-wide ${tw.saleBadge} text-[10px]`}>
+          <span className={`absolute left-2 top-2 ${tw.saleBadge} text-[10px]`}>
             −{discountPct}%
           </span>
         )}
         {product.badge && (
-          <span className="absolute right-2 top-2 rounded-md bg-primary-mid px-2 py-0.5 text-[10px] font-bold text-white">
+          <span className="absolute right-2 top-2 rounded-md bg-primary-mid px-2 py-0.5 font-eyebrow text-[10px] font-bold text-white">
             {product.badge}
           </span>
         )}
       </div>
 
       <div className="flex flex-1 flex-col p-3 md:p-4">
-        <p className="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-accent">
+        <p className="mb-0.5 font-eyebrow text-[10px] tracking-wider text-accent">
           {product.brand}
         </p>
-        <h3 className="mb-2 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-primary">
+        <h3 className="mb-2 line-clamp-2 min-h-[2.5rem] font-display text-sm font-semibold leading-snug text-primary">
           {product.name}
         </h3>
 
@@ -56,9 +56,9 @@ export default function DealCard({ product, onClick }: DealCardProps) {
         </div>
 
         <div className="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <span className="text-base font-bold text-primary">{fmt(product.price)}</span>
+          <span className="font-price text-base font-bold text-primary">{fmt(product.price)}</span>
           {product.originalPrice && (
-            <span className="text-xs text-muted line-through">{fmt(product.originalPrice)}</span>
+            <span className="font-price text-xs text-muted line-through">{fmt(product.originalPrice)}</span>
           )}
         </div>
 

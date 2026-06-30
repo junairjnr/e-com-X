@@ -26,30 +26,39 @@ function FlashSaleBlock({
   offer: (typeof FLASH_OFFERS)[number];
 }) {
   return (
-    <div className="flex flex-col gap-3 w-full lg:h-[460px] lg:gap-4">
+    <div className="flex h-full w-full flex-col gap-3 lg:h-[460px] lg:gap-4">
       {/* Countdown */}
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-white p-4 shadow-[0_4px_16px_color-mix(in_srgb,var(--color-primary)_6%,transparent)] shrink-0">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent to-accent-hover" />
-        <h3 className="mt-1 mb-3 flex items-center gap-1.5 text-base font-extrabold text-primary">
-          <span className="text-lg text-accent">⚡</span> Flash Sale
-          <span className="ml-auto text-[10px] font-bold uppercase tracking-wider text-sale animate-pulse">
+      <div className="relative shrink-0 overflow-hidden rounded-2xl border border-border/80 bg-white p-4 shadow-[0_4px_20px_color-mix(in_srgb,var(--color-primary)_5%,transparent)]">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-accent/8" />
+        <div className="pointer-events-none absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-accent-soft" />
+
+        <div className="relative flex items-center gap-2 mb-3">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-hover text-base shadow-[0_3px_10px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]">
+            ⚡
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-sans text-sm font-bold leading-none text-primary">Flash Sale</h3>
+            <p className="mt-0.5 text-[10px] text-muted">Ends soon — don&apos;t miss out</p>
+          </div>
+          <span className="font-eyebrow shrink-0 rounded-md bg-sale/10 px-2 py-1 text-[9px] text-sale">
             Live
           </span>
-        </h3>
-        <div className="flex gap-2">
+        </div>
+
+        <div className="relative flex gap-2">
           {[
-            { value: timeLeft.hours, label: "Hours" },
+            { value: timeLeft.hours, label: "Hrs" },
             { value: timeLeft.minutes, label: "Min" },
             { value: timeLeft.seconds, label: "Sec" },
           ].map((item) => (
             <div
               key={item.label}
-              className="flex-1 rounded-xl border border-border bg-bg-soft px-2 py-2.5 text-center shadow-inner"
+              className="flex-1 rounded-xl border border-accent/15 bg-gradient-to-b from-white to-bg-soft px-1.5 py-2.5 text-center"
             >
-              <div className="text-xl font-bold tabular-nums text-primary">
+              <div className="font-mono text-xl font-bold tabular-nums text-primary">
                 {String(item.value).padStart(2, "0")}
               </div>
-              <div className="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-muted">
+              <div className="font-eyebrow mt-0.5 text-[8px] tracking-wide text-muted">
                 {item.label}
               </div>
             </div>
@@ -57,43 +66,54 @@ function FlashSaleBlock({
         </div>
       </div>
 
-      {/* Offer card */}
-      <div className="relative flex-1 overflow-hidden rounded-2xl cursor-pointer bg-footer p-4 sm:p-5 shadow-[0_12px_24px_rgba(0,0,0,0.2)] transition-transform hover:-translate-y-0.5">
-        {offer.img && (
-          <>
+      {/* Offer — coupon ticket */}
+      <div className="coupon-ticket relative flex-1 cursor-pointer transition-transform duration-300 hover:-translate-y-0.5">
+        {/* Stub — price & CTA */}
+        <div className="flex w-[38%] min-w-[108px] max-w-[130px] shrink-0 flex-col items-center justify-center gap-2 px-3 py-4 sm:px-4">
+          <span className="font-eyebrow text-[8px] tracking-widest text-accent">Today only</span>
+          <div className="text-center">
+            <span className="font-price block text-xl font-bold leading-none text-primary sm:text-2xl">
+              {offer.price}
+            </span>
+            {offer.oldPrice && (
+              <span className="font-price mt-1 block text-[11px] text-muted line-through">
+                {offer.oldPrice}
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            className="mt-1 w-full rounded-full bg-gradient-to-r from-accent-hover to-accent px-3 py-2 font-label text-[10px] font-bold text-white shadow-[0_3px_12px_color-mix(in_srgb,var(--color-accent)_35%,transparent)] transition-all hover:brightness-105"
+          >
+            {offer.cta}
+          </button>
+        </div>
+
+        <div className="coupon-divider" aria-hidden />
+
+        {/* Body — offer copy */}
+        <div className="relative flex min-w-0 flex-1 flex-col justify-center px-4 py-4 sm:px-5">
+          {offer.img && (
             <StoreImage
               src={offer.img}
               alt=""
               aria-hidden
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.07]"
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-footer/95 via-footer/90 to-footer/98" />
-          </>
-        )}
-        <div className="relative z-[1] flex h-full flex-col justify-between gap-4 sm:flex-row sm:items-center lg:flex-col lg:items-start">
-          <div className="flex-1">
-            <span className="inline-block rounded-full bg-accent px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+          )}
+          <div className="relative z-[1]">
+            <span className="font-eyebrow inline-block rounded border border-accent/25 bg-accent/10 px-2 py-0.5 text-[8px] tracking-widest text-accent">
               {offer.tag}
             </span>
-            <h3 className="mt-2.5 text-lg sm:text-xl font-extrabold leading-tight text-white">
+            <h3 className="mt-2 font-sans text-base font-extrabold leading-tight text-primary sm:text-lg">
               {offer.title}
             </h3>
-            <p className="mt-1 text-xs font-medium text-white/60">{offer.subtitle}</p>
-            <p className="mt-1 hidden text-[11px] text-accent-soft sm:block">{offer.highlight}</p>
-          </div>
-          <div className="flex shrink-0 items-end justify-between gap-3 sm:flex-col sm:items-end lg:items-start">
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white">{offer.price}</span>
-              {offer.oldPrice && (
-                <span className="text-xs line-through text-white/40">{offer.oldPrice}</span>
-              )}
-            </div>
-            <button
-              type="button"
-              className="rounded-full bg-white px-4 py-2 text-xs font-bold text-primary shadow-md transition-colors hover:bg-accent-soft"
-            >
-              {offer.cta}
-            </button>
+            <p className="mt-1 text-xs font-medium text-primary/70">{offer.subtitle}</p>
+            {offer.highlight && (
+              <p className="mt-2 border-t border-dashed border-accent/20 pt-2 text-[10px] leading-relaxed text-muted">
+                {offer.highlight}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -158,9 +178,9 @@ export default function HeroSection({
   const dealProducts = PRODUCTS.slice(0, 4);
 
   return (
-    <section className="w-full bg-white font-sans select-none pb-12 pt-[104px]">
+    <section className="w-full bg-white font-sans select-none pb-12 pt-[120px] md:pt-[104px]">
       {/* Top Banner */}
-      <div className="bg-footer text-accent py-2 px-4 text-center text-[13px] font-semibold tracking-wide">
+      <div className="bg-footer font-label text-accent py-2 px-4 text-center text-[13px] font-semibold tracking-wide">
         🎉 MEGA SALE: Up to 50% OFF on selected items! Free shipping on orders over QAR 299
       </div>
 
@@ -195,7 +215,7 @@ export default function HeroSection({
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <span className="flex min-h-[2rem] w-full items-start justify-center text-center text-[10px] font-semibold leading-tight text-primary group-hover:text-accent sm:min-h-[2.25rem] sm:text-[11px] md:text-[12px] line-clamp-2">
+                <span className="font-label flex min-h-[2rem] w-full items-start justify-center text-center text-[10px] font-semibold leading-tight text-primary group-hover:text-accent sm:min-h-[2.25rem] sm:text-[11px] md:text-[12px] line-clamp-2">
                   {c.label}
                 </span>
               </button>
@@ -234,10 +254,10 @@ export default function HeroSection({
                 />
                 <div className="relative z-10 flex items-center h-full px-6 md:px-12 w-full max-w-[500px]">
                   <div className="bg-white/90 backdrop-blur-xl border border-white/80 p-6 md:p-8 rounded-3xl flex flex-col gap-3 w-full shadow-[0_12px_40px_color-mix(in_srgb,var(--color-primary)_12%,transparent)]">
-                    <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full w-fit bg-gradient-to-r from-accent to-accent-hover text-white shadow-md">
+                    <span className="font-eyebrow text-[10px] md:text-[11px] tracking-widest px-3 py-1 rounded-full w-fit bg-gradient-to-r from-accent to-accent-hover text-white shadow-md">
                       {s.eyebrow}
                     </span>
-                    <h2 className="text-[clamp(24px,3vw,36px)] font-extrabold leading-tight whitespace-pre-line text-primary drop-shadow-sm">
+                    <h2 className="font-display text-[clamp(24px,3vw,36px)] font-extrabold leading-tight whitespace-pre-line text-primary drop-shadow-sm">
                       {s.title}
                     </h2>
                     <p className="text-muted font-medium text-[13px] md:text-[14px] leading-relaxed">
@@ -296,8 +316,8 @@ export default function HeroSection({
       <div className="max-w-[1400px] mx-auto px-4 pb-12">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-primary">Today's Deals</h2>
-            <p className="text-sm text-muted mt-1">Grab these limited-time offers before they're gone!</p>
+            <h2 className="font-display text-xl md:text-2xl font-bold text-primary">Today&apos;s Deals</h2>
+            <p className="text-sm text-muted mt-1">Grab these limited-time offers before they&apos;re gone!</p>
           </div>
           <button
             type="button"

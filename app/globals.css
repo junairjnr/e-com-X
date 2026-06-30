@@ -18,8 +18,10 @@
   --color-footer: #131921;
   --color-sale: #E53935;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-cormorant), Georgia, serif;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-label: var(--font-space), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
 
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
   --animate-fade-in: fade-in 0.25s ease;
@@ -80,6 +82,23 @@ body {
   @apply min-h-full font-sans text-primary antialiased bg-bg;
 }
 
+/* Typography roles — each UI layer uses a distinct family */
+.font-eyebrow {
+  @apply font-label font-bold uppercase tracking-[0.14em];
+}
+
+.font-price {
+  @apply font-mono tabular-nums;
+}
+
+.font-nav {
+  @apply font-label tracking-wide;
+}
+
+h1, h2, h3 {
+  @apply font-display;
+}
+
 .scrollbar-thin::-webkit-scrollbar { width: 5px; }
 .scrollbar-thin::-webkit-scrollbar-track { background: var(--color-bg-soft); }
 .scrollbar-thin::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--color-accent) 40%, var(--color-border)); border-radius: 10px; }
@@ -106,7 +125,7 @@ body {
 
 .product-cta-row > button,
 .cta-row > button {
-  @apply inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-full border-0 cursor-pointer font-bold transition-all;
+  @apply inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-full border-0 cursor-pointer font-label font-bold transition-all;
   @apply h-12 px-4 text-sm sm:h-[52px] sm:px-5 sm:text-[15px];
 }
 
@@ -140,7 +159,7 @@ body {
 }
 
 .clay-button {
-  @apply rounded-full text-white transition-all duration-300;
+  @apply rounded-full font-label text-white transition-all duration-300;
   background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
   box-shadow: 0 4px 16px color-mix(in srgb, var(--color-accent) 35%, transparent);
 }
@@ -167,4 +186,69 @@ body {
 .nav-icon-btn:hover {
   @apply border-accent/30 text-accent bg-accent-soft/80;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 2px 8px color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+
+/* Flash sale coupon ticket */
+.coupon-ticket {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fffefb 0%, #fff9f0 48%, #fff5e6 100%);
+  border: 1.5px dashed color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+  box-shadow:
+    0 8px 28px color-mix(in srgb, var(--color-accent) 12%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.coupon-ticket::before,
+.coupon-ticket::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1.5px dashed color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  transform: translateY(-50%);
+}
+
+.coupon-ticket::before {
+  left: -10px;
+}
+
+.coupon-ticket::after {
+  right: -10px;
+}
+
+.coupon-divider {
+  position: relative;
+  width: 0;
+  flex-shrink: 0;
+  align-self: stretch;
+  border-left: 2px dashed color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  margin: 10px 0;
+}
+
+.coupon-divider::before,
+.coupon-divider::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1.5px dashed color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  transform: translateX(-50%);
+}
+
+.coupon-divider::before {
+  top: -18px;
+}
+
+.coupon-divider::after {
+  bottom: -18px;
 }
