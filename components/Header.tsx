@@ -239,7 +239,7 @@ export default function Header({
             {/* Group 3: Nav links — spaced from search */}
             <nav
               aria-label="Main"
-              className="hidden shrink-0 items-center gap-2  border-border/60 pl-5 lg:pl-8 xl:flex"
+              className="hidden shrink-0 items-center gap-2 border-l border-border/60 pl-5 lg:pl-8 xl:flex"
             >
               {NAV.map((item) => {
                 const active = isActive(item);
@@ -268,7 +268,7 @@ export default function Header({
             <div className="min-w-3 flex-1" aria-hidden />
 
             {/* Group 4: Action icons — separated at the end */}
-            <div className="flex shrink-0 items-center gap-2  border-border/60 pl-3 md:gap-2.5 md:pl-5">
+            <div className="flex shrink-0 items-center gap-2 border-l border-border/60 pl-3 md:gap-2.5 md:pl-5">
               <NavIconBtn label={user ? user.name : "Sign in"} onClick={onLoginOpen}>
                 {user ? <Avatar name={user.name} size={22} imageUrl={user.avatarUrl} className="border-0 shadow-none" /> : <Icons.User />}
               </NavIconBtn>

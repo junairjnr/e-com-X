@@ -65,7 +65,7 @@ function FlashSaleBlock({
             <span className="font-eyebrow inline-block rounded border border-accent/25 bg-accent/10 px-2 py-0.5 text-[8px] tracking-widest text-accent">
               {offer.tag}
             </span>
-            <h3 className="mt-2 font-sans text-2xl font-extrabold leading-tight text-primary sm:text-xl">
+            <h3 className="mt-2 font-sans text-base font-extrabold leading-tight text-primary sm:text-lg">
               {offer.title}
             </h3>
             <p className="mt-1 text-xs font-medium text-primary/70">{offer.subtitle}</p>
@@ -255,7 +255,7 @@ export default function HeroSection({
       <div className="max-w-[1400px] mx-auto px-4 pb-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-primary">Today&apos;s Deals</h2>
+            <h2 className="font-display text-xl md:text-2xl font-bold text-primary">Today&apos;s Deals</h2>
             <p className="text-sm text-muted mt-1">Grab these limited-time offers before they&apos;re gone!</p>
           </div>
           <button

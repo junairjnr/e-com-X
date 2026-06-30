@@ -18,10 +18,10 @@
   --color-footer: #131921;
   --color-sale: #E53935;
 
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
-  --font-label: var(--font-space), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-sans: var(--font-urbanist), "Urbanist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-urbanist), "Urbanist", ui-sans-serif, system-ui, sans-serif;
+  --font-label: var(--font-urbanist), "Urbanist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-urbanist), "Urbanist", ui-sans-serif, system-ui, sans-serif;
 
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
   --animate-fade-in: fade-in 0.25s ease;
