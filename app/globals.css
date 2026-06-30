@@ -180,12 +180,56 @@ h1, h2, h3 {
 }
 
 .nav-icon-btn {
-  @apply flex shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent text-primary cursor-pointer transition-all duration-200;
+  @apply flex shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent text-primary cursor-pointer;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.25s ease;
 }
 
 .nav-icon-btn:hover {
   @apply border-accent/30 text-accent bg-accent-soft/80;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 2px 8px color-mix(in srgb, var(--color-accent) 14%, transparent);
+  transform: translateY(-1px);
+}
+
+.nav-link {
+  @apply relative whitespace-nowrap rounded-full border border-transparent px-4 py-2 font-label tracking-wide text-[13px] font-medium text-primary;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.25s ease;
+}
+
+.nav-link:hover {
+  @apply border-accent/40 bg-accent-soft text-accent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 2px 12px color-mix(in srgb, var(--color-accent) 16%, transparent);
+  transform: translateY(-1px);
+}
+
+.nav-link--active,
+.nav-link--open {
+  @apply border-accent/45 bg-accent-soft font-bold text-accent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 2px 12px color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+
+.nav-link__indicator {
+  @apply absolute bottom-1.5 left-1/2 h-0.5 w-0 -translate-x-1/2 rounded-full bg-gradient-to-r from-accent via-accent-light to-accent;
+  transition: width 0.3s ease, opacity 0.3s ease;
+}
+
+.nav-link:hover .nav-link__indicator,
+.nav-link--active .nav-link__indicator,
+.nav-link--open .nav-link__indicator {
+  @apply w-[50%] opacity-100;
 }
 
 /* Flash sale coupon ticket */

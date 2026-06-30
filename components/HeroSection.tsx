@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import DealCard from "./DealCard";
 import StoreImage from "./StoreImage";
 import { PRODUCTS, HERO_SLIDER_SLIDES, HERO_CATEGORY_STRIP, FLASH_OFFERS } from "@/lib/data";
+import HardwarePromoBanner from "./HardwarePromoBanner";
 import type { Product, WishlistItem } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,57 +20,16 @@ const SLIDES = HERO_SLIDER_SLIDES;
 const CATEGORIES = HERO_CATEGORY_STRIP;
 
 function FlashSaleBlock({
-  timeLeft,
   offer,
+  onShop,
 }: {
-  timeLeft: { hours: number; minutes: number; seconds: number };
   offer: (typeof FLASH_OFFERS)[number];
+  onShop?: () => void;
 }) {
   return (
-    <div className="flex h-full w-full flex-col gap-3 lg:h-[460px] lg:gap-4">
-      {/* Countdown */}
-      <div className="relative shrink-0 overflow-hidden rounded-2xl border border-border/80 bg-white p-4 shadow-[0_4px_20px_color-mix(in_srgb,var(--color-primary)_5%,transparent)]">
-        <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-accent/8" />
-        <div className="pointer-events-none absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-accent-soft" />
-
-        <div className="relative flex items-center gap-2 mb-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-hover text-base shadow-[0_3px_10px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]">
-            ⚡
-          </span>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-sans text-sm font-bold leading-none text-primary">Flash Sale</h3>
-            <p className="mt-0.5 text-[10px] text-muted">Ends soon — don&apos;t miss out</p>
-          </div>
-          <span className="font-eyebrow shrink-0 rounded-md bg-sale/10 px-2 py-1 text-[9px] text-sale">
-            Live
-          </span>
-        </div>
-
-        <div className="relative flex gap-2">
-          {[
-            { value: timeLeft.hours, label: "Hrs" },
-            { value: timeLeft.minutes, label: "Min" },
-            { value: timeLeft.seconds, label: "Sec" },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="flex-1 rounded-xl border border-accent/15 bg-gradient-to-b from-white to-bg-soft px-1.5 py-2.5 text-center"
-            >
-              <div className="font-mono text-xl font-bold tabular-nums text-primary">
-                {String(item.value).padStart(2, "0")}
-              </div>
-              <div className="font-eyebrow mt-0.5 text-[8px] tracking-wide text-muted">
-                {item.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Offer — coupon ticket */}
-      <div className="coupon-ticket relative flex-1 cursor-pointer transition-transform duration-300 hover:-translate-y-0.5">
-        {/* Stub — price & CTA */}
-        <div className="flex w-[38%] min-w-[108px] max-w-[130px] shrink-0 flex-col items-center justify-center gap-2 px-3 py-4 sm:px-4">
+    <div className="flex h-full w-full lg:h-[460px]">
+      <div className="coupon-ticket relative flex h-full min-h-[280px] w-full cursor-pointer flex-row items-stretch transition-transform duration-300 hover:-translate-y-0.5 lg:min-h-0">
+        <div className="flex w-[38%] min-w-[108px] max-w-[130px] shrink-0 flex-col items-center justify-center gap-2 px-3 py-6 sm:px-4 lg:py-8">
           <span className="font-eyebrow text-[8px] tracking-widest text-accent">Today only</span>
           <div className="text-center">
             <span className="font-price block text-xl font-bold leading-none text-primary sm:text-2xl">
@@ -83,6 +43,7 @@ function FlashSaleBlock({
           </div>
           <button
             type="button"
+            onClick={onShop}
             className="mt-1 w-full rounded-full bg-gradient-to-r from-accent-hover to-accent px-3 py-2 font-label text-[10px] font-bold text-white shadow-[0_3px_12px_color-mix(in_srgb,var(--color-accent)_35%,transparent)] transition-all hover:brightness-105"
           >
             {offer.cta}
@@ -91,8 +52,7 @@ function FlashSaleBlock({
 
         <div className="coupon-divider" aria-hidden />
 
-        {/* Body — offer copy */}
-        <div className="relative flex min-w-0 flex-1 flex-col justify-center px-4 py-4 sm:px-5">
+        <div className="relative flex min-w-0 flex-1 flex-col justify-center px-4 py-6 sm:px-5 lg:py-8">
           {offer.img && (
             <StoreImage
               src={offer.img}
@@ -105,7 +65,7 @@ function FlashSaleBlock({
             <span className="font-eyebrow inline-block rounded border border-accent/25 bg-accent/10 px-2 py-0.5 text-[8px] tracking-widest text-accent">
               {offer.tag}
             </span>
-            <h3 className="mt-2 font-sans text-base font-extrabold leading-tight text-primary sm:text-lg">
+            <h3 className="mt-2 font-sans text-2xl font-extrabold leading-tight text-primary sm:text-xl">
               {offer.title}
             </h3>
             <p className="mt-1 text-xs font-medium text-primary/70">{offer.subtitle}</p>
@@ -128,7 +88,6 @@ export default function HeroSection({
 }: HeroSectionProps) {
   const [slide, setSlide] = useState(0);
   const [fading, setFading] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({ hours: 5, minutes: 42, seconds: 18 });
   const catRef = useRef<HTMLDivElement>(null);
 
   const go = useCallback((idx: number) => {
@@ -145,26 +104,6 @@ export default function HeroSection({
     return () => clearInterval(t);
   }, [slide, go]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        let { hours, minutes, seconds } = prev;
-        if (seconds > 0) {
-          seconds--;
-        } else if (minutes > 0) {
-          minutes--;
-          seconds = 59;
-        } else if (hours > 0) {
-          hours--;
-          minutes = 59;
-          seconds = 59;
-        }
-        return { hours, minutes, seconds };
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   const s = SLIDES[slide];
 
   const scrollCat = (dir: "l" | "r") => {
@@ -178,7 +117,7 @@ export default function HeroSection({
   const dealProducts = PRODUCTS.slice(0, 4);
 
   return (
-    <section className="w-full bg-white font-sans select-none pb-12 pt-[120px] md:pt-[104px]">
+    <section className="w-full bg-white font-sans select-none pb-12 pt-[150px] md:pt-[104px]">
       {/* Top Banner */}
       <div className="bg-footer font-label text-accent py-2 px-4 text-center text-[13px] font-semibold tracking-wide">
         🎉 MEGA SALE: Up to 50% OFF on selected items! Free shipping on orders over QAR 299
@@ -186,19 +125,19 @@ export default function HeroSection({
 
       {/* Categories — horizontal scroll; arrows desktop only */}
       <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 md:py-6 border-b border-border/50">
-        <div className="relative md:mx-5 md:px-11">
+        <div className="flex items-start gap-2 md:gap-3">
           <button
             type="button"
             aria-label="Scroll categories left"
             onClick={() => scrollCat("l")}
-            className="absolute left-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-xl text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft md:flex"
+            className="mt-3.5 hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white text-xl leading-none text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft sm:mt-[18px] md:mt-7 md:flex"
           >
             ‹
           </button>
 
           <div
             ref={catRef}
-            className="flex items-start gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide py-1 sm:gap-5 md:gap-8"
+            className="flex min-w-0 flex-1 items-start gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide py-1 sm:gap-5 md:gap-8"
             style={{ scrollPaddingInline: "12px" }}
           >
             {CATEGORIES.map((c, idx) => (
@@ -208,14 +147,14 @@ export default function HeroSection({
                 onClick={() => onCategoryClick?.(c.shopCategory)}
                 className="flex w-[68px] shrink-0 snap-start flex-col items-center gap-1.5 border-0 bg-transparent p-0 cursor-pointer group sm:w-[72px] md:w-20 md:gap-2"
               >
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-accent/40 sm:h-16 sm:w-16 md:h-[84px] md:w-[84px]">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-accent/40 sm:h-16 sm:w-16 md:h-[84px] md:w-[84px]">
                   <StoreImage
                     src={c.img}
                     alt={c.label}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover object-center"
                   />
                 </div>
-                <span className="font-label flex min-h-[2rem] w-full items-start justify-center text-center text-[10px] font-semibold leading-tight text-primary group-hover:text-accent sm:min-h-[2.25rem] sm:text-[11px] md:text-[12px] line-clamp-2">
+                <span className="font-label flex min-h-[2rem] w-full items-center justify-center text-center text-[10px] font-semibold leading-tight text-primary group-hover:text-accent sm:min-h-[2.25rem] sm:text-[11px] md:text-[12px] line-clamp-2">
                   {c.label}
                 </span>
               </button>
@@ -226,7 +165,7 @@ export default function HeroSection({
             type="button"
             aria-label="Scroll categories right"
             onClick={() => scrollCat("r")}
-            className="absolute right-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-xl text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft md:flex"
+            className="mt-3.5 hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white text-xl leading-none text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft sm:mt-[18px] md:mt-7 md:flex"
           >
             ›
           </button>
@@ -307,16 +246,16 @@ export default function HeroSection({
 
           {/* Flash Sale — visible on all screen sizes (below slider on mobile) */}
           <div className="lg:col-span-1">
-            <FlashSaleBlock timeLeft={timeLeft} offer={FLASH_OFFERS[0]} />
+            <FlashSaleBlock offer={FLASH_OFFERS[0]} onShop={onViewAllDeals} />
           </div>
         </div>
       </div>
 
       {/* Deals Grid */}
-      <div className="max-w-[1400px] mx-auto px-4 pb-12">
+      <div className="max-w-[1400px] mx-auto px-4 pb-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="font-display text-xl md:text-2xl font-bold text-primary">Today&apos;s Deals</h2>
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-primary">Today&apos;s Deals</h2>
             <p className="text-sm text-muted mt-1">Grab these limited-time offers before they&apos;re gone!</p>
           </div>
           <button
@@ -338,6 +277,8 @@ export default function HeroSection({
           ))}
         </div>
       </div>
+
+      <HardwarePromoBanner onCategoryClick={onCategoryClick} />
     </section>
   );
 }

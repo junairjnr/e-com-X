@@ -1,7 +1,7 @@
 import type {
   Product, Category, Testimonial, HeroSlide, NavMenu, Review
 } from "./types";
-import { heroImage, categoryImage, productImages } from "./images";
+import { heroImage, categoryImage, productImages, productImage } from "./images";
 
 // ─── PRODUCTS: POS Systems & IT Hardware ──────────────────────────────────────
 export const PRODUCTS: Product[] = [
@@ -368,6 +368,81 @@ export const FLASH_OFFERS = [
     img: categoryImage("ups"),
   },
 ];
+
+export const HARDWARE_SHOWCASE = {
+  sectionEyebrow: "Hardware Solutions",
+  sectionSubtitle:
+    "We supply and install high-quality hardware designed for durability and performance.",
+  featured: {
+    category: "POS Systems",
+    title: "Touch POS System",
+    description:
+      "Advanced Point of Sale systems for retail and hospitality businesses",
+    img: productImage("atacc-restaurant-pos"),
+    shopCategory: "POS Systems",
+    cta: "Shop POS Systems",
+    demoCta: "Book Free Demo",
+    modelCount: "45+",
+    features: [
+      "Retail & hospitality ready",
+      "Qatar VAT compliant",
+      "Free installation & training",
+      "24/7 Doha support",
+    ],
+    services: ["POS Installation", "Peripheral Integration", "Technical Support"],
+  },
+  cards: [
+    {
+      category: "Printers",
+      title: "Barcode & Receipt Printers",
+      description: "High-speed, reliable printing solutions for all business needs",
+      img: categoryImage("printers"),
+      shopCategory: "Printers",
+    },
+    {
+      category: "Scanners",
+      title: "Scanners & Peripherals",
+      description: "Accurate barcode scanners and essential peripherals for efficiency",
+      img: categoryImage("scanners"),
+      shopCategory: "Scanners",
+    },
+    {
+      category: "Label Printers",
+      title: "Label Printing Solutions",
+      description: "Custom label printing for inventory and product management",
+      img: categoryImage("printers-grid"),
+      shopCategory: "Label Printers",
+    },
+    {
+      category: "Storage",
+      title: "Server Infrastructure",
+      description: "Robust server solutions for secure data management and storage",
+      img: categoryImage("servers"),
+      shopCategory: "Storage",
+    },
+    {
+      category: "Networking",
+      title: "Networking Hardware",
+      description: "Routers, switches, and access points for seamless connectivity",
+      img: categoryImage("networking"),
+      shopCategory: "Networking",
+    },
+    {
+      category: "Security",
+      title: "Security & CCTV",
+      description: "Enterprise surveillance and access control for your premises",
+      img: categoryImage("cctv"),
+      shopCategory: "Security",
+    },
+  ],
+};
+
+/** @deprecated use HARDWARE_SHOWCASE.featured */
+export const HOME_POS_BANNER = {
+  sectionEyebrow: HARDWARE_SHOWCASE.sectionEyebrow,
+  sectionSubtitle: HARDWARE_SHOWCASE.sectionSubtitle,
+  ...HARDWARE_SHOWCASE.featured,
+};
 
 // ─── HERO SLIDES (legacy export) ─────────────────────────────────────────────
 // export const HERO_SLIDES: HeroSlide[] = [

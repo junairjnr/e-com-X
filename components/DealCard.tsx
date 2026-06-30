@@ -39,10 +39,10 @@ export default function DealCard({ product, onClick }: DealCardProps) {
       </div>
 
       <div className="flex flex-1 flex-col p-3 md:p-4">
-        <p className="mb-0.5 font-eyebrow text-[10px] tracking-wider text-accent">
+        <p className="mb-0.5 font-eyebrow text-xs  tracking-wider text-accent">
           {product.brand}
         </p>
-        <h3 className="mb-2 line-clamp-2 min-h-[2.5rem] font-display text-sm font-semibold leading-snug text-primary">
+        <h3 className="mb-2 line-clamp-2 min-h-[2.5rem] font-display text-lg font-semibold leading-snug text-primary">
           {product.name}
         </h3>
 
@@ -56,7 +56,7 @@ export default function DealCard({ product, onClick }: DealCardProps) {
         </div>
 
         <div className="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <span className="font-price text-base font-bold text-primary">{fmt(product.price)}</span>
+          <span className="font-price text-md font-bold text-primary">{fmt(product.price)}</span>
           {product.originalPrice && (
             <span className="font-price text-xs text-muted line-through">{fmt(product.originalPrice)}</span>
           )}

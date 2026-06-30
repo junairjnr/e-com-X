@@ -53,6 +53,17 @@ function NavIconBtn({
   );
 }
 
+const SEARCH_CATEGORIES = [
+  "POS Systems",
+  "Printers",
+  "Scanners",
+  "Software & ERP",
+  "Networking",
+  "Laptops & PCs",
+  "Security & CCTV",
+  "UPS & Power",
+];
+
 function HeaderSearch({
   onOpen,
   className = "",
@@ -60,24 +71,45 @@ function HeaderSearch({
   onOpen: () => void;
   className?: string;
 }) {
+  const [hintIdx, setHintIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      swapTimerRef.current = setTimeout(() => {
+        setHintIdx((i) => (i + 1) % SEARCH_CATEGORIES.length);
+        setVisible(true);
+      }, 550);
+    }, 2500);
+    return () => {
+      clearInterval(interval);
+      if (swapTimerRef.current) clearTimeout(swapTimerRef.current);
+    };
+  }, []);
+
   return (
-    <div className={`relative min-w-0 ${className}`}>
-      <label htmlFor="header-search" className="sr-only">
-        Search products
-      </label>
-      <span className="pointer-events-none absolute left-3.5 top-1/2 z-[1] -translate-y-1/2 text-muted">
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`Search for ${SEARCH_CATEGORIES[hintIdx]}`}
+      className={`flex h-8 w-[300px] shrink-0 items-center gap-2 rounded-full border border-border bg-white/90 px-3 text-left shadow-[inset_0_1px_2px_color-mix(in_srgb,var(--color-primary)_4%,transparent)] transition-[border-color,box-shadow] hover:border-accent/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent/40 xl:w-[320px] ${className}`}
+    >
+      <span className="shrink-0 text-muted">
         <Icons.Search />
       </span>
-      <input
-        id="header-search"
-        type="search"
-        readOnly
-        placeholder="Search POS, printers, scanners, software…"
-        onFocus={onOpen}
-        onClick={onOpen}
-        className="h-10 w-full cursor-pointer rounded-full border border-border bg-white/90 py-0 pl-10 pr-4 text-sm text-primary shadow-[inset_0_1px_2px_color-mix(in_srgb,var(--color-primary)_4%,transparent)] outline-none transition-all placeholder:text-muted/80 hover:border-accent/35 focus:border-accent/50 focus:ring-2 focus:ring-accent/15 md:h-[38px] md:text-[13px]"
-      />
-    </div>
+      <span className="flex min-w-0 flex-1 items-center text-[11px] text-muted sm:text-xs">
+        <span className="shrink-0">Search for</span>
+        <span className="relative ml-1 inline-block w-[132px] shrink-0 overflow-hidden xl:w-[148px]">
+          <span
+            className={`block truncate font-medium text-accent transition-opacity duration-500 ease-in-out ${visible ? "opacity-100" : "opacity-0"}`}
+          >
+            &quot;{SEARCH_CATEGORIES[hintIdx]}&quot;
+          </span>
+        </span>
+      </span>
+    </button>
   );
 }
 
@@ -168,123 +200,121 @@ export default function Header({
         className={`pointer-events-none fixed left-0 right-0 z-[150] flex justify-center px-2 md:px-3.5 transition-[top] duration-300 ${scrolled ? "top-[38px] sm:top-[40px]" : "top-9 sm:top-[42px]"}`}
       >
         <header
-          className={`pointer-events-auto relative flex w-full max-w-[1350px] flex-col gap-2 overflow-visible rounded-[14px] md:rounded-[10px] border border-border bg-bg-soft/95 px-3.5 py-2 md:flex-row md:items-center md:gap-3 md:px-4 md:py-0 md:h-[58px] backdrop-blur-[28px] transition-all duration-300 ${
+          className={`pointer-events-auto relative flex w-full max-w-[1350px] flex-col gap-2 overflow-visible rounded-[14px] md:rounded-[12px] border border-border bg-bg-soft/95 px-3 py-2 md:px-5 md:py-0 backdrop-blur-[28px] transition-all duration-300 ${
             scrolled
               ? "shadow-[0_10px_44px_rgba(0,0,0,0.08)]"
               : "shadow-[0_4px_28px_rgba(0,0,0,0.06)]"
           }`}
           onMouseLeave={() => setActiveMenu(null)}
         >
-          <div className="flex h-[44px] w-full items-center gap-2 md:h-auto md:min-w-0 md:flex-1 md:gap-3">
-          {/* Logo */}
-          <button
-            type="button"
-            onClick={() => { onNavigateHome(); setActiveNavLabel(null); }}
-            className="flex shrink-0 items-center gap-2 rounded-[10px] border-0 bg-transparent p-1 pr-1.5 cursor-pointer transition-opacity hover:opacity-75"
-          >
-            <div className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent-hover via-accent to-primary-light shadow-[0_3px_10px_color-mix(in_srgb,var(--color-accent)_32%,transparent)]">
-              <span className="font-display text-[13px] font-black text-white">S</span>
-            </div>
-            <div className="hidden min-[380px]:block leading-none text-left">
-              <span className="font-display block text-lg md:text-[21px] font-extrabold tracking-tight text-primary">
-                {client.name.split(" ")[0]}
-                <span className="text-[11px] font-black text-accent">™</span>
-              </span>
-              <span className="font-eyebrow hidden min-[500px]:block mt-0.5 text-[8px] font-semibold tracking-[0.16em] text-muted">
-                {client.tagline}
-              </span>
-            </div>
-          </button>
-
-          {/* Search — before nav, extra width */}
-          <HeaderSearch
-            onOpen={onSearchOpen}
-            className="hidden min-[520px]:block min-w-0 flex-1 max-w-[520px]"
-          />
-
-          {/* Desktop nav */}
-          <nav className="hidden shrink-0 items-center gap-0.5 xl:flex">
-            {NAV.map((item) => {
-              const active = isActive(item);
-              return (
-                <div
-                  key={item.label}
-                  className="relative"
-                  onMouseEnter={() => (item.hasMenu ? setActiveMenu(item.label) : setActiveMenu(null))}
-                >
-                  <button
-                    type="button"
-                    onClick={() => handleNav(item)}
-                    className={`relative whitespace-nowrap rounded-full border px-3 py-1.5 font-nav text-[13px] transition-all ${
-                      active
-                        ? "border-accent/40 bg-accent-soft/80 font-bold text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
-                        : "border-transparent bg-transparent font-medium text-primary hover:border-accent/25 hover:bg-accent-soft/50"
-                    }`}
-                  >
-                    {item.label}
-                    {active && (
-                      <span className="absolute bottom-1 left-1/2 h-0.5 w-[55%] -translate-x-1/2 rounded-full bg-gradient-to-r from-accent via-accent-light to-accent" />
-                    )}
-                  </button>
+          {/* Main bar — grouped: brand | search | nav ··· actions */}
+          <div className="flex h-[44px] w-full items-center md:h-[56px]">
+            {/* Group 1: Company / brand */}
+            <div className="flex shrink-0 items-center">
+              <button
+                type="button"
+                onClick={() => { onNavigateHome(); setActiveNavLabel(null); }}
+                className="flex items-center gap-2 rounded-[10px] border-0 bg-transparent p-1 pr-2 cursor-pointer transition-opacity hover:opacity-75"
+              >
+                <div className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent-hover via-accent to-primary-light shadow-[0_3px_10px_color-mix(in_srgb,var(--color-accent)_32%,transparent)]">
+                  <span className="font-display text-[13px] font-black text-white">S</span>
                 </div>
-              );
-            })}
-          </nav>
+                <div className="hidden min-[380px]:block leading-none text-left">
+                  <span className="font-display block text-lg md:text-[20px] font-extrabold tracking-tight text-primary">
+                    {client.name.split(" ")[0]}
+                    <span className="text-[11px] font-black text-accent">™</span>
+                  </span>
+                  <span className="font-eyebrow hidden min-[500px]:block mt-0.5 text-[8px] font-semibold tracking-[0.16em] text-muted">
+                    {client.tagline}
+                  </span>
+                </div>
+              </button>
+            </div>
 
-          <div className="flex-1 min-[520px]:hidden" />
+            {/* Group 2: Search — fixed width so nav links don't shift */}
+            <div className="hidden min-[520px]:flex w-[300px] shrink-0 items-center pl-3 md:pl-4 xl:w-[320px]">
+              <HeaderSearch onOpen={onSearchOpen} className="w-full max-w-none xl:w-[320px]" />
+            </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-0.5 md:gap-1">
-            <NavIconBtn label="Search" onClick={onSearchOpen} className="min-[520px]:hidden">
-              <Icons.Search />
-            </NavIconBtn>
-            <NavIconBtn label={user ? user.name : "Sign in"} onClick={onLoginOpen}>
-              {user ? <Avatar name={user.name} size={22} imageUrl={user.avatarUrl} className="border-0 shadow-none" /> : <Icons.User />}
-            </NavIconBtn>
-            <NavIconBtn label={`Wishlist (${wishlist.length})`} onClick={onWishlistOpen} className="hidden min-[480px]:flex">
-              <div className="relative">
-                <Icons.Heart filled={wishlist.length > 0} />
-                {wishlist.length > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[8px] font-black text-white">
-                    {wishlist.length > 9 ? "9+" : wishlist.length}
+            {/* Group 3: Nav links — spaced from search */}
+            <nav
+              aria-label="Main"
+              className="hidden shrink-0 items-center gap-2  border-border/60 pl-5 lg:pl-8 xl:flex"
+            >
+              {NAV.map((item) => {
+                const active = isActive(item);
+                const menuOpen = activeMenu === item.label;
+                const highlighted = active || menuOpen;
+                return (
+                  <div
+                    key={item.label}
+                    className="relative"
+                    onMouseEnter={() => (item.hasMenu ? setActiveMenu(item.label) : setActiveMenu(null))}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleNav(item)}
+                      className={`nav-link ${highlighted ? (active ? "nav-link--active" : "nav-link--open") : ""}`}
+                    >
+                      {item.label}
+                      <span className="nav-link__indicator" aria-hidden />
+                    </button>
+                  </div>
+                );
+              })}
+            </nav>
+
+            {/* Spacer — pushes action icons to the end */}
+            <div className="min-w-3 flex-1" aria-hidden />
+
+            {/* Group 4: Action icons — separated at the end */}
+            <div className="flex shrink-0 items-center gap-2  border-border/60 pl-3 md:gap-2.5 md:pl-5">
+              <NavIconBtn label={user ? user.name : "Sign in"} onClick={onLoginOpen}>
+                {user ? <Avatar name={user.name} size={22} imageUrl={user.avatarUrl} className="border-0 shadow-none" /> : <Icons.User />}
+              </NavIconBtn>
+              <NavIconBtn label={`Wishlist (${wishlist.length})`} onClick={onWishlistOpen} className="hidden min-[480px]:flex">
+                <div className="relative">
+                  <Icons.Heart filled={wishlist.length > 0} />
+                  {wishlist.length > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[8px] font-black text-white">
+                      {wishlist.length > 9 ? "9+" : wishlist.length}
+                    </span>
+                  )}
+                </div>
+              </NavIconBtn>
+
+              <button
+                type="button"
+                onClick={onCartOpen}
+                aria-label={`Cart (${cartCount})`}
+                className={`relative flex items-center justify-center rounded-full border transition-all md:gap-1.5 md:px-4 md:py-0 md:h-[38px] max-md:h-9 max-md:w-9 ${
+                  cartCount > 0
+                    ? "border-accent/50 bg-gradient-to-br from-accent to-primary-light text-white shadow-[0_4px_16px_color-mix(in_srgb,var(--color-accent)_38%,transparent)]"
+                    : "border-accent/25 bg-accent-soft/40 text-muted hover:border-accent/40"
+                }`}
+              >
+                <Icons.Bag />
+                <span className="hidden md:inline text-[13px] font-bold">Cart</span>
+                {cartCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-accent-light md:static md:h-auto md:w-auto md:rounded-full md:bg-primary/85 md:px-2 md:py-0 md:text-[10.5px]">
+                    {cartCount > 9 ? "9+" : cartCount}
                   </span>
                 )}
-              </div>
-            </NavIconBtn>
+              </button>
 
-            {/* Cart */}
-            <button
-              type="button"
-              onClick={onCartOpen}
-              aria-label={`Cart (${cartCount})`}
-              className={`relative ml-0.5 flex items-center justify-center rounded-full border transition-all md:ml-1.5 md:gap-1.5 md:px-4 md:py-0 md:h-[38px] max-md:h-9 max-md:w-9 ${
-                cartCount > 0
-                  ? "border-accent/50 bg-gradient-to-br from-accent to-primary-light text-white shadow-[0_4px_16px_color-mix(in_srgb,var(--color-accent)_38%,transparent)]"
-                  : "border-accent/25 bg-accent-soft/40 text-muted hover:border-accent/40"
-              }`}
-            >
-              <Icons.Bag />
-              <span className="hidden md:inline text-[13px] font-bold">Cart</span>
-              {cartCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-accent-light md:static md:h-auto md:w-auto md:rounded-full md:bg-primary/85 md:px-2 md:py-0 md:text-[10.5px]">
-                  {cartCount > 9 ? "9+" : cartCount}
-                </span>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Menu"
-              className="nav-icon-btn ml-0.5 h-9 w-9 xl:hidden"
-            >
-              <Icons.Menu />
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Menu"
+                className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-transparent text-primary transition-all hover:border-accent/30 hover:bg-accent-soft/80 max-xl:flex"
+              >
+                <Icons.Menu />
+              </button>
+            </div>
           </div>
 
-          {/* Mobile / tablet full-width search row */}
-          <HeaderSearch onOpen={onSearchOpen} className="min-[520px]:hidden w-full pb-0.5" />
+          {/* Mobile full-width search row */}
+          <HeaderSearch onOpen={onSearchOpen} className="min-[520px]:hidden !w-full max-w-none pb-0.5" />
 
           {/* Mega menu */}
           {activeMenu && (
@@ -352,10 +382,12 @@ export default function Header({
                       if (item.hasMenu) setMobileAccordion(mobileAccordion === item.label ? null : item.label);
                       else handleNav(item);
                     }}
-                    className={`mb-0.5 flex w-full items-center justify-between rounded-xl border px-3.5 py-3 font-display text-xl font-bold transition-all ${
+                    className={`mb-0.5 flex w-full items-center justify-between rounded-xl border px-3.5 py-3 font-display text-xl font-bold transition-[color,background-color,border-color,box-shadow,transform] duration-300 ease-out ${
                       isActive(item)
-                        ? "border-accent/30 bg-accent-soft/60 text-accent"
-                        : "border-transparent bg-transparent text-primary"
+                        ? "border-accent/30 bg-accent-soft text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
+                        : mobileAccordion === item.label
+                          ? "border-accent/25 bg-accent-soft/80 text-accent"
+                          : "border-transparent bg-transparent text-primary hover:border-accent/25 hover:bg-accent-soft/70 hover:text-accent hover:shadow-sm active:scale-[0.99]"
                     }`}
                   >
                     {item.label}
@@ -370,7 +402,7 @@ export default function Header({
                           key={sub}
                           type="button"
                           onClick={() => handleNav(item)}
-                          className="block w-full border-b border-accent/10 py-1.5 text-left text-[13px] font-medium text-muted"
+                          className="block w-full border-b border-accent/10 py-1.5 text-left text-[13px] font-medium text-muted transition-[color,background-color,padding] duration-300 ease-out hover:bg-accent-soft/50 hover:pl-1 hover:text-accent"
                         >
                           {sub}
                         </button>

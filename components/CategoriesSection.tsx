@@ -47,7 +47,7 @@ export default function CategoriesSection({ onCategoryClick, onViewAll }: Catego
             />
             <div className="min-w-0">
               <p className="font-eyebrow mb-2 text-[11px] text-accent">Shop by Category</p>
-              <h2 className="font-sans text-[clamp(1.375rem,3.5vw,2.25rem)] font-bold leading-[1.15] tracking-tight text-primary">
+              <h2 className="font-sans text-5xl font-bold leading-[1.2] tracking-tight text-primary">
                 Find the right <span className="text-accent">solution</span> for your business
               </h2>
               <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted">
@@ -213,7 +213,7 @@ function CategoryCard({
         <h3
           className={`font-sans font-semibold leading-snug text-white ${
             isHero
-              ? "text-lg sm:text-xl lg:text-2xl"
+              ? "text-lg sm:text-xl lg:text-xl"
               : isWide
                 ? "line-clamp-2 text-base sm:text-lg"
                 : "line-clamp-2 text-sm sm:text-base"
