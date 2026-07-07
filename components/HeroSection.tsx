@@ -4,6 +4,7 @@ import DealCard from "./DealCard";
 import StoreImage from "./StoreImage";
 import { PRODUCTS, HERO_SLIDER_SLIDES, HERO_CATEGORY_STRIP, FLASH_OFFERS } from "@/lib/data";
 import HardwarePromoBanner from "./HardwarePromoBanner";
+import HeroPromoBanner from "./HeroPromoBanner";
 import type { Product, WishlistItem } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -130,7 +131,7 @@ export default function HeroSection({
             type="button"
             aria-label="Scroll categories left"
             onClick={() => scrollCat("l")}
-            className="mt-3.5 hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white text-xl leading-none text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft sm:mt-[18px] md:mt-7 md:flex"
+            className="mt-2 hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-white text-lg leading-none text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft sm:mt-2.5 md:mt-3.5 md:flex"
           >
             ‹
           </button>
@@ -145,9 +146,9 @@ export default function HeroSection({
                 key={`${c.label}-${idx}`}
                 type="button"
                 onClick={() => onCategoryClick?.(c.shopCategory)}
-                className="flex w-[68px] shrink-0 snap-start flex-col items-center gap-1.5 border-0 bg-transparent p-0 cursor-pointer group sm:w-[72px] md:w-20 md:gap-2"
+                className="flex w-[56px] shrink-0 snap-start flex-col items-center gap-1.5 border-0 bg-transparent p-0 cursor-pointer group sm:w-[60px] md:w-[68px] md:gap-2"
               >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-accent/40 sm:h-16 sm:w-16 md:h-[84px] md:w-[84px]">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-accent/40 sm:h-14 sm:w-14 md:h-16 md:w-16">
                   <StoreImage
                     src={c.img}
                     alt={c.label}
@@ -165,12 +166,15 @@ export default function HeroSection({
             type="button"
             aria-label="Scroll categories right"
             onClick={() => scrollCat("r")}
-            className="mt-3.5 hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white text-xl leading-none text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft sm:mt-[18px] md:mt-7 md:flex"
+            className="mt-2 hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-white text-lg leading-none text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft sm:mt-2.5 md:mt-3.5 md:flex"
           >
             ›
           </button>
         </div>
       </div>
+
+      {/* Highlight promo banner (under categories) */}
+      <HeroPromoBanner onExplore={onViewAllDeals} />
 
       {/* Hero Area + Flash Sale Side */}
       <div className="max-w-[1400px] mx-auto px-4 py-6 md:py-8">
