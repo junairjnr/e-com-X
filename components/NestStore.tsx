@@ -11,6 +11,9 @@ import ProductPage from "@/components/ProductPage";
 import HeroSection from "@/components/HeroSection";
 import CategoriesSection from "@/components/CategoriesSection";
 import NewsletterSection from "@/components/NewsletterSection";
+import FlashSaleSection from "@/components/FlashSaleSection";
+import FlipkartProductRow from "@/components/FlipkartProductRow";
+import PromoBannerStrip from "@/components/PromoBannerStrip";
 import OrdersPage from "@/components/Orders";
 import { useStore } from "@/components/StoreProvider";
 import type { CartItem, Product, WishlistItem } from "@/lib/types";
@@ -18,6 +21,7 @@ import type { StorePage } from "@/lib/routes";
 import * as Icons from "@/components/Icons";
 import { tw } from "@/lib/theme";
 import { useState } from "react";
+import { PRODUCTS } from "@/lib/data";
 
 export default function NestStore() {
   const {
@@ -155,6 +159,7 @@ export default function NestStore() {
   );
 }
 
+// ── Flipkart-Style Homepage ────────────────────────────────────────────────────
 function HomePage({
   addToCart,
   toggleWishlist,
@@ -166,24 +171,91 @@ function HomePage({
   wishlist: WishlistItem[];
   navigate: (page: StorePage) => void;
 }) {
+  const openProduct = (product: Product) => navigate({ type: "product", product });
+  const goShop = () => navigate({ type: "shop" });
+
+  const bestSellers = PRODUCTS.filter(p => p.isBestSeller);
+  const newArrivals = PRODUCTS.filter(p => p.isNew);
+  const allProducts = PRODUCTS;
+
   return (
-    <>
-      <HeroSection
-        onAddToCart={addToCart}
-        onWishlistToggle={toggleWishlist}
-        wishlist={wishlist}
-        onProductClick={p => navigate({ type: "product", product: p })}
-        onViewAllDeals={() => navigate({ type: "shop" })}
-        onCategoryClick={cat => navigate({ type: "shop", category: cat })}
-      />
-      <CategoriesSection
-        onCategoryClick={cat => navigate({ type: "shop", category: cat })}
-        onViewAll={() => navigate({ type: "shop" })}
-      />
-      <NewsletterSection />
-    </>
+    // Flipkart uses a grey page background (#f1f3f6) with white card sections
+    <div className="page-top-offset min-h-screen" style={{ background: "#f1f3f6" }}>
+      <div className="mx-auto max-w-[1440px] px-5">
+        {/* 1. Full-width hero slider */}
+        <div className="mb-2">
+          <HeroSection onViewAll={goShop} />
+        </div>
+
+        {/* 2. Flash Sale / Deal of the Day */}
+        <FlashSaleSection onProductClick={openProduct} onViewAll={goShop} />
+
+        {/* 3. Promo banners */}
+        <PromoBannerStrip onCategoryClick={cat => navigate({ type: "shop", category: cat })} />
+
+        {/* 4. Best Sellers */}
+        <FlipkartProductRow
+          title="Best Sellers"
+          subtitle="Top-rated products by Skynet customers"
+          products={bestSellers.length > 0 ? bestSellers : allProducts}
+          onProductClick={openProduct}
+          onViewAll={goShop}
+        />
+
+        {/* 5. Shop by Category */}
+        <CategoriesSection
+          onCategoryClick={cat => navigate({ type: "shop", category: cat })}
+          onViewAll={goShop}
+        />
+
+        {/* 6. New Arrivals */}
+        <FlipkartProductRow
+          title="New Arrivals"
+          subtitle="Just landed — fresh products for your business"
+          products={newArrivals.length > 0 ? newArrivals : allProducts.slice(4)}
+          onProductClick={openProduct}
+          onViewAll={goShop}
+          bgColor="#ffffff"
+        />
+
+        {/* 7. Second promo banner — full width */}
+        <div
+          className="mb-2 flex cursor-pointer items-center justify-between overflow-hidden px-8 py-6 md:px-12 md:py-8"
+          style={{ background: "linear-gradient(135deg, #111827 0%, #1F2937 40%, #374151 100%)" }}
+          onClick={goShop}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => e.key === "Enter" && goShop()}
+        >
+          <div>
+            <div className="font-eyebrow text-[10px] tracking-widest text-slate-300/70">LIMITED TIME</div>
+            <div className="font-display text-2xl font-extrabold text-white md:text-4xl">
+              🎉 MEGA SALE — Up to 50% OFF
+            </div>
+            <div className="mt-1 font-label text-sm text-slate-200/70">Free installation on all POS systems · Qatar VAT Compliant</div>
+          </div>
+          <div className="hidden shrink-0 rounded-sm bg-white px-6 py-3 font-label text-sm font-bold text-[#111827] transition-all hover:bg-gray-100 md:block">
+            Shop Now →
+          </div>
+        </div>
+
+        {/* 8. All Products */}
+        <FlipkartProductRow
+          title="Explore All Products"
+          products={allProducts}
+          onProductClick={openProduct}
+          onViewAll={goShop}
+          bgColor="#ffffff"
+        />
+
+        {/* 9. Newsletter */}
+        <NewsletterSection />
+      </div>
+    </div>
   );
 }
+
+
 
 function CheckoutPage({ onBack, cart }: { onBack: () => void; cart: CartItem[] }) {
   const sub = cart.reduce((s, i) => s + i.price * i.qty, 0);
@@ -246,7 +318,7 @@ function CheckoutPage({ onBack, cart }: { onBack: () => void; cart: CartItem[] }
                     <input placeholder={label} className={inputClass} />
                   </div>
                 ))}
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-[13px] text-emerald-700">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-[13px] text-gray-700">
                   ✓ Free installation included · Est. delivery 1–2 business days
                 </div>
                 <div className="flex gap-2.5">
@@ -313,7 +385,7 @@ function CheckoutPage({ onBack, cart }: { onBack: () => void; cart: CartItem[] }
                 ([l, v], i) => (
                   <div key={l} className={`flex justify-between ${i === 2 ? "mt-1 border-t border-border pt-2" : ""}`}>
                     <span className={`${i === 2 ? "text-sm font-bold text-primary" : "text-xs text-muted"}`}>{l}</span>
-                    <span className={`${i === 2 ? "font-price text-sm font-extrabold text-primary" : "text-xs font-medium"} ${i === 1 ? "text-emerald-600" : "text-primary/80"}`}>
+                     <span className={`${i === 2 ? "font-price text-sm font-extrabold text-primary" : "text-xs font-medium"} ${i === 1 ? "text-gray-600" : "text-primary/80"}`}>
                       {v}
                     </span>
                   </div>

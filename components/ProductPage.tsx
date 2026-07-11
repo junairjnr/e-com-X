@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PRODUCTS, fmt } from "@/lib/data";
 import type { Product, WishlistItem } from "@/lib/types";
 import ReviewsSection from "./ReviewsSection";
@@ -43,6 +43,10 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
   const rotate360Ref = useRef<{ startX: number; startRot: number } | null>(null);
 
   const similar = PRODUCTS.filter(p => p.id !== product.id).slice(0, 4);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [product.id]);
 
   const handleAdd = () => {
     if (!selectedSize) { setSizeError(true); return; }
@@ -323,7 +327,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
   }
 
   return (
-    <div className={`min-h-screen ${tw.sectionBg} pt-24 md:pt-[108px]`}>
+    <div className={`page-top-offset min-h-screen ${tw.sectionBg}`}>
       <div className="mx-auto max-w-[1280px] px-4 md:px-6 pb-16 md:pb-20">
 
         {/* Breadcrumb */}
@@ -341,7 +345,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
 
           {/* ── LEFT: Image Gallery ── */}
-          <div className="lg:sticky lg:top-24 w-full">
+          <div className="lg:sticky w-full" style={{ top: "var(--page-top)" }}>
             <div className="flex flex-col lg:flex-row gap-3 lg:gap-2.5 w-full">
 
               {/* Thumbnails — below viewer on mobile, left strip on desktop */}
@@ -398,7 +402,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
               </div>
               <span className="text-sm font-bold text-accent">{product.rating}</span>
               <span className="text-[13px] text-muted">({product.reviews.toLocaleString()} reviews)</span>
-              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-600">
+              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
                 {Math.round(product.rating * 20)}% recommended
               </span>
               {product.stock !== undefined && product.stock < 20 && (
@@ -501,7 +505,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
                 </button>
               </div>
               {product.stock !== undefined && (
-                <span className={`text-xs font-medium ${product.stock > 20 ? "text-emerald-600" : "text-red-600"}`}>
+                <span className={`text-xs font-medium ${product.stock > 20 ? "text-gray-600" : "text-red-600"}`}>
                   {product.stock > 20 ? `✓ In Stock (${product.stock})` : `⚡ Only ${product.stock} left`}
                 </span>
               )}
@@ -512,7 +516,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
               <button
                 type="button"
                 onClick={handleAdd}
-                className={`${added ? "!bg-emerald-600" : tw.btnPrimary} !font-bold !shadow-none sm:!shadow-[0_4px_20px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]`}
+                className={`${added ? "!bg-gray-700" : tw.btnPrimary} !font-bold !shadow-none sm:!shadow-[0_4px_20px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]`}
               >
                 {added ? <><Icons.Check /> Added to Cart!</> : <><Icons.Bag /> Add to Cart</>}
               </button>
@@ -538,7 +542,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
                 <button type="button" className={`${tw.btnPrimarySm} px-4 py-2.5`}>Check</button>
               </div>
               {pincode.length > 4 && (
-                <div className="mt-2 text-xs font-medium text-emerald-600">
+                <div className="mt-2 text-xs font-medium text-gray-600">
                   ✓ Delivery in 1–2 business days · Free installation included
                 </div>
               )}

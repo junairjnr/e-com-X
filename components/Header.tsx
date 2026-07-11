@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import MegaMenu from "./MegaMenu";
+import { motion, AnimatePresence } from "framer-motion";
 import * as Icons from "./Icons";
 import type { CartItem, WishlistItem, StoreUser } from "@/lib/types";
 import Avatar from "./Avatar";
 import { useClientTheme } from "./ThemeProvider";
+import { HERO_CATEGORY_STRIP } from "@/lib/data";
 
 interface HeaderProps {
   cart: CartItem[];
@@ -21,37 +22,13 @@ interface HeaderProps {
   onNavigateHome: () => void;
 }
 
-const NAV = [
-  { label: "Products", page: "shop", hasMenu: true },
-  { label: "Solutions", page: "shop", hasMenu: true },
-  { label: "Deals", page: "shop", hasMenu: true },
-  { label: "Support", page: "support", hasMenu: false },
-  { label: "Orders", page: "orders", hasMenu: false },
+const NAV_LINKS = [
+  { label: "Products", page: "shop" },
+  { label: "Solutions", page: "shop" },
+  { label: "Deals", page: "shop" },
+  { label: "Support", page: "support" },
+  { label: "Orders", page: "orders" },
 ];
-
-function NavIconBtn({
-  label,
-  onClick,
-  children,
-  className = "",
-}: {
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className={`nav-icon-btn h-[38px] w-[38px] md:h-[38px] md:w-[38px] max-md:h-[34px] max-md:w-[34px] ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
 
 const SEARCH_CATEGORIES = [
   "POS Systems",
@@ -64,15 +41,23 @@ const SEARCH_CATEGORIES = [
   "UPS & Power",
 ];
 
-function HeaderSearch({
-  onOpen,
-  className = "",
-}: {
-  onOpen: () => void;
-  className?: string;
-}) {
+export default function Header({
+  cart, wishlist,
+  onCartOpen, onWishlistOpen, onSearchOpen, onLoginOpen, onLogout,
+  user, setPage, onNavigateHome,
+}: HeaderProps) {
+  const { client } = useClientTheme();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const catRef = useRef<HTMLDivElement>(null);
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+  const [catVisible, setCatVisible] = useState(true);
+
   const [hintIdx, setHintIdx] = useState(0);
   const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
   const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -89,358 +74,389 @@ function HeaderSearch({
     };
   }, []);
 
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label={`Search for ${SEARCH_CATEGORIES[hintIdx]}`}
-      className={`flex h-8 w-[300px] shrink-0 items-center gap-2 rounded-full border border-border bg-white/90 px-3 text-left shadow-[inset_0_1px_2px_color-mix(in_srgb,var(--color-primary)_4%,transparent)] transition-[border-color,box-shadow] hover:border-accent/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent/40 xl:w-[320px] ${className}`}
-    >
-      <span className="shrink-0 text-muted">
-        <Icons.Search />
-      </span>
-      <span className="flex min-w-0 flex-1 items-center text-[11px] text-muted sm:text-xs">
-        <span className="shrink-0">Search for</span>
-        <span className="relative ml-1 inline-block w-[132px] shrink-0 overflow-hidden xl:w-[148px]">
-          <span
-            className={`block truncate font-medium text-accent transition-opacity duration-500 ease-in-out ${visible ? "opacity-100" : "opacity-0"}`}
-          >
-            &quot;{SEARCH_CATEGORIES[hintIdx]}&quot;
-          </span>
-        </span>
-      </span>
-    </button>
-  );
-}
-
-export default function Header({
-  cart,
-  wishlist,
-  onCartOpen,
-  onWishlistOpen,
-  onSearchOpen,
-  onLoginOpen,
-  onLogout,
-  user,
-  page,
-  setPage,
-  onNavigateHome,
-}: HeaderProps) {
-  const { client } = useClientTheme();
-  const [scrolled, setScrolled] = useState(false);
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileAccordion, setMobileAccordion] = useState<string | null>(null);
-  const [activeNavLabel, setActiveNavLabel] = useState<string | null>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20);
+    // Heights: full = outer pt-3 + top-bar + category strip, compact = outer pt-3 + top-bar
+    const setH = (full: boolean) => {
+      document.documentElement.style.setProperty(
+        "--header-height",
+        full ? "120px" : "64px"
+      );
+    };
+
+    const fn = () => {
+      const y = window.scrollY;
+      if (y <= 10) {
+        setScrolled(false);
+        setCatVisible(true);
+        setH(true);
+      } else {
+        setScrolled(true);
+        if (y > lastScrollY.current + 4) {
+          setCatVisible(false);
+          setH(false);
+        } else if (y < lastScrollY.current - 4) {
+          setCatVisible(true);
+          setH(true);
+        }
+      }
+      lastScrollY.current = y;
+    };
+
+    // Set initial
+    setH(true);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
-
-  useEffect(() => {
-    const fn = (e: MouseEvent) => {
-      if (headerRef.current && !headerRef.current.contains(e.target as Node)) setActiveMenu(null);
-    };
-    document.addEventListener("mousedown", fn);
-    return () => document.removeEventListener("mousedown", fn);
-  }, []);
-
-  useEffect(() => {
-    if (page === "home") setActiveNavLabel(null);
-  }, [page]);
 
   useEffect(() => {
     document.body.classList.toggle("overflow-hidden", mobileOpen);
     return () => document.body.classList.remove("overflow-hidden");
   }, [mobileOpen]);
 
-  const handleNav = (item: (typeof NAV)[0]) => {
-    setPage(item.page);
-    setActiveNavLabel(item.label);
-    setActiveMenu(null);
-    setMobileOpen(false);
-  };
-
-  const isActive = (item: (typeof NAV)[0]) => {
-    if (activeNavLabel !== null) return activeNavLabel === item.label;
-    if (item.label === "Support" && page === "support") return true;
-    if (item.label === "Orders" && page === "orders") return true;
-    return false;
-  };
 
   return (
     <>
-      {/* Announcement bar */}
-      <div className="fixed top-0 left-0 right-0 z-[160] flex h-8 sm:h-[34px] items-center justify-center gap-1.5 overflow-hidden border-b border-white/10 bg-footer px-3">
-        <div className="pointer-events-none absolute inset-0 animate-shimmer-bar bg-gradient-to-r from-transparent via-accent/15 to-transparent" />
-        <span className="hidden font-label text-[10.5px] font-medium tracking-wide text-white/70 sm:inline">
-          🎁 Free installation on all POS systems · Qatar VAT Compliant ·
-        </span>
-        <span className="font-label text-[10px] font-medium text-white/70 sm:hidden">
-          🎁 Free installation · Qatar VAT Compliant
-        </span>
-        <a
-          href={client.siteUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="shrink-0 border-b border-accent/50 font-label text-[9.5px] sm:text-[10.5px] font-bold tracking-wide text-accent transition-colors hover:text-accent-light"
-        >
-          <span className="sm:hidden">Free Demo →</span>
-          <span className="hidden sm:inline">Book a Free Demo →</span>
-        </a>
-      </div>
-
-      {/* Floating navbar */}
-      <div
-        ref={headerRef}
-        className={`pointer-events-none fixed left-0 right-0 z-[150] flex justify-center px-2 md:px-3.5 transition-[top] duration-300 ${scrolled ? "top-[38px] sm:top-[40px]" : "top-9 sm:top-[42px]"}`}
+      {/* ════════════════════════════════════════
+          MAIN HEADER — floating pill style
+      ════════════════════════════════════════ */}
+      <motion.div
+        className="fixed left-0 right-0 top-0 z-[150] px-2 pt-2 sm:px-3 sm:pt-3 md:px-5"
+        style={{ paddingBottom: 0 }}
       >
-        <header
-          className={`pointer-events-auto relative flex w-full max-w-[1350px] flex-col gap-2 overflow-visible rounded-[14px] md:rounded-[12px] border border-border bg-bg-soft/95 px-3 py-2 md:px-5 md:py-0 backdrop-blur-[28px] transition-all duration-300 ${
-            scrolled
-              ? "shadow-[0_10px_44px_rgba(0,0,0,0.08)]"
-              : "shadow-[0_4px_28px_rgba(0,0,0,0.06)]"
-          }`}
-          onMouseLeave={() => setActiveMenu(null)}
+        <motion.div
+          className="mx-auto max-w-[1440px] overflow-hidden"
+          animate={{
+            boxShadow: scrolled
+              ? "0 12px 40px rgba(0,0,0,0.28), 0 4px 12px rgba(0,0,0,0.14)"
+              : "0 4px 20px rgba(0,0,0,0.18), 0 1px 6px rgba(0,0,0,0.10)",
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          style={{
+            background: "linear-gradient(135deg, #111827 0%, #1F2937 55%, #374151 100%)",
+            borderRadius: "20px",
+          }}
         >
-          {/* Main bar — grouped: brand | search | nav ··· actions */}
-          <div className="flex h-[44px] w-full items-center md:h-[56px]">
-            {/* Group 1: Company / brand */}
-            <div className="flex shrink-0 items-center">
-              <button
-                type="button"
-                onClick={() => { onNavigateHome(); setActiveNavLabel(null); }}
-                className="flex items-center gap-2 rounded-[10px] border-0 bg-transparent p-1 pr-2 cursor-pointer transition-opacity hover:opacity-75"
-              >
-                <div className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent-hover via-accent to-primary-light shadow-[0_3px_10px_color-mix(in_srgb,var(--color-accent)_32%,transparent)]">
-                  <span className="font-display text-[13px] font-black text-white">S</span>
-                </div>
-                <div className="hidden min-[380px]:block leading-none text-left">
-                  <span className="font-display block text-lg md:text-[20px] font-extrabold tracking-tight text-primary">
-                    {client.name.split(" ")[0]}
-                    <span className="text-[11px] font-black text-accent">™</span>
-                  </span>
-                  <span className="font-eyebrow hidden min-[500px]:block mt-0.5 text-[8px] font-semibold tracking-[0.16em] text-muted">
-                    {client.tagline}
-                  </span>
-                </div>
-              </button>
-            </div>
+          {/* ── Top bar ── */}
+          <div className="flex items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 md:gap-4 md:px-6">
 
-            {/* Group 2: Search — fixed width so nav links don't shift */}
-            <div className="hidden min-[520px]:flex w-[300px] shrink-0 items-center pl-3 md:pl-4 xl:w-[320px]">
-              <HeaderSearch onOpen={onSearchOpen} className="w-full max-w-none xl:w-[320px]" />
-            </div>
-
-            {/* Group 3: Nav links — spaced from search */}
-            <nav
-              aria-label="Main"
-              className="hidden shrink-0 items-center gap-2  border-border/60 pl-5 lg:pl-8 xl:flex"
+            {/* Logo */}
+            <motion.button
+              type="button"
+              onClick={onNavigateHome}
+              className="flex shrink-0 cursor-pointer flex-col items-start border-0 bg-transparent p-0"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
-              {NAV.map((item) => {
-                const active = isActive(item);
-                const menuOpen = activeMenu === item.label;
-                const highlighted = active || menuOpen;
-                return (
-                  <div
-                    key={item.label}
-                    className="relative"
-                    onMouseEnter={() => (item.hasMenu ? setActiveMenu(item.label) : setActiveMenu(null))}
+              <span className="font-display text-[18px] font-extrabold leading-none tracking-tight text-white sm:text-[20px] md:text-[22px]">
+                {client.name.split(" ")[0]}
+                <span className="text-[11px] font-black text-slate-300 sm:text-[13px]">™</span>
+              </span>
+              <span className="hidden font-eyebrow text-[7.5px] tracking-[0.22em] text-slate-400/75 sm:block">
+                {client.tagline}
+              </span>
+            </motion.button>
+
+            {/* Search bar */}
+            <motion.button
+              type="button"
+              onClick={onSearchOpen}
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-xl bg-white/95 px-3 py-2 text-left shadow-sm sm:gap-3 sm:px-4"
+              whileHover={{ scale: 1.005, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}
+              whileTap={{ scale: 0.998 }}
+              aria-label={`Search for ${SEARCH_CATEGORIES[hintIdx]}`}
+            >
+              <span className="shrink-0 text-muted">
+                <Icons.Search />
+              </span>
+              <span className="hidden min-w-0 flex-1 items-center text-[11px] text-muted min-[480px]:flex sm:text-xs">
+                <span className="shrink-0">Search for</span>
+                <span className="relative ml-1 inline-block w-[90px] shrink-0 overflow-hidden sm:w-[120px] xl:w-[148px]">
+                  <span
+                    className={`block truncate font-medium text-accent transition-opacity duration-500 ease-in-out ${visible ? "opacity-100" : "opacity-0"}`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => handleNav(item)}
-                      className={`nav-link ${highlighted ? (active ? "nav-link--active" : "nav-link--open") : ""}`}
-                    >
-                      {item.label}
-                      <span className="nav-link__indicator" aria-hidden />
-                    </button>
-                  </div>
-                );
-              })}
-            </nav>
+                    &quot;{SEARCH_CATEGORIES[hintIdx]}&quot;
+                  </span>
+                </span>
+              </span>
+              <span className="flex-1 text-[11px] text-gray-400 min-[480px]:hidden">
+                Search…
+              </span>
+            </motion.button>
 
-            {/* Spacer — pushes action icons to the end */}
-            <div className="min-w-3 flex-1" aria-hidden />
+            {/* Desktop actions */}
+            <div className="flex shrink-0 items-center gap-1">
+              {/* Login */}
+              <motion.button
+                type="button"
+                onClick={onLoginOpen}
+                className="hidden items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 font-label text-[12.5px] font-bold text-white backdrop-blur-sm md:flex"
+                whileHover={{ background: "rgba(255,255,255,0.2)", scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                {user ? (
+                  <>
+                    <Avatar name={user.name} size={18} imageUrl={user.avatarUrl} className="border-0 shadow-none" />
+                    <span className="hidden md:inline">{user.name.split(" ")[0]}</span>
+                  </>
+                ) : (
+                  <>
+                    <Icons.User />
+                    <span className="hidden md:inline">Login</span>
+                  </>
+                )}
+              </motion.button>
 
-            {/* Group 4: Action icons — separated at the end */}
-            <div className="flex shrink-0 items-center gap-2  border-border/60 pl-3 md:gap-2.5 md:pl-5">
-              <NavIconBtn label={user ? user.name : "Sign in"} onClick={onLoginOpen}>
-                {user ? <Avatar name={user.name} size={22} imageUrl={user.avatarUrl} className="border-0 shadow-none" /> : <Icons.User />}
-              </NavIconBtn>
-              <NavIconBtn label={`Wishlist (${wishlist.length})`} onClick={onWishlistOpen} className="hidden min-[480px]:flex">
-                <div className="relative">
-                  <Icons.Heart filled={wishlist.length > 0} />
+              {/* Wishlist */}
+              <motion.button
+                type="button"
+                onClick={onWishlistOpen}
+                className="relative hidden items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 font-label text-[12.5px] font-bold text-white backdrop-blur-sm md:flex"
+                whileHover={{ background: "rgba(255,255,255,0.2)", scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Icons.Heart filled={wishlist.length > 0} />
+                <span className="hidden lg:inline">Wishlist</span>
+                <AnimatePresence>
                   {wishlist.length > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[8px] font-black text-white">
+                    <motion.span
+                      initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                      className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white shadow"
+                    >
                       {wishlist.length > 9 ? "9+" : wishlist.length}
-                    </span>
+                    </motion.span>
                   )}
-                </div>
-              </NavIconBtn>
+                </AnimatePresence>
+              </motion.button>
 
-              <button
+              {/* Cart */}
+              <motion.button
                 type="button"
                 onClick={onCartOpen}
-                aria-label={`Cart (${cartCount})`}
-                className={`relative flex items-center justify-center rounded-full border transition-all md:gap-1.5 md:px-4 md:py-0 md:h-[38px] max-md:h-9 max-md:w-9 ${
-                  cartCount > 0
-                    ? "border-accent/50 bg-gradient-to-br from-accent to-primary-light text-white shadow-[0_4px_16px_color-mix(in_srgb,var(--color-accent)_38%,transparent)]"
-                    : "border-accent/25 bg-accent-soft/40 text-muted hover:border-accent/40"
-                }`}
+                className="relative hidden items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-2.5 py-2 font-label text-[12.5px] font-bold text-white backdrop-blur-sm sm:flex sm:px-3.5"
+                whileHover={{ background: "rgba(255,255,255,0.2)", scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 <Icons.Bag />
-                <span className="hidden md:inline text-[13px] font-bold">Cart</span>
-                {cartCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-accent-light md:static md:h-auto md:w-auto md:rounded-full md:bg-primary/85 md:px-2 md:py-0 md:text-[10.5px]">
-                    {cartCount > 9 ? "9+" : cartCount}
-                  </span>
-                )}
-              </button>
+                <span className="hidden lg:inline">Cart</span>
+                <AnimatePresence>
+                  {cartCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                      className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white shadow"
+                    >
+                      {cartCount > 9 ? "9+" : cartCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
 
-              <button
+              {/* More */}
+              <motion.button
+                type="button"
+                onClick={() => setPage("shop")}
+                className="hidden items-center gap-1 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 font-label text-[12.5px] font-bold text-white backdrop-blur-sm lg:flex"
+                whileHover={{ background: "rgba(255,255,255,0.2)", scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                More <Icons.ChevronDown />
+              </motion.button>
+
+              {/* Mobile cart btn — visible only on very small screens */}
+              <motion.button
+                type="button"
+                onClick={onCartOpen}
+                className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white sm:hidden"
+                whileHover={{ background: "rgba(255,255,255,0.2)" }}
+                whileTap={{ scale: 0.93 }}
+                aria-label="Cart"
+              >
+                <Icons.Bag />
+                <AnimatePresence>
+                  {cartCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                      className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white shadow"
+                    >
+                      {cartCount > 9 ? "9+" : cartCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+
+              {/* Mobile menu btn */}
+              <motion.button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                aria-label="Menu"
-                className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-transparent text-primary transition-all hover:border-accent/30 hover:bg-accent-soft/80 max-xl:flex"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white md:hidden"
+                whileHover={{ background: "rgba(255,255,255,0.2)" }}
+                whileTap={{ scale: 0.93 }}
+                aria-label="Open menu"
               >
                 <Icons.Menu />
-              </button>
+              </motion.button>
             </div>
           </div>
 
-          {/* Mobile full-width search row */}
-          <HeaderSearch onOpen={onSearchOpen} className="min-[520px]:hidden !w-full max-w-none pb-0.5" />
-
-          {/* Mega menu */}
-          {activeMenu && (
-            <div className="absolute left-1/2 top-[calc(100%+10px)] z-[200] hidden w-[min(940px,90vw)] -translate-x-1/2 animate-mega-fade-in md:block lg:w-[min(940px,90vw)]">
-              <div className="overflow-hidden rounded-[20px] border border-accent/20 bg-white/98 p-6 backdrop-blur-2xl shadow-[0_20px_60px_color-mix(in_srgb,var(--color-primary)_13%,transparent)] lg:px-7 lg:py-6">
-                <div className="mb-4 border-b border-accent/15 pb-2.5 font-eyebrow text-[9.5px] tracking-[0.15em] text-accent">
-                  {activeMenu}
-                </div>
-                <MegaMenu section={activeMenu} onClose={() => setActiveMenu(null)} />
-              </div>
-            </div>
-          )}
-        </header>
-      </div>
-
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <>
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 z-[300] animate-fade-in bg-primary/50 backdrop-blur-sm"
-          />
-          <div className="fixed bottom-0 left-0 top-0 z-[310] flex w-[min(320px,85vw)] animate-slide-in-left flex-col overflow-y-auto overflow-x-hidden bg-bg shadow-[4px_0_40px_color-mix(in_srgb,var(--color-primary)_18%,transparent)]">
-            <div className="flex shrink-0 items-center justify-between bg-primary px-4 py-[18px]">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-accent-light/30 bg-accent-light/10">
-                  <span className="font-display text-[13px] font-black text-accent-light">S</span>
-                </div>
-                <div>
-                  <span className="font-display block text-lg font-extrabold text-accent-light">{client.name.split(" ")[0]}™</span>
-                  <span className="font-eyebrow text-[8px] tracking-[0.14em] text-accent-light/50">{client.tagline}</span>
-                </div>
-              </div>
-              <button type="button" onClick={() => setMobileOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-accent-light/20 bg-white/10 text-accent-light">
-                <Icons.X />
-              </button>
-            </div>
-
-            <div className="flex gap-2 border-b border-accent/10 bg-accent-soft/40 px-3.5 py-3">
-              {[
-                { icon: <Icons.Search />, label: "Search", action: () => { onSearchOpen(); setMobileOpen(false); } },
-                { icon: <Icons.User />, label: user ? "Account" : "Sign In", action: () => { onLoginOpen(); setMobileOpen(false); } },
-                { icon: <Icons.Heart filled={wishlist.length > 0} />, label: "Wishlist", action: () => { onWishlistOpen(); setMobileOpen(false); } },
-              ].map(({ icon, label, action }) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={action}
-                  className="flex flex-1 flex-col items-center gap-1 rounded-[10px] border border-accent/20 bg-white/80 py-2 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
-                >
-                  <span className="text-base">{icon}</span>
-                  <span className="text-[9.5px] font-semibold tracking-wide text-muted">{label}</span>
-                </button>
-              ))}
-            </div>
-
-            <nav className="flex-1 p-2.5">
-              {NAV.map((item) => (
-                <div key={item.label}>
-                  <button
+          {/* ── Category strip — hides on scroll down ── */}
+          <motion.div
+            className="overflow-hidden border-t border-white/10 bg-white"
+            animate={{
+              height: catVisible ? "auto" : 0,
+              opacity: catVisible ? 1 : 0,
+            }}
+            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <div className="relative mx-auto max-w-[1440px]">
+              <div
+                ref={catRef}
+                className="flex items-center overflow-x-auto scroll-smooth scrollbar-hide px-4 md:px-8"
+              >
+                {HERO_CATEGORY_STRIP.map((cat, i) => (
+                  <motion.button
+                    key={`${cat.label}-${i}`}
                     type="button"
-                    onClick={() => {
-                      if (item.hasMenu) setMobileAccordion(mobileAccordion === item.label ? null : item.label);
-                      else handleNav(item);
-                    }}
-                    className={`mb-0.5 flex w-full items-center justify-between rounded-xl border px-3.5 py-3 font-display text-xl font-bold transition-[color,background-color,border-color,box-shadow,transform] duration-300 ease-out ${
-                      isActive(item)
-                        ? "border-accent/30 bg-accent-soft text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
-                        : mobileAccordion === item.label
-                          ? "border-accent/25 bg-accent-soft/80 text-accent"
-                          : "border-transparent bg-transparent text-primary hover:border-accent/25 hover:bg-accent-soft/70 hover:text-accent hover:shadow-sm active:scale-[0.99]"
-                    }`}
+                    onClick={() => setPage("shop")}
+                    className="group flex shrink-0 flex-col items-center gap-0.5 border-0 bg-transparent px-2.5 py-1.5 md:px-3"
+                    whileHover={{ y: -1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <div className="relative h-7 w-7 overflow-hidden rounded-full border border-gray-100 bg-gray-50 shadow-sm transition-all duration-200 group-hover:border-slate-300 group-hover:shadow-md md:h-8 md:w-8">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={cat.img}
+                        alt={cat.label}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                    </div>
+                    <span className="whitespace-nowrap font-label text-[8px] font-semibold text-gray-700 transition-colors group-hover:text-slate-900 md:text-[9px]">
+                      {cat.label}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+
+      {/* ════════════════════════════════════════
+          MOBILE DRAWER
+      ════════════════════════════════════════ */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-sm"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+            />
+
+            {/* Drawer */}
+            <motion.div
+              className="fixed bottom-0 left-0 top-0 z-[310] flex w-[min(300px,85vw)] flex-col overflow-y-auto bg-white"
+              style={{ boxShadow: "4px 0 40px rgba(0,0,0,0.18)", borderRadius: "0 24px 24px 0" }}
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            >
+              {/* Header */}
+              <div
+                className="flex items-center justify-between px-5 py-4"
+                style={{ background: "linear-gradient(135deg, #111827 0%, #1F2937 55%, #374151 100%)" }}
+              >
+                <div>
+                  <div className="font-display text-lg font-extrabold text-white">
+                    {client.name.split(" ")[0]}<span className="text-slate-300 text-sm">™</span>
+                  </div>
+                  <div className="font-eyebrow text-[7.5px] tracking-widest text-slate-400/70">{client.tagline}</div>
+                </div>
+                <motion.button
+                  type="button"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Icons.X />
+                </motion.button>
+              </div>
+
+              {/* Quick action grid */}
+              <div className="grid grid-cols-3 gap-2 border-b border-gray-100 p-4">
+                {[
+                  { icon: <Icons.Search />, label: "Search", fn: () => { onSearchOpen(); setMobileOpen(false); } },
+                  { icon: <Icons.Heart filled={wishlist.length > 0} />, label: `Wishlist${wishlist.length > 0 ? ` (${wishlist.length})` : ""}`, fn: () => { onWishlistOpen(); setMobileOpen(false); } },
+                  { icon: <Icons.Bag />, label: `Cart${cartCount > 0 ? ` (${cartCount})` : ""}`, fn: () => { onCartOpen(); setMobileOpen(false); } },
+                ].map(({ icon, label, fn }) => (
+                  <motion.button
+                    key={label}
+                    type="button"
+                    onClick={fn}
+                    className="flex flex-col items-center gap-1.5 rounded-2xl border border-gray-100 bg-gray-50 py-3 text-gray-700"
+                    whileHover={{ background: "#f3f4f6", borderColor: "#d1d5db" }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-[18px]">{icon}</span>
+                    <span className="text-[9.5px] font-semibold leading-tight text-center">{label}</span>
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Nav */}
+              <nav className="flex-1 p-4">
+                <p className="mb-2 px-1 font-eyebrow text-[9px] text-gray-400">NAVIGATION</p>
+                {NAV_LINKS.map(item => (
+                  <motion.button
+                    key={item.label}
+                    type="button"
+                    onClick={() => { setPage(item.page); setMobileOpen(false); }}
+                    className="mb-1 flex w-full items-center justify-between rounded-2xl border border-transparent px-4 py-3 text-left font-label text-[14px] font-semibold text-gray-800"
+                    whileHover={{ background: "#f3f4f6", borderColor: "#e5e7eb", color: "#111827" }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     {item.label}
-                    <span className={`text-sm text-accent/70 transition-transform ${mobileAccordion === item.label ? "rotate-90" : ""}`}>
-                      {item.hasMenu ? "›" : "→"}
-                    </span>
-                  </button>
-                  {item.hasMenu && mobileAccordion === item.label && (
-                    <div className="animate-fade-in px-3.5 pb-2 pl-6">
-                      {["New Arrivals", "Bestsellers", "Shop All", "Bundles"].map((sub) => (
-                        <button
-                          key={sub}
-                          type="button"
-                          onClick={() => handleNav(item)}
-                          className="block w-full border-b border-accent/10 py-1.5 text-left text-[13px] font-medium text-muted transition-[color,background-color,padding] duration-300 ease-out hover:bg-accent-soft/50 hover:pl-1 hover:text-accent"
-                        >
-                          {sub}
-                        </button>
-                      ))}
+                    <span className="text-gray-500 text-sm">›</span>
+                  </motion.button>
+                ))}
+              </nav>
+
+              {/* User section */}
+              <div className="border-t border-gray-100 p-4 pb-8">
+                {user ? (
+                  <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                    <Avatar name={user.name} size={40} imageUrl={user.avatarUrl} />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-label text-[13px] font-bold text-gray-900">{user.name}</div>
+                      <div className="truncate font-label text-[10.5px] text-gray-500">{user.email}</div>
                     </div>
-                  )}
-                </div>
-              ))}
-            </nav>
-
-            <div className="mx-3.5 h-px bg-accent/15" />
-
-            <div className="shrink-0 p-3.5 pb-7">
-              {user ? (
-                <div className="flex items-center gap-2.5 rounded-[14px] border border-accent/20 bg-accent-soft p-3">
-                  <Avatar name={user.name} size={38} imageUrl={user.avatarUrl} />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[13px] font-bold text-primary">{user.name}</div>
-                    <div className="truncate text-[10.5px] text-muted">{user.email}</div>
+                    <motion.button
+                      type="button"
+                      onClick={() => { onLogout?.(); setMobileOpen(false); }}
+                      className="shrink-0 rounded-xl border border-gray-300 px-3 py-1.5 font-label text-[11px] font-bold text-gray-700"
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Sign Out
+                    </motion.button>
                   </div>
-                  <button type="button" onClick={() => { onLogout?.(); setMobileOpen(false); }} className="shrink-0 rounded-lg border border-accent/40 px-2.5 py-1 text-[10.5px] font-bold text-accent">
-                    Sign Out
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => { onLoginOpen(); setMobileOpen(false); }}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border-0 bg-gradient-to-br from-accent-hover via-accent to-primary-light py-3.5 text-[13.5px] font-bold text-white shadow-[0_4px_16px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]"
-                >
-                  <Icons.LogIn />
-                  Sign In / Register
-                </button>
-              )}
-            </div>
-          </div>
-        </>
-      )}
+                ) : (
+                  <motion.button
+                    type="button"
+                    onClick={() => { onLoginOpen(); setMobileOpen(false); }}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 font-label text-[13.5px] font-bold text-white shadow"
+                    style={{ background: "linear-gradient(135deg, #111827, #374151)" }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    <Icons.LogIn />
+                    Sign In / Register
+                  </motion.button>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }

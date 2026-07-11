@@ -163,7 +163,7 @@ export default function ProductModal({ product, onClose, onAddToCart, onWishlist
           <div className="mt-2 flex gap-3">
             <button
               type="button"
-              className={`${tw.btnPrimary} flex-1 justify-center py-4 text-[15px] ${added ? "!bg-emerald-600" : ""}`}
+              className={`${tw.btnPrimary} flex-1 justify-center py-4 text-[15px] ${added ? "!bg-gray-700" : ""}`}
               onClick={handleAdd}
             >
               {added ? <><Icons.Check /> Added to Cart!</> : "Add to Cart"}

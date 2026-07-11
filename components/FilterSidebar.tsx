@@ -45,28 +45,21 @@ export default function FilterSidebar({ filters, onChange, onClear, resultCount,
     filters.sizes.length + filters.tags.length +
     (filters.priceRange[0] > 0 || filters.priceRange[1] < PRICE_MAX ? 1 : 0);
 
-  const wrapperClass = mobile
-    ? "w-full"
-    : "w-[260px] shrink-0";
-
-  const stickyClass = mobile
-    ? ""
-    : "sticky top-[100px] max-h-[calc(100vh-120px)] overflow-y-auto scrollbar-thin";
+  const wrapperClass = mobile ? "w-full" : "w-full";
 
   return (
     <aside className={wrapperClass}>
-      <div className={stickyClass}>
-        <div className="rounded-[20px] border border-border bg-white p-4 shadow-[0_4px_24px_color-mix(in_srgb,var(--color-primary)_5%,transparent)]">
-          <div className="mb-4 flex items-center justify-between border-b border-bg-soft pb-3.5">
+      <div>
+          <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-3">
             <div>
-              <div className="font-display text-[15px] font-bold text-primary">Filters</div>
-              <div className="mt-0.5 text-xs text-muted">{resultCount} result{resultCount !== 1 ? "s" : ""}</div>
+              <div className="font-display text-[14px] font-bold text-gray-900">All Filters</div>
+              <div className="mt-0.5 text-[11px] text-gray-500">{resultCount} result{resultCount !== 1 ? "s" : ""}</div>
             </div>
             {activeCount > 0 && (
               <button
                 type="button"
                 onClick={onClear}
-                className="rounded-full border-0 bg-accent-soft px-2.5 py-1.5 text-[11px] font-semibold text-accent cursor-pointer whitespace-nowrap"
+                className="rounded-full border-0 bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-700 cursor-pointer whitespace-nowrap hover:bg-gray-200"
               >
                 Clear ({activeCount})
               </button>
@@ -187,7 +180,6 @@ export default function FilterSidebar({ filters, onChange, onClear, resultCount,
                 <FilterCheckbox key={t} label={t} checked={filters.tags.includes(t)} onChange={() => toggleArr("tags", t)} />
               ))}
             </FilterSection>
-          </div>
         </div>
       </div>
     </aside>

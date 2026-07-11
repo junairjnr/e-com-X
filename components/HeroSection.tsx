@@ -1,288 +1,420 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
-import DealCard from "./DealCard";
 import StoreImage from "./StoreImage";
-import { PRODUCTS, HERO_SLIDER_SLIDES, HERO_CATEGORY_STRIP, FLASH_OFFERS } from "@/lib/data";
-import HardwarePromoBanner from "./HardwarePromoBanner";
-import HeroPromoBanner from "./HeroPromoBanner";
-import type { Product, WishlistItem } from "@/lib/types";
-import { motion, AnimatePresence } from "framer-motion";
-
-interface HeroSectionProps {
-  onAddToCart?: (product: Product, color: string, size: string) => void;
-  onWishlistToggle?: (item: WishlistItem) => void;
-  wishlist?: WishlistItem[];
-  onProductClick?: (product: Product) => void;
-  onViewAllDeals?: () => void;
-  onCategoryClick?: (category: string) => void;
-}
+import { HERO_SLIDER_SLIDES } from "@/lib/data";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 
 const SLIDES = HERO_SLIDER_SLIDES;
-const CATEGORIES = HERO_CATEGORY_STRIP;
+const AUTO_MS = 5500;
 
-function FlashSaleBlock({
-  offer,
-  onShop,
-}: {
-  offer: (typeof FLASH_OFFERS)[number];
-  onShop?: () => void;
-}) {
+const ACCENTS = [
+  { color: "#111827", soft: "#E5E7EB", dark: "#030712", glow: "rgba(17,24,39,0.18)" },
+  { color: "#0891b2", soft: "#cffafe", dark: "#164e63", glow: "rgba(8,145,178,0.16)" },
+  { color: "#1F2937", soft: "#F3F4F6", dark: "#111827", glow: "rgba(17,24,39,0.18)" },
+  { color: "#7c3aed", soft: "#ede9fe", dark: "#4c1d95", glow: "rgba(124,58,237,0.14)" },
+];
+
+/* ── Animated title lines ── */
+function SlideTitle({ text }: { text: string }) {
   return (
-    <div className="flex h-full w-full lg:h-[460px]">
-      <div className="coupon-ticket relative flex h-full min-h-[280px] w-full cursor-pointer flex-row items-stretch transition-transform duration-300 hover:-translate-y-0.5 lg:min-h-0">
-        <div className="flex w-[38%] min-w-[108px] max-w-[130px] shrink-0 flex-col items-center justify-center gap-2 px-3 py-6 sm:px-4 lg:py-8">
-          <span className="font-eyebrow text-[8px] tracking-widest text-accent">Today only</span>
-          <div className="text-center">
-            <span className="font-price block text-xl font-bold leading-none text-primary sm:text-2xl">
-              {offer.price}
-            </span>
-            {offer.oldPrice && (
-              <span className="font-price mt-1 block text-[11px] text-muted line-through">
-                {offer.oldPrice}
-              </span>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={onShop}
-            className="mt-1 w-full rounded-full bg-gradient-to-r from-accent-hover to-accent px-3 py-2 font-label text-[10px] font-bold text-white shadow-[0_3px_12px_color-mix(in_srgb,var(--color-accent)_35%,transparent)] transition-all hover:brightness-105"
+    <div>
+      {text.split("\n").map((line, i) => (
+        <div key={i} className="overflow-hidden leading-[1.08]">
+          <motion.span
+            className="block"
+            initial={{ y: "110%" }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.06 + i * 0.1 }}
           >
-            {offer.cta}
-          </button>
+            {line}
+          </motion.span>
         </div>
-
-        <div className="coupon-divider" aria-hidden />
-
-        <div className="relative flex min-w-0 flex-1 flex-col justify-center px-4 py-6 sm:px-5 lg:py-8">
-          {offer.img && (
-            <StoreImage
-              src={offer.img}
-              alt=""
-              aria-hidden
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.07]"
-            />
-          )}
-          <div className="relative z-[1]">
-            <span className="font-eyebrow inline-block rounded border border-accent/25 bg-accent/10 px-2 py-0.5 text-[8px] tracking-widest text-accent">
-              {offer.tag}
-            </span>
-            <h3 className="mt-2 font-sans text-base font-extrabold leading-tight text-primary sm:text-lg">
-              {offer.title}
-            </h3>
-            <p className="mt-1 text-xs font-medium text-primary/70">{offer.subtitle}</p>
-            {offer.highlight && (
-              <p className="mt-2 border-t border-dashed border-accent/20 pt-2 text-[10px] leading-relaxed text-muted">
-                {offer.highlight}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
 
-export default function HeroSection({
-  onProductClick,
-  onViewAllDeals,
-  onCategoryClick,
-}: HeroSectionProps) {
+export default function HeroSection({ onViewAll }: { onViewAll?: () => void }) {
   const [slide, setSlide] = useState(0);
-  const [fading, setFading] = useState(false);
-  const catRef = useRef<HTMLDivElement>(null);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+  const [prog, setProg] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const ix = useTransform(mx, [-400, 400], [-8, 8]);
+  const iy = useTransform(my, [-200, 200], [-4, 4]);
 
-  const go = useCallback((idx: number) => {
-    if (fading) return;
-    setFading(true);
-    setTimeout(() => {
-      setSlide(idx);
-      setFading(false);
-    }, 350);
-  }, [fading]);
+  const go = useCallback((n: number) => {
+    setDirection(n > slide || (slide === SLIDES.length - 1 && n === 0) ? 1 : -1);
+    setSlide(n);
+    setProg(0);
+  }, [slide]);
 
   useEffect(() => {
-    const t = setInterval(() => go((slide + 1) % SLIDES.length), 5000);
-    return () => clearInterval(t);
-  }, [slide, go]);
+    setProg(0);
+    const step = 100 / (AUTO_MS / 60);
+    timerRef.current = setInterval(() => {
+      setProg(p => {
+        if (p >= 100) {
+          setDirection(1);
+          setSlide(s => (s + 1) % SLIDES.length);
+          return 0;
+        }
+        return p + step;
+      });
+    }, 60);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [slide]);
 
   const s = SLIDES[slide];
+  const ac = ACCENTS[slide % ACCENTS.length];
 
-  const scrollCat = (dir: "l" | "r") => {
-    catRef.current?.scrollBy({ left: dir === "l" ? -320 : 320, behavior: "smooth" });
+  /* Slide animation variants — smooth crossfade + subtle directional movement */
+  const imageVariants = {
+    enter: (d: number) => ({ opacity: 0, scale: 1.06, x: d > 0 ? 40 : -40 }),
+    center: { opacity: 1, scale: 1, x: 0 },
+    exit: (d: number) => ({ opacity: 0, scale: 0.97, x: d > 0 ? -30 : 30 }),
   };
 
-  const handleProductClick = (product: Product) => {
-    onProductClick?.(product);
+  const contentVariants = {
+    enter: { opacity: 0, y: 18 },
+    center: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -12 },
   };
-
-  const dealProducts = PRODUCTS.slice(0, 4);
 
   return (
-    <section className="w-full bg-white font-sans select-none pb-12 pt-[150px] md:pt-[104px]">
-      {/* Top Banner */}
-      <div className="bg-footer font-label text-accent py-2 px-4 text-center text-[13px] font-semibold tracking-wide">
-        🎉 MEGA SALE: Up to 50% OFF on selected items! Free shipping on orders over QAR 299
-      </div>
+    <div className="px-2 pb-3 pt-1 sm:px-3 md:px-5">
+      <div
+        className="hero-slider relative w-full overflow-hidden rounded-2xl md:rounded-3xl"
+        style={{
+          background: "#ffffff",
+          boxShadow: "0 2px 24px rgba(0,0,0,0.07), 0 0 0 1.5px rgba(0,0,0,0.05)",
+        }}
+        onMouseMove={e => {
+          const r = e.currentTarget.getBoundingClientRect();
+          mx.set(e.clientX - r.left - r.width / 2);
+          my.set(e.clientY - r.top - r.height / 2);
+        }}
+        onMouseLeave={() => { mx.set(0); my.set(0); }}
+      >
+        {/* ── Dot grid background ── */}
+        <div
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            background: "#fafbfc",
+            backgroundImage: `radial-gradient(circle, ${ac.color}18 1.2px, transparent 1.2px)`,
+            backgroundSize: "26px 26px",
+            transition: "background-image 0.5s ease",
+          }}
+        />
 
-      {/* Categories — horizontal scroll; arrows desktop only */}
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 md:py-6 border-b border-border/50">
-        <div className="flex items-start gap-2 md:gap-3">
-          <button
-            type="button"
-            aria-label="Scroll categories left"
-            onClick={() => scrollCat("l")}
-            className="mt-2 hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-white text-lg leading-none text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft sm:mt-2.5 md:mt-3.5 md:flex"
-          >
-            ‹
-          </button>
+        {/* ── Accent glow blob ── */}
+        <motion.div
+          className="pointer-events-none absolute z-[1]"
+          style={{
+            right: "-5%", top: "10%",
+            width: "55%", height: "80%",
+          }}
+          animate={{
+            background: `radial-gradient(ellipse at center, ${ac.glow} 0%, transparent 68%)`,
+          }}
+          transition={{ duration: 0.8 }}
+        />
 
-          <div
-            ref={catRef}
-            className="flex min-w-0 flex-1 items-start gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide py-1 sm:gap-5 md:gap-8"
-            style={{ scrollPaddingInline: "12px" }}
-          >
-            {CATEGORIES.map((c, idx) => (
-              <button
-                key={`${c.label}-${idx}`}
-                type="button"
-                onClick={() => onCategoryClick?.(c.shopCategory)}
-                className="flex w-[56px] shrink-0 snap-start flex-col items-center gap-1.5 border-0 bg-transparent p-0 cursor-pointer group sm:w-[60px] md:w-[68px] md:gap-2"
+        {/* ═══════════════════════════════════════════════
+            LAYOUT: stacked on mobile, side-by-side on md+
+        ═══════════════════════════════════════════════ */}
+        <div className="relative z-[5] flex flex-col md:flex-row md:items-stretch"
+          style={{ minHeight: "clamp(260px, 42vw, 480px)" }}
+        >
+          {/* ── LEFT: Content ── */}
+          <div className="relative z-10 flex flex-1 items-center px-5 pt-6 pb-2 sm:px-7 sm:pt-8 md:w-[56%] md:flex-none md:px-10 md:py-8 lg:px-14 lg:py-10">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={`c-${slide}`}
+                className="w-full max-w-[460px]"
+                variants={contentVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                custom={direction}
+                transition={{ duration: 0.4, ease: "easeOut" }}
               >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-accent/40 sm:h-14 sm:w-14 md:h-16 md:w-16">
-                  <StoreImage
-                    src={c.img}
-                    alt={c.label}
-                    className="h-full w-full object-cover object-center"
+                {/* Eyebrow */}
+                <motion.div
+                  className="mb-3 flex items-center gap-2 md:mb-4"
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" style={{ background: ac.color }} />
+                    <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: ac.color }} />
+                  </span>
+                  <span
+                    className="rounded-full border px-2.5 py-0.5 font-eyebrow text-[9px] tracking-[0.14em] sm:px-3 sm:py-1 sm:text-[10px]"
+                    style={{ background: ac.soft, color: ac.dark, borderColor: `${ac.color}25` }}
+                  >
+                    {s.eyebrow}
+                  </span>
+                </motion.div>
+
+                {/* Title */}
+                <h2
+                  className="mb-3 font-display font-extrabold tracking-tight text-gray-950 md:mb-4"
+                  style={{ fontSize: "clamp(20px, 3.5vw, 44px)" }}
+                >
+                  <SlideTitle text={s.title} />
+                </h2>
+
+                {/* Divider */}
+                <motion.div
+                  className="mb-3 h-[3px] w-8 rounded-full md:mb-4 md:w-10"
+                  style={{ background: `linear-gradient(90deg, ${ac.color}, ${ac.soft})` }}
+                  initial={{ scaleX: 0, originX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.5, delay: 0.25 }}
+                />
+
+                {/* Subtitle */}
+                <motion.p
+                  className="mb-4 max-w-[280px] text-[12px] leading-relaxed text-slate-500 sm:text-[13px] md:mb-6 md:max-w-[300px] md:text-[14px]"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
+                >
+                  {s.sub}
+                </motion.p>
+
+                {/* CTAs */}
+                <motion.div
+                  className="flex flex-wrap items-center gap-2 sm:gap-3"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.38 }}
+                >
+                  <motion.button
+                    type="button"
+                    onClick={onViewAll}
+                    className="relative flex items-center gap-1.5 overflow-hidden rounded-full px-5 py-2.5 font-label text-[12px] font-bold text-white sm:gap-2 sm:px-7 sm:py-3 sm:text-[13px] md:text-[14px]"
+                    style={{
+                      background: `linear-gradient(135deg, ${ac.color}, ${ac.color}bb)`,
+                      boxShadow: `0 6px 22px ${ac.glow}`,
+                    }}
+                    whileHover={{ scale: 1.04, y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    <motion.span
+                      className="pointer-events-none absolute inset-0"
+                      style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)" }}
+                      animate={{ x: ["-100%", "200%"] }}
+                      transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.8 }}
+                    />
+                    {s.cta}
+                    <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </motion.button>
+
+                  <motion.button
+                    type="button"
+                    onClick={onViewAll}
+                    className="hidden rounded-full px-4 py-2.5 font-label text-[12px] font-medium transition-all sm:inline-flex sm:px-5 sm:py-3 sm:text-[13px]"
+                    style={{ border: `1.5px solid ${ac.color}28`, color: ac.dark, background: "white" }}
+                    whileHover={{ borderColor: ac.color, background: ac.soft }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    View all deals
+                  </motion.button>
+                </motion.div>
+
+                <motion.p
+                  className="mt-2 font-label text-[9px] text-slate-400 sm:mt-3 sm:text-[10px]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  {s.note}
+                </motion.p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* ── RIGHT: Image ── */}
+          <div className="relative flex-1 md:w-[44%] md:flex-none">
+            {/* Fade divider — only on desktop */}
+            <div
+              className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-20 md:block"
+              style={{ background: "linear-gradient(90deg, #fafbfc 0%, transparent 100%)" }}
+            />
+            {/* Fade divider — top on mobile (stacked layout) */}
+            <div
+              className="pointer-events-none absolute left-0 right-0 top-0 z-10 h-8 md:hidden"
+              style={{ background: "linear-gradient(180deg, #fafbfc 0%, transparent 100%)" }}
+            />
+
+            <div className="relative h-[180px] w-full overflow-hidden sm:h-[220px] md:h-full">
+              <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                <motion.div
+                  key={`img-${slide}`}
+                  className="absolute inset-0"
+                  variants={imageVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  custom={direction}
+                  transition={{ duration: 0.65, ease: [0.4, 0, 0.2, 1] }}
+                >
+                  <motion.div className="h-full w-full" style={{ x: ix, y: iy }}>
+                    <StoreImage
+                      src={s.img}
+                      alt={s.title}
+                      className="h-full w-full object-cover object-center"
+                    />
+                  </motion.div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Top-right accent tag — desktop only */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`tag-${slide}`}
+                  className="absolute right-3 top-3 z-20 hidden md:block md:right-4 md:top-4"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <div
+                    className="rounded-xl px-3 py-1.5 text-center shadow-md backdrop-blur-md"
+                    style={{ background: "rgba(255,255,255,0.88)", border: `1px solid ${ac.color}20` }}
+                  >
+                    <div className="font-label text-[9px] font-bold uppercase tracking-widest" style={{ color: ac.color }}>
+                      {s.eyebrow}
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════
+            BOTTOM BAR — thumbnails + progress
+        ═══════════════════════════════════════════════ */}
+        <div className="relative z-20 flex items-center justify-between border-t border-gray-100/60 px-4 py-2.5 sm:px-5 sm:py-3 md:px-8 md:py-3.5">
+          {/* Thumbnail dots / strip */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {SLIDES.map((sl, i) => (
+              <motion.button
+                key={i}
+                onClick={() => go(i)}
+                aria-label={`Slide ${i + 1}`}
+                className="relative shrink-0 overflow-hidden rounded-md sm:rounded-lg"
+                style={{
+                  width: i === slide ? 44 : 30,
+                  height: 30,
+                  border: `2px solid ${i === slide ? ac.color : "rgba(0,0,0,0.08)"}`,
+                  background: "#f1f5f9",
+                  transition: "width 0.35s ease, border-color 0.35s ease",
+                  boxShadow: i === slide ? `0 2px 10px ${ac.glow}` : "none",
+                }}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.93 }}
+              >
+                <StoreImage src={sl.img} alt="" className="h-full w-full object-cover" />
+                {i === slide && (
+                  <motion.div
+                    className="absolute inset-0"
+                    style={{ background: `${ac.color}18` }}
                   />
-                </div>
-                <span className="font-label flex min-h-[2rem] w-full items-center justify-center text-center text-[10px] font-semibold leading-tight text-primary group-hover:text-accent sm:min-h-[2.25rem] sm:text-[11px] md:text-[12px] line-clamp-2">
-                  {c.label}
-                </span>
-              </button>
+                )}
+              </motion.button>
             ))}
           </div>
 
-          <button
-            type="button"
-            aria-label="Scroll categories right"
-            onClick={() => scrollCat("r")}
-            className="mt-2 hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-white text-lg leading-none text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:bg-bg-soft sm:mt-2.5 md:mt-3.5 md:flex"
-          >
-            ›
-          </button>
-        </div>
-      </div>
-
-      {/* Highlight promo banner (under categories) */}
-      <HeroPromoBanner onExplore={onViewAllDeals} />
-
-      {/* Hero Area + Flash Sale Side */}
-      <div className="max-w-[1400px] mx-auto px-4 py-6 md:py-8">
-        <div className="grid lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
-          {/* Main Slider - Takes 3 columns */}
-          <div className="lg:col-span-3 relative rounded-2xl md:rounded-3xl overflow-hidden h-[340px] md:h-[460px] shadow-[0_8px_30px_color-mix(in_srgb,var(--color-primary)_10%,transparent)] bg-bg-soft group">
-            <AnimatePresence initial={false}>
+          {/* Progress + counter */}
+          <div className="flex items-center gap-2 sm:flex-col sm:items-end sm:gap-1.5">
+            <span className="font-mono text-[9px] tracking-widest text-slate-400 sm:text-[10px]">
+              {String(slide + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}
+            </span>
+            <div className="h-[3px] w-[52px] overflow-hidden rounded-full bg-gray-200 sm:w-[72px]">
               <motion.div
-                key={slide}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="absolute inset-0"
+                className="h-full rounded-full"
+                style={{
+                  width: `${prog}%`,
+                  background: `linear-gradient(90deg, ${ac.color}, ${ac.soft})`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Trust badges — desktop only ── */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`b-${slide}`}
+            className="absolute bottom-20 right-4 z-20 hidden flex-col gap-2 lg:flex lg:right-5"
+            initial={{ opacity: 0, x: 14 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.45 }}
+          >
+            {[
+              { icon: "⚡", t: "Express Delivery", s: "1–2 days Doha" },
+              { icon: "🛡️", t: "Qatar Warranty", s: "1 year local" },
+            ].map((b, i) => (
+              <motion.div
+                key={b.t}
+                className="flex items-center gap-2 rounded-xl px-3 py-2"
+                style={{
+                  background: "rgba(255,255,255,0.90)",
+                  border: `1px solid ${ac.color}18`,
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                  backdropFilter: "blur(12px)",
+                }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.52 + i * 0.1 }}
+                whileHover={{ scale: 1.03 }}
               >
-                <StoreImage
-                  src={s.img}
-                  alt={s.title}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="relative z-10 flex items-center h-full px-6 md:px-12 w-full max-w-[500px]">
-                  <div className="bg-white/90 backdrop-blur-xl border border-white/80 p-6 md:p-8 rounded-3xl flex flex-col gap-3 w-full shadow-[0_12px_40px_color-mix(in_srgb,var(--color-primary)_12%,transparent)]">
-                    <span className="font-eyebrow text-[10px] md:text-[11px] tracking-widest px-3 py-1 rounded-full w-fit bg-gradient-to-r from-accent to-accent-hover text-white shadow-md">
-                      {s.eyebrow}
-                    </span>
-                    <h2 className="font-display text-[clamp(24px,3vw,36px)] font-extrabold leading-tight whitespace-pre-line text-primary drop-shadow-sm">
-                      {s.title}
-                    </h2>
-                    <p className="text-muted font-medium text-[13px] md:text-[14px] leading-relaxed">
-                      {s.sub}
-                    </p>
-                    <button className="mt-2 w-fit px-6 py-2.5 text-sm font-bold clay-button">
-                      {s.cta}
-                    </button>
-                    <span className="text-muted text-[10px] font-medium">{s.note}</span>
-                  </div>
+                <span className="text-sm">{b.icon}</span>
+                <div>
+                  <div className="font-label text-[10px] font-bold text-gray-800">{b.t}</div>
+                  <div className="font-label text-[9px] text-gray-400">{b.s}</div>
                 </div>
               </motion.div>
-            </AnimatePresence>
+            ))}
+          </motion.div>
+        </AnimatePresence>
 
-            {/* Navigation Arrows */}
-            <div className="absolute inset-y-0 left-0 flex items-center z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-               <button
-                  onClick={() => go((slide - 1 + SLIDES.length) % SLIDES.length)}
-                  className="w-10 h-16 md:w-12 md:h-20 bg-white/80 backdrop-blur-md border border-white/50 shadow-[4px_0_12px_rgba(0,0,0,0.1)] flex items-center justify-center text-3xl text-primary hover:bg-white transition-all rounded-r-xl"
-                >
-                  ‹
-                </button>
-            </div>
-            <div className="absolute inset-y-0 right-0 flex items-center z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-               <button
-                  onClick={() => go((slide + 1) % SLIDES.length)}
-                  className="w-10 h-16 md:w-12 md:h-20 bg-white/80 backdrop-blur-md border border-white/50 shadow-[-4px_0_12px_rgba(0,0,0,0.1)] flex items-center justify-center text-3xl text-primary hover:bg-white transition-all rounded-l-xl"
-                >
-                  ›
-                </button>
-            </div>
-
-            {/* Slide Indicators */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-              {SLIDES.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => go(i)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    i === slide ? "w-8 bg-accent shadow-[0_0_8px_color-mix(in_srgb,var(--color-accent)_80%,transparent)]" : "w-2 bg-white/50 border border-border"
-                  }`}
-                  aria-label={`Slide ${i + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Flash Sale — visible on all screen sizes (below slider on mobile) */}
-          <div className="lg:col-span-1">
-            <FlashSaleBlock offer={FLASH_OFFERS[0]} onShop={onViewAllDeals} />
-          </div>
-        </div>
-      </div>
-
-      {/* Deals Grid */}
-      <div className="max-w-[1400px] mx-auto px-4 pb-6">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="font-display text-xl md:text-2xl font-bold text-primary">Today&apos;s Deals</h2>
-            <p className="text-sm text-muted mt-1">Grab these limited-time offers before they&apos;re gone!</p>
-          </div>
-          <button
-            type="button"
-            onClick={onViewAllDeals}
-            className="px-5 py-2.5 clay-button text-sm border-0 cursor-pointer"
+        {/* ── Prev / Next arrows ── */}
+        {[
+          { d: -1, lbl: "Prev", side: "left-2 sm:left-3" },
+          { d: 1, lbl: "Next", side: "right-2 sm:right-3" },
+        ].map(({ d, lbl, side }) => (
+          <motion.button
+            key={lbl}
+            onClick={() => go((slide + d + SLIDES.length) % SLIDES.length)}
+            className={`absolute ${side} top-[40%] z-30 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full sm:h-9 sm:w-9 md:top-[45%]`}
+            style={{
+              background: "rgba(255,255,255,0.90)",
+              border: "1.5px solid rgba(0,0,0,0.08)",
+              backdropFilter: "blur(8px)",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0 }}
+            whileHover={{ opacity: 1, scale: 1.12 }}
+            whileTap={{ scale: 0.92 }}
+            aria-label={lbl}
           >
-            View All Deals
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-5">
-          {dealProducts.map((product) => (
-            <DealCard
-              key={product.id}
-              product={product}
-              onClick={handleProductClick}
-            />
-          ))}
-        </div>
+            <svg className="h-3.5 w-3.5 text-gray-700 sm:h-4 sm:w-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d={d === -1 ? "M15.75 19.5L8.25 12l7.5-7.5" : "M8.25 4.5l7.5 7.5-7.5 7.5"} />
+            </svg>
+          </motion.button>
+        ))}
       </div>
-
-      <HardwarePromoBanner onCategoryClick={onCategoryClick} />
-    </section>
+    </div>
   );
 }

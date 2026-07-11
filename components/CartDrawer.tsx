@@ -92,7 +92,7 @@ export default function CartDrawer({ cart, open, onClose, onUpdate, onRemove, se
               {([["Subtotal", fmt(sub)], ["Shipping", "FREE"], ["Total", fmt(total)]] as [string, string][]).map(([label, val], i) => (
                 <div key={label} className={`flex justify-between py-1.5 ${i === 2 ? "mt-2 border-t border-border pt-2" : ""}`}>
                   <span className={`${i === 2 ? "text-[15px] font-bold text-primary" : "text-[13px] text-muted"}`}>{label}</span>
-                  <span className={`${i === 2 ? "text-[15px] font-bold text-primary" : "text-[13px] font-medium"} ${i === 1 ? "text-emerald-600" : "text-primary/80"}`}>{val}</span>
+                  <span className={`${i === 2 ? "text-[15px] font-bold text-primary" : "text-[13px] font-medium"} ${i === 1 ? "text-gray-600" : "text-primary/80"}`}>{val}</span>
                 </div>
               ))}
             </div>

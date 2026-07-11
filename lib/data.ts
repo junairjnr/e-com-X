@@ -276,18 +276,18 @@ export const assetForCategory = (category?: string) =>
 
 // ─── CATEGORIES ──────────────────────────────────────────────────────────────
 export const CATEGORIES: Category[] = [
-  { name: "POS Systems", count: 45, img: "pos-systems", color: "#8B6B1F", shopCategory: "POS Systems" },
-  { name: "Printers", count: 32, img: "printers-grid", color: "#B88A2A", shopCategory: "Printers" },
-  { name: "Scanners", count: 28, img: "scanners-grid", color: "#A16207", shopCategory: "Scanners" },
-  { name: "Displays", count: 19, img: "displays-grid", color: "#92400E", shopCategory: "Displays" },
-  { name: "Software & ERP", count: 12, img: "software", color: "#D4A63A", shopCategory: "Software" },
-  { name: "Security & CCTV", count: 23, img: "security", color: "#8B6B1F", shopCategory: "Security" },
+  { name: "POS Systems", count: 45, img: "pos-systems", color: "#166534", shopCategory: "POS Systems" },
+  { name: "Printers", count: 32, img: "printers-grid", color: "#15803D", shopCategory: "Printers" },
+  { name: "Scanners", count: 28, img: "scanners-grid", color: "#16A34A", shopCategory: "Scanners" },
+  { name: "Displays", count: 19, img: "displays-grid", color: "#0D3B2E", shopCategory: "Displays" },
+  { name: "Software & ERP", count: 12, img: "software", color: "#15803D", shopCategory: "Software" },
+  { name: "Security & CCTV", count: 23, img: "security", color: "#166534", shopCategory: "Security" },
   { name: "Servers & Storage", count: 18, img: "servers", color: "#111827", shopCategory: "Storage" },
   { name: "Networking", count: 27, img: "networking", color: "#6B7280" },
-  { name: "Laptops & PCs", count: 34, img: "laptops", color: "#92400E", shopCategory: "Mobile Computers" },
-  { name: "UPS & Power", count: 15, img: "ups", color: "#A16207", shopCategory: "Power Solutions" },
-  { name: "Label Printers", count: 21, img: "printers", color: "#B88A2A", shopCategory: "Label Printers" },
-  { name: "Mobile Computers", count: 16, img: "scanners-grid", color: "#8B6B1F", shopCategory: "Mobile Computers" },
+  { name: "Laptops & PCs", count: 34, img: "laptops", color: "#0D3B2E", shopCategory: "Mobile Computers" },
+  { name: "UPS & Power", count: 15, img: "ups", color: "#16A34A", shopCategory: "Power Solutions" },
+  { name: "Label Printers", count: 21, img: "printers", color: "#15803D", shopCategory: "Label Printers" },
+  { name: "Mobile Computers", count: 16, img: "scanners-grid", color: "#166534", shopCategory: "Mobile Computers" },
 ];
 
 export const HERO_CATEGORY_STRIP = [
@@ -304,7 +304,14 @@ export const HERO_CATEGORY_STRIP = [
   { label: "CCTV & Security", img: categoryImage("cctv"), shopCategory: "Security" },
   { label: "Access Control", img: categoryImage("security"), shopCategory: "Security" },
   { label: "UPS / APC", img: categoryImage("ups"), shopCategory: "Power Solutions" },
-  { label: "Power Backup", img: categoryImage("ups"), shopCategory: "Power Solutions" },
+  { label: "Power Backup", img: categoryImage("ups"), shopCategory: "Power Solutions" },  { label: "Servers", img: categoryImage("servers"), shopCategory: "Storage" },
+  { label: "Networking", img: categoryImage("networking"), shopCategory: "Networking" },
+  { label: "Laptops", img: categoryImage("laptops"), shopCategory: "Mobile Computers" },
+  { label: "POS Systems", img: categoryImage("pos"), shopCategory: "POS Systems" },
+  { label: "Printers", img: categoryImage("printers"), shopCategory: "Printers" },
+  { label: "Label Printers", img: categoryImage("printers-grid"), shopCategory: "Label Printers" },
+  { label: "Scanners", img: categoryImage("scanners"), shopCategory: "Scanners" },
+  
 ];
 
 export const HERO_SLIDER_SLIDES = [

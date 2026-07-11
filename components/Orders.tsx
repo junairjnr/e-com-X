@@ -12,7 +12,7 @@ export const ORDERS = [
 export const formatPrice = (p: number) => `QAR ${p.toLocaleString("en-QA")}`;
 
 const STATUS_CLASS: Record<string, string> = {
-  Delivered: "bg-emerald-500/15 text-emerald-700 border border-emerald-200",
+  Delivered: "bg-gray-200 text-gray-700 border border-gray-300",
   Shipped: "bg-accent-soft text-primary border border-accent/30",
   Processing: "bg-amber-500/15 text-amber-700 border border-amber-200",
 };

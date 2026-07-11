@@ -63,7 +63,7 @@ export default function DealCard({ product, onClick }: DealCardProps) {
         </div>
 
         <div className="mt-2.5 flex items-center justify-between border-t border-border pt-2.5">
-          <span className="text-[11px] font-medium text-emerald-600">Free delivery</span>
+          <span className="text-[11px] font-medium text-gray-500">Free delivery</span>
           <span className="text-[11px] font-semibold text-accent group-hover:underline">
             View deal →
           </span>

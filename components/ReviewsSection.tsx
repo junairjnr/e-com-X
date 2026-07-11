@@ -143,7 +143,7 @@ function ReviewCard({ review, isHelpfulClicked, onHelpful }: { review: Review; i
       <div className="flex items-center justify-between border-t border-bg-soft pt-3">
         <div className="flex flex-wrap gap-2">
           {review.verified && (
-            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-700">
               ✓ Verified Purchase
             </span>
           )}
@@ -156,7 +156,7 @@ function ReviewCard({ review, isHelpfulClicked, onHelpful }: { review: Review; i
           onClick={onHelpful}
           className={`rounded-full px-2.5 py-1 text-xs cursor-pointer transition-all ${
             isHelpfulClicked
-              ? "border border-emerald-200 bg-emerald-100 text-emerald-700"
+              ? "border border-gray-200 bg-gray-100 text-gray-700"
               : "border-0 bg-transparent text-muted"
           }`}
         >

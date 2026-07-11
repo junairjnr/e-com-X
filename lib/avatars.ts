@@ -1,4 +1,4 @@
-export const AVATAR_COLORS = ["#8B6B1F", "#B88A2A", "#A16207", "#92400E", "#D4A63A", "#6B7280", "#1A1208", "#BE123C"];
+export const AVATAR_COLORS = ["#15803D", "#166534", "#0D3B2E", "#052E16", "#16A34A", "#6B7280", "#0f766e", "#BE123C"];
 
 export const AVATAR_BG_CLASSES = [
   "bg-yellow-700",

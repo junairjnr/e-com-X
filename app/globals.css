@@ -3,19 +3,19 @@
 /* ─── Default theme (must match config/clients/skynet.ts — overridden on <html> at runtime) ─ */
 @theme {
   --color-bg: #FFFFFF;
-  --color-bg-soft: #FAF8F3;
+  --color-bg-soft: #F0F0F8;
   --color-surface: rgba(255, 255, 255, 0.98);
   --color-primary: #111827;
-  --color-primary-mid: #8B6B1F;
-  --color-primary-light: #D4A63A;
-  --color-accent: #B88A2A;
-  --color-accent-hover: #8B6B1F;
-  --color-accent-soft: #FFF9F0;
-  --color-accent-light: #E8C978;
+  --color-primary-mid: #1F2937;
+  --color-primary-light: #374151;
+  --color-accent: #111827;
+  --color-accent-hover: #1F2937;
+  --color-accent-soft: #E5E7EB;
+  --color-accent-light: #9CA3AF;
   --color-muted: #6B7280;
-  --color-border: #E5E7EB;
+  --color-border: #D1D5DB;
   --color-border-light: rgba(255, 255, 255, 0.72);
-  --color-footer: #131921;
+  --color-footer: #111827;
   --color-sale: #E53935;
 
   --font-sans: var(--font-urbanist), "Urbanist", ui-sans-serif, system-ui, sans-serif;
@@ -76,10 +76,50 @@
 
 html {
   scroll-behavior: smooth;
+  /* JS overrides --header-height dynamically via Header.tsx */
+  --header-height: 120px;
+  --header-gap: 20px;
+  --page-top: calc(var(--header-height) + var(--header-gap));
+}
+
+.page-top-offset {
+  padding-top: var(--page-top);
+  transition: padding-top 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+  html {
+    --header-height: 110px;
+    --header-gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    --header-height: 100px;
+    --header-gap: 12px;
+  }
 }
 
 body {
   @apply min-h-full font-sans text-primary antialiased bg-bg;
+}
+
+/* Hero slider — stable height that scales smoothly across breakpoints */
+.hero-slider {
+  min-height: 320px;
+}
+@media (min-width: 640px) {
+  .hero-slider { min-height: 340px; }
+}
+@media (min-width: 768px) {
+  .hero-slider { min-height: 380px; }
+}
+@media (min-width: 1024px) {
+  .hero-slider { min-height: 420px; }
+}
+@media (min-width: 1280px) {
+  .hero-slider { min-height: 460px; }
 }
 
 /* Typography roles — each UI layer uses a distinct family */
@@ -160,14 +200,14 @@ h1, h2, h3 {
 
 .clay-button {
   @apply rounded-full font-label text-white transition-all duration-300;
-  background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: linear-gradient(135deg, #111827 0%, #374151 100%);
+  box-shadow: 0 4px 16px rgba(17,24,39,0.35);
 }
 
 .clay-button:hover {
   @apply -translate-y-0.5;
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-accent) 45%, transparent);
-  background: linear-gradient(135deg, var(--color-primary-mid) 0%, var(--color-primary-light) 100%);
+  box-shadow: 0 8px 24px rgba(17,24,39,0.45);
+  background: linear-gradient(135deg, #1F2937 0%, #4B5563 100%);
 }
 
 .clay-button:active {
@@ -238,10 +278,10 @@ h1, h2, h3 {
   display: flex;
   overflow: hidden;
   border-radius: 16px;
-  background: linear-gradient(135deg, #fffefb 0%, #fff9f0 48%, #fff5e6 100%);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9eaf0 48%, #d1d5db 100%);
   border: 1.5px dashed color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
   box-shadow:
-    0 8px 28px color-mix(in srgb, var(--color-accent) 12%, transparent),
+    0 8px 28px rgba(17,24,39,0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
