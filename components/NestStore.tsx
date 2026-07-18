@@ -115,7 +115,7 @@ export default function NestStore() {
         onNavigateHome={() => navigate({ type: "home" })}
       />
 
-      <main>{renderPage()}</main>
+      <main className="">{renderPage()}</main>
 
       <Footer />
 
@@ -179,81 +179,96 @@ function HomePage({
   const allProducts = PRODUCTS;
 
   return (
-    // Flipkart uses a grey page background (#f1f3f6) with white card sections
     <div className="page-top-offset min-h-screen" style={{ background: "#f1f3f6" }}>
-      <div className="mx-auto max-w-[1440px] px-5">
+      <div className="mx-auto max-w-[1440px]">
+
         {/* 1. Full-width hero slider */}
         <div className="mb-2">
           <HeroSection onViewAll={goShop} />
         </div>
 
         {/* 2. Flash Sale / Deal of the Day */}
-        <FlashSaleSection onProductClick={openProduct} onViewAll={goShop} />
+        <div className="mb-2 bg-white">
+          <FlashSaleSection onProductClick={openProduct} onViewAll={goShop} />
+        </div>
 
         {/* 3. Promo banners */}
-        <PromoBannerStrip onCategoryClick={cat => navigate({ type: "shop", category: cat })} />
+        <div className="mb-2">
+          <PromoBannerStrip onCategoryClick={cat => navigate({ type: "shop", category: cat })} />
+        </div>
 
         {/* 4. Best Sellers */}
-        <FlipkartProductRow
-          title="Best Sellers"
-          subtitle="Top-rated products by Skynet customers"
-          products={bestSellers.length > 0 ? bestSellers : allProducts}
-          onProductClick={openProduct}
-          onViewAll={goShop}
-        />
+        <div className="mb-2 bg-white">
+          <FlipkartProductRow
+            title="Best Sellers"
+            subtitle="Top-rated products by Skynet customers"
+            products={bestSellers.length > 0 ? bestSellers : allProducts}
+            onProductClick={openProduct}
+            onViewAll={goShop}
+            bgColor="#ffffff"
+          />
+        </div>
 
         {/* 5. Shop by Category */}
-        <CategoriesSection
-          onCategoryClick={cat => navigate({ type: "shop", category: cat })}
-          onViewAll={goShop}
-        />
+        <div className="mb-2 bg-white">
+          <CategoriesSection
+            onCategoryClick={cat => navigate({ type: "shop", category: cat })}
+            onViewAll={goShop}
+          />
+        </div>
 
         {/* 6. New Arrivals */}
-        <FlipkartProductRow
-          title="New Arrivals"
-          subtitle="Just landed — fresh products for your business"
-          products={newArrivals.length > 0 ? newArrivals : allProducts.slice(4)}
-          onProductClick={openProduct}
-          onViewAll={goShop}
-          bgColor="#ffffff"
-        />
+        <div className="mb-2 bg-white">
+          <FlipkartProductRow
+            title="New Arrivals"
+            subtitle="Latest products just added"
+            products={newArrivals.length > 0 ? newArrivals : allProducts.slice(4)}
+            onProductClick={openProduct}
+            onViewAll={goShop}
+            bgColor="#ffffff"
+          />
+        </div>
 
-        {/* 7. Second promo banner — full width */}
-        <div
-          className="mb-2 flex cursor-pointer items-center justify-between overflow-hidden px-8 py-6 md:px-12 md:py-8"
-          style={{ background: "linear-gradient(135deg, #111827 0%, #1F2937 40%, #374151 100%)" }}
-          onClick={goShop}
-          role="button"
-          tabIndex={0}
-          onKeyDown={e => e.key === "Enter" && goShop()}
-        >
-          <div>
-            <div className="font-eyebrow text-[10px] tracking-widest text-slate-300/70">LIMITED TIME</div>
-            <div className="font-display text-2xl font-extrabold text-white md:text-4xl">
-              🎉 MEGA SALE — Up to 50% OFF
+        {/* 7. Mega Sale Banner */}
+        <div className="mb-2 overflow-hidden" style={{ background: "linear-gradient(135deg, #0a255dff 0%, #1e293b 40%, #334155 100%)" }}>
+          <div
+            className="flex cursor-pointer items-center justify-between px-10 py-8 md:py-10"
+            onClick={goShop} role="button" tabIndex={0} onKeyDown={e => e.key === "Enter" && goShop()}
+          >
+            <div>
+              <div className="mb-1 font-eyebrow text-[9px] tracking-[0.2em] text-slate-400/70">LIMITED TIME OFFER</div>
+              <div className="font-display text-[26px] font-extrabold leading-tight text-white md:text-[36px]">
+                MEGA SALE — Up to 50% OFF
+              </div>
+              <div className="mt-2 font-label text-[12px] text-slate-300/60">
+                Free installation on all POS systems · Qatar VAT Compliant
+              </div>
+              <div
+                className="mt-4 inline-flex items-center gap-2 rounded-lg px-6 py-2.5 font-label text-[13px] font-bold text-white transition-all hover:opacity-90"
+                style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)" }}
+              >
+                Shop Now →
+              </div>
             </div>
-            <div className="mt-1 font-label text-sm text-slate-200/70">Free installation on all POS systems · Qatar VAT Compliant</div>
-          </div>
-          <div className="hidden shrink-0 rounded-sm bg-white px-6 py-3 font-label text-sm font-bold text-[#111827] transition-all hover:bg-gray-100 md:block">
-            Shop Now →
+            <div className="hidden shrink-0 md:flex flex-col items-center justify-center">
+              <div
+                className="flex h-24 w-24 items-center justify-center rounded-2xl text-[42px] font-black text-white"
+                style={{ background: "rgba(255,255,255,0.10)", border: "1.5px solid rgba(255,255,255,0.18)" }}
+              >
+                %
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 8. All Products */}
-        <FlipkartProductRow
-          title="Explore All Products"
-          products={allProducts}
-          onProductClick={openProduct}
-          onViewAll={goShop}
-          bgColor="#ffffff"
-        />
-
-        {/* 9. Newsletter */}
+        {/* 8. Newsletter */}
         <NewsletterSection />
+
       </div>
     </div>
   );
 }
+
 
 
 

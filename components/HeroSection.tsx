@@ -83,7 +83,7 @@ export default function HeroSection({ onViewAll }: { onViewAll?: () => void }) {
   };
 
   return (
-    <div className="px-2 pb-3 pt-1 sm:px-3 md:px-5">
+    <div className="px-3 pb-2 pt-4">
       <div
         className="hero-slider relative w-full overflow-hidden rounded-2xl md:rounded-3xl"
         style={{
@@ -361,8 +361,8 @@ export default function HeroSection({ onViewAll }: { onViewAll?: () => void }) {
             transition={{ delay: 0.45 }}
           >
             {[
-              { icon: "⚡", t: "Express Delivery", s: "1–2 days Doha" },
-              { icon: "🛡️", t: "Qatar Warranty", s: "1 year local" },
+              { icon: "⚡", t: "Express Delivery", s: "Fast & Reliable" },
+              { icon: "🛡️", t: "Official Warranty", s: "Brand Warranty Products" },
             ].map((b, i) => (
               <motion.div
                 key={b.t}

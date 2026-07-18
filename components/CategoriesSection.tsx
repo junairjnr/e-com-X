@@ -1,81 +1,99 @@
 "use client";
 import { motion } from "framer-motion";
 import { CATEGORIES, getCategoryDisplayCount } from "@/lib/data";
-import { categoryImage } from "@/lib/images";
-import StoreImage from "./StoreImage";
 
 interface CategoriesSectionProps {
   onCategoryClick?: (category: string) => void;
   onViewAll?: () => void;
 }
 
+// Map each category to its beautiful product image
+const CAT_IMAGES: Record<string, string> = {
+  "CCTV & Security": "/images/categories/cat-cctv.png",
+  "Security & CCTV": "/images/categories/cat-cctv.png",
+  "Networking": "/images/categories/cat-networking.png",
+  "POS Systems": "/images/categories/cat-pos.png",
+  "Computers": "/images/categories/cat-computers.png",
+  "Laptops & PCs": "/images/categories/cat-computers.png",
+  "Printers": "/images/categories/cat-printers.png",
+  "Scanners": "/images/categories/cat-scanners.png",
+  "Software & ERP": "/images/categories/cat-software.png",
+  "Displays": "/images/categories/cat-displays.png",
+  "Servers & Storage": "/images/categories/cat-servers.png",
+  "UPS & Power": "/images/categories/cat-ups.png",
+  "Access Control": "/images/categories/cat-access.png",
+  "Mobile Computers": "/images/categories/cat-mobile.png",
+  "Label Printers": "/images/categories/cat-printers.png",
+};
+
+const FALLBACK_IMAGE = "/images/categories/cat-pos.png";
+
 export default function CategoriesSection({ onCategoryClick, onViewAll }: CategoriesSectionProps) {
   return (
-    <section className="mb-2 bg-white">
+    <section className="bg-white pb-1">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 md:px-6">
+      <div className="flex items-center justify-between px-6 py-4 lg:px-10">
         <div>
-          <h2 className="font-display text-xl font-extrabold text-gray-900 md:text-2xl">Shop by Category</h2>
-          <p className="mt-0.5 font-label text-xs text-gray-500">Explore all product categories</p>
+          <h2 className="font-display text-[19px] font-extrabold text-gray-900 md:text-[21px]">Shop by Category</h2>
+          <p className="mt-0.5 font-label text-[11px] text-gray-500">Browse our wide range of product categories</p>
         </div>
         <motion.button
           type="button"
           onClick={onViewAll}
-          className="flex items-center gap-1.5 rounded-full border border-[#111827] px-5 py-2 font-label text-[12px] font-bold text-[#111827]"
-          whileHover={{ background: "#111827", color: "#ffffff", scale: 1.03 }}
+          className="flex items-center gap-1.5 rounded-full border border-gray-800 px-4 py-1.5 font-label text-[12px] font-bold text-gray-800 transition-all hover:bg-gray-800 hover:text-white"
           whileTap={{ scale: 0.97 }}
         >
-          View All
+          View All Categories
         </motion.button>
       </div>
 
-      {/* Category grid */}
-      <div className="grid grid-cols-3 gap-2 px-3 pb-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 md:px-5">
+      {/* Category grid — 6 cols × 2 rows with beautiful product images */}
+      <div className="grid grid-cols-4 gap-3 px-6 pb-5 sm:grid-cols-5 md:grid-cols-6 lg:px-10">
         {CATEGORIES.map((cat, i) => {
           const count = getCategoryDisplayCount(cat);
+          const img = CAT_IMAGES[cat.name] ?? FALLBACK_IMAGE;
+
           return (
             <motion.button
               key={cat.name}
               type="button"
               onClick={() => onCategoryClick?.(cat.shopCategory ?? cat.name)}
-              className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 text-center"
+              className="group flex flex-col items-center gap-2 rounded-xl bg-white p-3 text-center cursor-pointer"
               style={{
                 border: "1.5px solid #f0f0f0",
-                boxShadow: "0 1px 8px rgba(0,0,0,0.04)",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
               }}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04, duration: 0.35 }}
+              transition={{ delay: i * 0.04, duration: 0.3 }}
               whileHover={{
-                y: -4,
-                boxShadow: "0 12px 32px rgba(17,24,39,0.14)",
-                borderColor: "#9CA3AF",
-                scale: 1.02,
+                y: -3,
+                boxShadow: "0 8px 24px rgba(17,24,39,0.10)",
+                borderColor: "#CBD5E1",
               }}
               whileTap={{ scale: 0.96 }}
             >
-              {/* Circle image with gradient ring on hover */}
-              <motion.div
-                className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full md:h-20 md:w-20"
-                style={{
-                  background: "linear-gradient(135deg, #f8f9fa, #f3f4f6)",
-                  border: "2px solid #e5e7eb",
-                }}
-                whileHover={{ borderColor: "#9CA3AF", scale: 1.06 }}
-                transition={{ duration: 0.25 }}
+              {/* Image container — rounded square with product photo */}
+              <div
+                className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl p-1.5 transition-all group-hover:scale-105"
+                style={{ background: "#f8fafc" }}
               >
-                <StoreImage
-                  src={categoryImage(cat.img)}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={img}
                   alt={cat.name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                  }}
                 />
-              </motion.div>
+              </div>
 
               <div>
-                <span className="block font-label text-[11px] font-semibold leading-tight text-gray-800 md:text-[12px]">
+                <span className="block font-label text-[10.5px] font-semibold leading-tight text-gray-800 sm:text-[11px]">
                   {cat.name}
                 </span>
-                <span className="mt-0.5 block font-label text-[9px] text-gray-500 font-medium">
+                <span className="mt-0.5 block font-label text-[9px] text-gray-400 font-medium">
                   {count}+ items
                 </span>
               </div>

@@ -36,7 +36,7 @@ export default function RootLayout({
       data-client={client.id}
       style={themeToCssProperties(client.theme)}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col mr-[50px] ml-[50px]">
         <ThemeProvider clientId={client.id}>{children}</ThemeProvider>
       </body>
     </html>

@@ -291,27 +291,18 @@ export const CATEGORIES: Category[] = [
 ];
 
 export const HERO_CATEGORY_STRIP = [
-  { label: "Servers", img: categoryImage("servers"), shopCategory: "Storage" },
-  { label: "Networking", img: categoryImage("networking"), shopCategory: "Networking" },
-  { label: "Laptops", img: categoryImage("laptops"), shopCategory: "Mobile Computers" },
-  { label: "POS Systems", img: categoryImage("pos"), shopCategory: "POS Systems" },
-  { label: "Printers", img: categoryImage("printers"), shopCategory: "Printers" },
-  { label: "Label Printers", img: categoryImage("printers-grid"), shopCategory: "Label Printers" },
-  { label: "Scanners", img: categoryImage("scanners"), shopCategory: "Scanners" },
-  { label: "Mobile Computers", img: categoryImage("scanners-grid"), shopCategory: "Mobile Computers" },
-  { label: "Displays", img: categoryImage("displays"), shopCategory: "Displays" },
-  { label: "Software & ERP", img: categoryImage("software"), shopCategory: "Software" },
   { label: "CCTV & Security", img: categoryImage("cctv"), shopCategory: "Security" },
-  { label: "Access Control", img: categoryImage("security"), shopCategory: "Security" },
-  { label: "UPS / APC", img: categoryImage("ups"), shopCategory: "Power Solutions" },
-  { label: "Power Backup", img: categoryImage("ups"), shopCategory: "Power Solutions" },  { label: "Servers", img: categoryImage("servers"), shopCategory: "Storage" },
   { label: "Networking", img: categoryImage("networking"), shopCategory: "Networking" },
-  { label: "Laptops", img: categoryImage("laptops"), shopCategory: "Mobile Computers" },
   { label: "POS Systems", img: categoryImage("pos"), shopCategory: "POS Systems" },
+  { label: "Computers", img: categoryImage("laptops"), shopCategory: "Mobile Computers" },
   { label: "Printers", img: categoryImage("printers"), shopCategory: "Printers" },
-  { label: "Label Printers", img: categoryImage("printers-grid"), shopCategory: "Label Printers" },
   { label: "Scanners", img: categoryImage("scanners"), shopCategory: "Scanners" },
-  
+  { label: "Software & ERP", img: categoryImage("software"), shopCategory: "Software" },
+  { label: "Displays", img: categoryImage("displays"), shopCategory: "Displays" },
+  { label: "Servers & Storage", img: categoryImage("servers"), shopCategory: "Storage" },
+  { label: "Access Control", img: categoryImage("security"), shopCategory: "Security" },
+  { label: "UPS & Power", img: categoryImage("ups"), shopCategory: "Power Solutions" },
+  { label: "Mobile Computers", img: categoryImage("scanners-grid"), shopCategory: "Mobile Computers" },
 ];
 
 export const HERO_SLIDER_SLIDES = [

@@ -1,14 +1,10 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PRODUCTS, fmt } from "@/lib/data";
 import type { Product, WishlistItem } from "@/lib/types";
-import ReviewsSection from "./ReviewsSection";
-import ProductCard from "./ProductCard";
 import StoreImage from "./StoreImage";
-import { tw, badgeBgClass, swatchBgClass } from "@/lib/theme";
 import * as Icons from "./Icons";
-
-
+import { Colors } from "@/lib/theme";
 
 interface ProductPageProps {
   product: Product;
@@ -20,542 +16,455 @@ interface ProductPageProps {
   wishlist: WishlistItem[];
 }
 
+function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
+  return (
+    <div className="flex items-center gap-px">
+      {[1, 2, 3, 4, 5].map(i => (
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24"
+          fill={i <= Math.round(rating) ? "#F59E0B" : "none"}
+          stroke={i <= Math.round(rating) ? "#F59E0B" : "#D1D5DB"}
+          strokeWidth="1.5"
+        >
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+const TABS = ["Description", "Specifications", "Downloads", "Support"] as const;
+type Tab = typeof TABS[number];
+
 export default function ProductPage({ product, onAddToCart, onWishlistToggle, isWishlisted, onBack, onProductClick, wishlist }: ProductPageProps) {
   const [imgIdx, setImgIdx] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(product.colors[0]);
-  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] ?? "");
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const [sizeError, setSizeError] = useState(false);
   const [pincode, setPincode] = useState("");
-  const [tab, setTab] = useState<"desc" | "details" | "care">("desc");
+  const [pincodeChecked, setPincodeChecked] = useState(false);
+  const [tab, setTab] = useState<Tab>("Description");
 
-  // ── Image viewer state ─────────────────────────────────────────────────────
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [is360Mode, setIs360Mode] = useState(false);
-  const [rotate360, setRotate360] = useState(0);
-  const imgRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
-  const rotate360Ref = useRef<{ startX: number; startRot: number } | null>(null);
+  const similar = PRODUCTS.filter(p => p.id !== product.id && p.category === product.category).slice(0, 6);
+  const fallbackSimilar = PRODUCTS.filter(p => p.id !== product.id).slice(0, 6);
+  const relatedProducts = similar.length >= 3 ? similar : fallbackSimilar;
 
-  const similar = PRODUCTS.filter(p => p.id !== product.id).slice(0, 4);
+  const discount = product.originalPrice
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : null;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [product.id]);
 
   const handleAdd = () => {
-    if (!selectedSize) { setSizeError(true); return; }
-    setSizeError(false);
-    for (let i = 0; i < qty; i++) onAddToCart(product, selectedColor.name, selectedSize);
+    onAddToCart(product, product.colors[0]?.name ?? "Default", selectedSize);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
 
-  const handleZoom = (dir: "in" | "out" | "reset") => {
-    if (is360Mode) return;
-    if (dir === "reset") { setZoom(1); setPan({ x: 0, y: 0 }); }
-    else setZoom(z => Math.min(3, Math.max(0.5, z + (dir === "in" ? 0.25 : -0.25))));
-  };
-
-  const handleWheel = (e: React.WheelEvent) => {
-    if (is360Mode) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const delta = e.deltaY > 0 ? -0.12 : 0.12;
-    setZoom(z => {
-      const next = Math.min(3, Math.max(0.5, z + delta));
-      if (next <= 1) setPan({ x: 0, y: 0 });
-      return next;
-    });
-  };
-
-  const handleRotate = () => setRotation(r => (r + 90) % 360);
-  const handleRotateReset = () => setRotation(0);
-
-  const isControlTarget = (target: EventTarget | null) =>
-    !!(target as HTMLElement)?.closest?.("[data-viewer-control]");
-
-  const handleViewerPointerDown = (e: React.PointerEvent) => {
-    if (isControlTarget(e.target)) return;
-
-    if (is360Mode) {
-      e.preventDefault();
-      rotate360Ref.current = { startX: e.clientX, startRot: rotate360 };
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      return;
-    }
-
-    if (zoom > 1) {
-      e.preventDefault();
-      dragRef.current = { startX: e.clientX, startY: e.clientY, panX: pan.x, panY: pan.y };
-      setIsDragging(true);
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    }
-  };
-
-  const handleViewerPointerMove = (e: React.PointerEvent) => {
-    if (rotate360Ref.current) {
-      const { startX, startRot } = rotate360Ref.current;
-      setRotate360(startRot + (e.clientX - startX) * 0.5);
-      return;
-    }
-    if (dragRef.current && isDragging) {
-      const { startX, startY, panX, panY } = dragRef.current;
-      setPan({ x: panX + (e.clientX - startX), y: panY + (e.clientY - startY) });
-    }
-  };
-
-  const handleViewerPointerUp = (e: React.PointerEvent) => {
-    rotate360Ref.current = null;
-    dragRef.current = null;
-    setIsDragging(false);
-    try {
-      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {
-      /* pointer may already be released */
-    }
-  };
-
-  const stopControl = (e: React.SyntheticEvent) => {
-    e.stopPropagation();
-  };
-
-  const toolBtnClass =
-    "viewer-toolbar-btn flex h-10 w-10 lg:h-11 lg:w-11 items-center justify-center rounded-lg border-0 bg-white/10 text-white cursor-pointer transition-all active:scale-95 active:bg-accent/30 hover:bg-white/20 hover:text-accent-light";
-
-  const viewerCursorClass = is360Mode
-    ? "cursor-grab active:cursor-grabbing"
-    : zoom > 1
-      ? isDragging
-        ? "cursor-grabbing"
-        : "cursor-grab"
-      : "cursor-zoom-in";
-
-  const viewerTouchClass = is360Mode || zoom > 1 ? "touch-none" : "";
-
-  const imageTransformStyle: React.CSSProperties = is360Mode
-    ? { transform: `perspective(900px) rotateY(${rotate360}deg)`, transformStyle: "preserve-3d" }
-    : { transform: `scale(${zoom}) rotate(${rotation}deg) translate(${pan.x / zoom}px, ${pan.y / zoom}px)` };
-
-  const imageTransitionStyle: React.CSSProperties =
-    isDragging || is360Mode
-      ? {}
-      : { transition: "transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1)" };
-
-  const imageViewer = (
-    <div
-      ref={imgRef}
-      onPointerDown={handleViewerPointerDown}
-      onPointerMove={handleViewerPointerMove}
-      onPointerUp={handleViewerPointerUp}
-      onPointerCancel={handleViewerPointerUp}
-      onWheel={handleWheel}
-      className={`relative w-full overflow-hidden bg-white select-none ${viewerCursorClass} ${viewerTouchClass} ${
-        isFullscreen
-          ? "h-full min-h-screen rounded-none border-0 shadow-none"
-          : "h-[340px] sm:h-[420px] lg:h-[520px] rounded-2xl lg:rounded-[28px] border border-border shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
-      }`}
-    >
-      {/* Soft spotlight behind product */}
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,var(--color-bg-soft)_0%,transparent_70%)]" />
-
-      {/* Product image — inline transform so zoom/360 work at runtime */}
-      <div
-        className="absolute inset-0 z-[1] flex items-center justify-center p-14 pb-20 lg:p-12 lg:pr-16"
-        style={{ ...imageTransformStyle, ...imageTransitionStyle }}
-      >
-        <StoreImage
-          src={product.images[imgIdx] || product.images[0]}
-          alt={product.name}
-          draggable={false}
-          className="max-h-full max-w-full object-contain select-none drop-shadow-[0_16px_32px_rgba(0,0,0,0.12)]"
-        />
-      </div>
-
-      {/* ── Top action bar: discount + wishlist ── */}
-      <div className="absolute top-0 left-0 right-0 z-30 flex items-start justify-between p-3 sm:p-4 pointer-events-none">
-        <div className="pointer-events-auto flex flex-wrap gap-2">
-          {product.originalPrice && (
-            <span className={tw.saleBadge}>
-              −{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-            </span>
-          )}
-          {product.badge && (
-            <span
-              className={`font-eyebrow inline-flex items-center rounded-lg px-3 py-1.5 text-[10px] tracking-wider text-white shadow-md ${badgeBgClass(product.badge)}`}
-            >
-              {product.badge}
-            </span>
-          )}
-        </div>
-
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onWishlistToggle({ id: product.id, name: product.name, brand: product.brand, price: product.price, img: product.images[0] });
-          }}
-          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          className={`pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 shadow-[0_4px_20px_rgba(0,0,0,0.15)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${
-            isWishlisted
-              ? "border-red-400 bg-red-50 text-red-500"
-              : "border-white bg-white/95 text-muted hover:border-red-200 hover:text-red-500"
-          }`}
-        >
-          <Icons.Heart filled={isWishlisted} />
-        </button>
-      </div>
-
-      {/* ── Toolbar — touch-safe controls ── */}
-      <div
-        data-viewer-control
-        className="pointer-events-auto absolute z-40 flex touch-manipulation items-center gap-1 overflow-hidden rounded-xl border border-white/10 bg-[#131921]/95 px-1.5 py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-xl bottom-3 left-1/2 -translate-x-1/2 lg:bottom-auto lg:left-auto lg:right-3 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-0 lg:flex-col lg:gap-0.5 lg:px-1 lg:py-2"
-      >
-        <button
-          type="button"
-          data-viewer-control
-          onClick={(e) => { stopControl(e); handleZoom("in"); }}
-          title="Zoom In"
-          className={toolBtnClass}
-        >
-          <Icons.ZoomIn />
-        </button>
-
-        <button
-          type="button"
-          data-viewer-control
-          onClick={(e) => { stopControl(e); handleZoom("reset"); }}
-          title="Reset zoom"
-          className={`${toolBtnClass} text-[10px] font-bold tabular-nums !w-auto min-w-[40px] px-1 ${zoom !== 1 ? "!text-accent-light" : ""}`}
-        >
-          {Math.round(zoom * 100)}%
-        </button>
-
-        <button
-          type="button"
-          data-viewer-control
-          onClick={(e) => { stopControl(e); handleZoom("out"); }}
-          title="Zoom Out"
-          className={toolBtnClass}
-        >
-          <Icons.ZoomOut />
-        </button>
-
-        <div className="mx-0.5 h-px w-5 bg-white/20 lg:mx-0 lg:my-0.5 lg:h-px lg:w-8" />
-
-        <button
-          type="button"
-          data-viewer-control
-          onClick={(e) => { stopControl(e); handleRotate(); }}
-          onContextMenu={(e) => { e.preventDefault(); handleRotateReset(); }}
-          title="Rotate 90° (right-click to reset)"
-          className={`${toolBtnClass} ${rotation !== 0 ? "!bg-accent/30 !text-accent-light" : ""}`}
-        >
-          <Icons.RotateCw />
-        </button>
-
-        <div className="mx-0.5 h-px w-5 bg-white/20 lg:mx-0 lg:my-0.5 lg:h-px lg:w-8" />
-
-        <button
-          type="button"
-          data-viewer-control
-          onClick={(e) => { stopControl(e); setIsFullscreen((fs) => !fs); }}
-          title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-          className={toolBtnClass}
-        >
-          {isFullscreen ? <Icons.Minimize /> : <Icons.Maximize />}
-        </button>
-
-        <div className="mx-0.5 h-px w-5 bg-white/20 lg:mx-0 lg:my-0.5 lg:h-px lg:w-8" />
-
-        <button
-          type="button"
-          data-viewer-control
-          onClick={(e) => {
-            stopControl(e);
-            setIs360Mode((m) => !m);
-            setRotate360(0);
-            setZoom(1);
-            setPan({ x: 0, y: 0 });
-          }}
-          title="360° view — drag to spin"
-          className={`${toolBtnClass} text-[9px] font-black tracking-wide ${is360Mode ? "!bg-accent/35 !text-accent-light" : ""}`}
-        >
-          360°
-        </button>
-      </div>
-
-      {/* 360° hint */}
-      {is360Mode && (
-        <div className="pointer-events-none absolute bottom-16 left-1/2 z-10 -translate-x-1/2 lg:bottom-6">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-footer/90 px-4 py-2 text-[11px] font-medium text-white/90 backdrop-blur-md shadow-lg">
-            ↔ Drag to rotate 360°
-          </span>
-        </div>
-      )}
-    </div>
-  );
-
-
-  // Fullscreen overlay
-  if (isFullscreen) {
-    return (
-      <div className="fixed inset-0 z-[600] flex flex-col bg-footer">
-        <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
-          <div className="font-display text-xl font-bold text-white">{product.name}</div>
-          <div className="flex gap-2">
-            {product.images.map((img, i) => (
-              <button key={i} type="button" onClick={() => setImgIdx(i)} className={`h-11 w-11 overflow-hidden rounded-lg border-2 p-0 cursor-pointer ${imgIdx === i ? "border-accent" : "border-transparent"}`}>
-                <StoreImage src={img} alt="" aria-hidden className="h-full w-full object-cover" />
-              </button>
-            ))}
-          </div>
-          <button type="button" onClick={() => setIsFullscreen(false)} className="flex h-9 w-9 items-center justify-center rounded-full border-0 bg-white/10 text-white cursor-pointer">
-            <Icons.X />
-          </button>
-        </div>
-        <div className="relative flex flex-1">
-          {imageViewer}
-        </div>
-      </div>
-    );
-  }
+  const crumbs = ["Home", product.category || "Printers", "Label Printers", product.name];
 
   return (
-    <div className={`page-top-offset min-h-screen ${tw.sectionBg}`}>
-      <div className="mx-auto max-w-[1280px] px-4 md:px-6 pb-16 md:pb-20">
+    <div className="page-top-offset min-h-screen" style={{ background: "#f1f3f6" }}>
+      <div className="mx-auto max-w-[1440px]">
 
         {/* Breadcrumb */}
-        <div className="mb-4 md:mb-6 flex flex-wrap items-center gap-1.5 text-xs md:text-[13px] text-muted">
-          <button type="button" onClick={onBack} className="flex items-center gap-1 border-0 bg-transparent cursor-pointer text-accent font-semibold">
-            <Icons.ChevronLeft /> Back
-          </button>
-          <span className="hidden sm:inline"><Icons.ChevronRight /></span>
-          <span className="hidden sm:inline">{product.category || "Products"}</span>
-          <span className="hidden sm:inline"><Icons.ChevronRight /></span>
-          <span className="font-semibold text-primary line-clamp-1">{product.name}</span>
+        <div className="bg-white px-6 py-2 lg:px-10 pt-4">
+          <nav className="flex items-center gap-1 text-[11.5px] text-gray-500">
+            {crumbs.map((crumb, i) => (
+              <span key={crumb} className="flex items-center gap-1">
+                {i > 0 && <span className="text-gray-300">›</span>}
+                {i < crumbs.length - 1 ? (
+                  <button type="button" onClick={onBack}
+                    className="text-gray-600 hover:text-blue-600 border-0 bg-transparent cursor-pointer hover:underline"
+                  >{crumb}</button>
+                ) : (
+                  <span className="text-gray-700 font-medium line-clamp-1">{crumb}</span>
+                )}
+              </span>
+            ))}
+          </nav>
         </div>
 
-        {/* Main layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
-
-          {/* ── LEFT: Image Gallery ── */}
-          <div className="lg:sticky w-full" style={{ top: "var(--page-top)" }}>
-            <div className="flex flex-col lg:flex-row gap-3 lg:gap-2.5 w-full">
-
-              {/* Thumbnails — below viewer on mobile, left strip on desktop */}
-              <div className="order-2 lg:order-1 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 shrink-0 scrollbar-thin">
-                {product.images.map((img, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => { setImgIdx(i); setZoom(1); setPan({ x: 0, y: 0 }); setRotation(0); setIs360Mode(false); }}
-                    className={`shrink-0 w-14 h-14 lg:w-[68px] lg:h-[68px] rounded-xl overflow-hidden border-0 cursor-pointer p-0 transition-all ${
-                      imgIdx === i
-                        ? "outline outline-2 outline-accent outline-offset-2 shadow-[0_4px_18px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]"
-                        : "outline outline-2 outline-border outline-offset-2"
-                    }`}
-                  >
-                    <StoreImage src={img} alt="" aria-hidden className="h-full w-full object-cover" />
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className="hidden lg:flex shrink-0 w-[68px] h-9 rounded-[10px] border border-border bg-white cursor-pointer items-center justify-center text-muted"
-                  title="Share"
-                >
-                  <Icons.Share />
-                </button>
-              </div>
-
-              {/* Main image viewer */}
-              <div className="order-1 lg:order-2 flex-1 min-w-0 w-full">
-                {imageViewer}
-              </div>
-            </div>
+        {/* Main product section */}
+        <div className="mt-1 bg-white px-6 py-6 lg:px-10 lg:py-8">
+          {/* SKU top-right */}
+          <div className="mb-2 flex justify-end">
+            {product.sku && <span className="text-[11px] text-gray-400">SKU: {product.sku}</span>}
           </div>
 
-          {/* ── RIGHT: Product Info — scroll-linked, same height ── */}
-          <div className="flex flex-col gap-[18px]">
-            {/* Brand + SKU */}
-            <div className="flex justify-between items-start">
-              <div className="font-eyebrow text-[11px] tracking-widest text-accent">
-                {product.brand} · <span className="normal-case tracking-normal text-muted">Skynet Solution Qatar</span>
-              </div>
-              {product.sku && (
-                <div className="text-[11px] text-muted">SKU: {product.sku}</div>
-              )}
-            </div>
-
-            <h1 className="font-display text-[32px] md:text-[38px] font-bold leading-tight text-primary">
-              {product.name}
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-2.5">
-              <div className="flex gap-0.5 text-accent">
-                {[1, 2, 3, 4, 5].map(i => <Icons.Star key={i} filled={i <= Math.round(product.rating)} />)}
-              </div>
-              <span className="text-sm font-bold text-accent">{product.rating}</span>
-              <span className="text-[13px] text-muted">({product.reviews.toLocaleString()} reviews)</span>
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
-                {Math.round(product.rating * 20)}% recommended
-              </span>
-              {product.stock !== undefined && product.stock < 20 && (
-                <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">
-                  Only {product.stock} left!
-                </span>
-              )}
-            </div>
-
-            {/* Price block */}
-            <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-accent-soft px-5 py-4">
-              <span className="font-price text-[30px] font-extrabold text-primary">{fmt(product.price)}</span>
-              {product.originalPrice && <>
-                <span className="text-base text-muted line-through">{fmt(product.originalPrice)}</span>
-                <span className={tw.saleBadge}>
-                  {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                </span>
-              </>}
-            </div>
-
-            {/* Spec tags */}
-            <div className="flex flex-wrap gap-1.5">
-              {product.tags.map(t => (
-                <span key={t} className="rounded-full bg-accent-soft px-3 py-1 text-[11px] font-semibold text-accent">
-                  ✓ {t}
-                </span>
-              ))}
-            </div>
-
-            {/* Color/Variant */}
-            {product.colors.length > 1 && (
-              <div>
-                <div className="mb-2 text-[13px] font-semibold text-primary/80">
-                  Color: <span className="font-bold text-primary">{selectedColor.name}</span>
-                </div>
-                <div className="flex gap-2.5">
-                  {product.colors.map(c => (
-                    <button
-                      key={c.name}
-                      type="button"
-                      onClick={() => setSelectedColor(c)}
-                      title={c.name}
-                      className={`h-[30px] w-[30px] rounded-full border-0 cursor-pointer transition-all ${swatchBgClass(c.hex)} ${
-                        selectedColor.name === c.name
-                          ? "outline outline-[2.5px] outline-primary outline-offset-[3px]"
-                          : "outline outline-2 outline-transparent outline-offset-[3px]"
+          {/* <div className="grid grid-cols-1 gap-6 lg:grid-cols-[460px_1fr] xl:grid-cols-[500px_1fr]"> */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[58%_42%] xl:grid-cols-[60%_40%]">
+            {/* ─── LEFT: Image Gallery ─── */}
+            <div className="flex gap-2.5">
+              {/* Thumbnail strip */}
+              <div className="flex flex-col gap-1.5">
+                {product.images.slice(0, 5).map((img, i) => (
+                  <button key={i} type="button" onClick={() => setImgIdx(i)}
+                    className={`h-[70px] w-[70px] flex-shrink-0 overflow-hidden rounded-md border-2 cursor-pointer p-1 transition-all ${imgIdx === i ? "border-blue-600" : "border-gray-200 hover:border-gray-400"
                       }`}
+                  >
+                    <StoreImage src={img} alt="" className="h-full w-full object-contain" />
+                  </button>
+                ))}
+                {product.images.length > 5 && (
+                  <button type="button" onClick={() => setImgIdx(5)}
+                    className="flex h-[70px] w-[70px] items-center justify-center rounded-md border-2 border-gray-200 cursor-pointer text-[11px] font-bold text-gray-500 hover:border-gray-400"
+                  >+{product.images.length - 5}</button>
+                )}
+              </div>
+
+              {/* Main image container — large */}
+              <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50" style={{ minHeight: "440px" }}>
+                {/* Badges */}
+                <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
+                  {discount && (
+                    <span className="rounded px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "#a70a1cff" }}>
+                      -{discount}% OFF
+                    </span>
+                  )}
+                  {product.badge && (
+                    <span className="rounded px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "#10b981" }}>
+                      {product.badge}
+                    </span>
+                  )}
+                </div>
+
+                {/* Wishlist */}
+                <button type="button"
+                  onClick={() => onWishlistToggle({ id: product.id, name: product.name, brand: product.brand, price: product.price, img: product.images[0] })}
+                  className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 bg-white transition-all cursor-pointer ${isWishlisted ? "border-red-400 text-red-500" : "border-gray-200 text-gray-400 hover:border-red-300"
+                    }`}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill={isWishlisted ? "#ef4444" : "none"} stroke={isWishlisted ? "#ef4444" : "#9ca3af"} strokeWidth="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </button>
+
+                {/* Image */}
+                <div className="flex h-full w-full items-center justify-center p-10">
+                  <StoreImage
+                    src={product.images[imgIdx] ?? product.images[0]}
+                    alt={product.name}
+                    className="max-h-full max-w-full object-contain"
+                    style={{ maxHeight: "380px" }}
+                  />
+                </div>
+
+                {/* Dot nav */}
+                <div className="absolute bottom-3 flex items-center gap-1.5">
+                  {product.images.slice(0, 6).map((_, i) => (
+                    <button key={i} type="button" onClick={() => setImgIdx(i)}
+                      className={`rounded-full border-0 cursor-pointer transition-all ${imgIdx === i ? "w-4 h-1.5 bg-blue-600" : "w-1.5 h-1.5 bg-gray-300"}`}
                     />
                   ))}
                 </div>
-              </div>
-            )}
 
-            {/* Size / Variant picker */}
-            <div>
-              <div className="mb-2 flex justify-between">
-                <span className="text-[13px] font-semibold text-primary/80">
-                  Select Variant:
-                  {sizeError && <span className="ml-2 text-red-500">Please select</span>}
+                {/* Prev/Next arrows */}
+                {imgIdx > 0 && (
+                  <button type="button" onClick={() => setImgIdx(i => Math.max(0, i - 1))}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm cursor-pointer hover:shadow-md"
+                  ><Icons.ChevronLeft /></button>
+                )}
+                {imgIdx < product.images.length - 1 && (
+                  <button type="button" onClick={() => setImgIdx(i => Math.min(product.images.length - 1, i + 1))}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm cursor-pointer hover:shadow-md"
+                  ><Icons.ChevronRight /></button>
+                )}
+              </div>
+            </div>
+
+            {/* ─── RIGHT: Product Info ─── */}
+            <div className="flex flex-col gap-3 min-w-0">
+              {/* Brand + Authorized */}
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-bold text-blue-700 uppercase tracking-wide">{product.brand}</span>
+                <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600">
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-500 inline-block" />
+                  Authorized Distributor
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {product.sizes.map(s => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => { setSelectedSize(s); setSizeError(false); }}
-                    className={`min-w-[52px] h-10 rounded-[10px] px-3.5 text-[13px] font-semibold cursor-pointer transition-all ${
-                      selectedSize === s
-                        ? "border-2 border-primary bg-primary text-white"
-                        : sizeError
-                          ? "border-2 border-red-500 bg-white text-primary/80"
-                          : "border-2 border-border bg-white text-primary/80"
-                    }`}
-                  >
-                    {s}
-                  </button>
+
+              {/* Product name */}
+              <h1 className="font-display text-[24px] font-bold leading-tight text-gray-900 md:text-[28px]">
+                {product.name}
+              </h1>
+
+              {/* Rating row */}
+              <div className="flex flex-wrap items-center gap-2">
+                <StarRating rating={product.rating} size={15} />
+                <span className="font-bold text-[13px] text-amber-500">{product.rating}</span>
+                <span className="text-[12px] text-gray-500">({product.reviews.toLocaleString()} reviews)</span>
+                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
+                  {Math.round(product.rating * 20)}% recommended
+                </span>
+              </div>
+
+              {/* Price block */}
+              <div className="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3.5">
+                <span className="font-mono text-[26px] font-extrabold text-gray-900">{fmt(product.price)}</span>
+                {product.originalPrice && (
+                  <>
+                    <span className="text-[14px] text-gray-400 line-through">{fmt(product.originalPrice)}</span>
+                    <span className="rounded px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "#a70a1cff" }}>
+                      {discount}% OFF
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Feature tags */}
+              {product.tags.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {product.tags.map(t => (
+                    <span key={t} className="flex items-center gap-1 text-[12px] font-medium text-gray-700">
+                      <svg className="h-3.5 w-3.5 text-blue-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <polyline points="20,6 9,17 4,12" />
+                      </svg>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Variant */}
+              {product.sizes && product.sizes.length > 0 && (
+                <div>
+                  <div className="mb-2 text-[12.5px] font-semibold text-gray-700">Select Variant</div>
+                  <div className="flex flex-wrap gap-2">
+                    {product.sizes.map(s => (
+                      <button key={s} type="button" onClick={() => setSelectedSize(s)}
+                        className={`rounded-lg border-2 px-4 py-1.5 text-[12px] font-semibold cursor-pointer transition-all ${selectedSize === s ? "border-blue-600 bg-blue-50 text-blue-700" : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
+                          }`}
+                      >{s}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quantity + Stock */}
+              <div className="flex items-center gap-4">
+                <span className="text-[12.5px] font-semibold text-gray-700">Quantity</span>
+                <div className="flex items-center overflow-hidden rounded-lg border border-gray-200">
+                  <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))}
+                    className="flex h-8 w-8 items-center justify-center border-0 bg-white text-gray-700 cursor-pointer hover:bg-gray-50 text-lg font-light"
+                  >−</button>
+                  <span className="flex h-8 w-9 items-center justify-center border-x border-gray-200 text-[13px] font-bold">{qty}</span>
+                  <button type="button" onClick={() => setQty(q => q + 1)}
+                    className="flex h-8 w-8 items-center justify-center border-0 bg-white text-gray-700 cursor-pointer hover:bg-gray-50 text-lg font-light"
+                  >+</button>
+                </div>
+                {product.stock !== undefined && (
+                  <span className="text-[11.5px] font-medium text-green-600">
+                    {product.stock > 0 ? `→ In Stock (${product.stock})` : "Out of Stock"}
+                  </span>
+                )}
+              </div>
+
+              {/* CTA Buttons — match screenshot: blue Add to Cart + dark Buy Now */}
+              <div className="flex gap-2.5">
+                <button type="button" onClick={handleAdd}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg py-3 text-[14px] font-bold text-white border-0 cursor-pointer transition-opacity hover:opacity-90"
+                  style={{ background: `${Colors.base_color}` }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                  </svg>
+                  {added ? "Added to Cart!" : "Add to Cart"}
+                </button>
+                <button type="button" onClick={handleAdd}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg py-3 text-[14px] font-bold text-white border-0 cursor-pointer transition-colors hover:bg-gray-800"
+                  style={{ background: "#111827" }}
+                >
+                  ⚡ Buy Now
+                </button>
+              </div>
+
+              {/* Delivery checker */}
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+                <div className="mb-2 text-[12px] font-bold text-gray-700">🚚 Check Delivery to Qatar</div>
+                <div className="flex gap-2">
+                  <input
+                    value={pincode}
+                    onChange={e => { setPincode(e.target.value); setPincodeChecked(false); }}
+                    placeholder="Enter city or area (e.g. Lusail)"
+                    className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] outline-none focus:border-blue-400"
+                  />
+                  <button type="button"
+                    onClick={() => setPincodeChecked(true)}
+                    className="shrink-0 rounded-lg border border-gray-300 bg-white px-4 py-2 text-[12px] font-bold text-gray-700 cursor-pointer hover:bg-gray-100"
+                  >Check</button>
+                </div>
+                {pincodeChecked && pincode && (
+                  <p className="mt-1.5 text-[11px] font-medium text-green-600">✓ Delivery available · 1–2 business days</p>
+                )}
+              </div>
+
+              {/* Trust badges */}
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {[
+                  { icon: "🔧", title: "Free Installation", sub: "For POS Systems" },
+                  { icon: "🛡️", title: "1 Year Warranty", sub: "Parts & Labour" },
+                  { icon: "📋", title: "Qatar VAT Ready", sub: "VAT Compliant" },
+                  { icon: "📞", title: "24/7 Support", sub: "Local Support" },
+                ].map(b => (
+                  <div key={b.title} className="flex items-center gap-2 rounded-xl border border-gray-100 bg-white px-2.5 py-2">
+                    <span className="text-base shrink-0">{b.icon}</span>
+                    <div>
+                      <div className="text-[10.5px] font-bold text-gray-800">{b.title}</div>
+                      <div className="text-[9.5px] text-gray-500">{b.sub}</div>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Quantity */}
-            <div className="flex items-center gap-4">
-              <span className="text-[13px] font-semibold text-primary/80">Qty:</span>
-              <div className="flex items-center rounded-full border border-border">
-                <button
-                  type="button"
-                  onClick={() => setQty(q => Math.max(1, q - 1))}
-                  className="flex h-9 w-9 items-center justify-center border-0 bg-transparent cursor-pointer text-muted"
-                >
-                  <Icons.Minus />
-                </button>
-                <span className="w-8 text-center font-bold">{qty}</span>
-                <button
-                  type="button"
-                  onClick={() => setQty(q => q + 1)}
-                  className="flex h-9 w-9 items-center justify-center border-0 bg-transparent cursor-pointer text-primary"
-                >
-                  <Icons.Plus />
-                </button>
-              </div>
-              {product.stock !== undefined && (
-                <span className={`text-xs font-medium ${product.stock > 20 ? "text-gray-600" : "text-red-600"}`}>
-                  {product.stock > 20 ? `✓ In Stock (${product.stock})` : `⚡ Only ${product.stock} left`}
-                </span>
+        {/* ─── Tabs ─── */}
+        <div className="mt-1 bg-white ">
+          <div className="flex border-b border-gray-200 px-6 lg:px-10">
+            {TABS.map(t => (
+              <button key={t} type="button" onClick={() => setTab(t)}
+                className={`relative shrink-0 px-5 py-3.5 border-0 cursor-pointer text-[13px] font-semibold transition-colors ${tab === t ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+                  }`}
+              >
+                {t}
+                {tab === t && <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 rounded-t" />}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 px-6 py-6 lg:px-10 lg:grid-cols-[1fr_220px]">
+            <div className="text-[13.5px] leading-relaxed text-gray-700">
+              {tab === "Description" && (
+                <>
+                  <p className="font-medium text-gray-800 mb-2">Compact desktop barcode and label printer designed for warehouses and retail inventory management.</p>
+                  <p>{product.description}</p>
+                  <p className="mt-3">
+                    The Honeywell PC42t is a reliable thermal transfer printer delivering fast, high-quality printing at 203 DPI. It supports a wide range of label sizes and media types, making it ideal for retail, logistics, healthcare, and warehouse operations.
+                  </p>
+                  <p className="mt-3">
+                    Backed by Skynet Solution Qatar&apos;s full implementation and support service including installation, software configuration, staff training, and priority technical support. All products are Qatar VAT compliant and integrate seamlessly with atACC ERP.
+                  </p>
+                </>
               )}
-            </div>
-
-            {/* CTAs */}
-            <div className="product-cta-row">
-              <button
-                type="button"
-                onClick={handleAdd}
-                className={`${added ? "!bg-gray-700" : tw.btnPrimary} !font-bold !shadow-none sm:!shadow-[0_4px_20px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]`}
-              >
-                {added ? <><Icons.Check /> Added to Cart!</> : <><Icons.Bag /> Add to Cart</>}
-              </button>
-              <button
-                type="button"
-                onClick={handleAdd}
-                className={`${tw.btnPrimary} !font-extrabold`}
-              >
-                ⚡ Buy Now
-              </button>
-            </div>
-
-            {/* Delivery check */}
-            <div className="rounded-2xl bg-stone-100 px-[18px] py-3.5">
-              <div className="mb-2 text-xs font-bold text-primary">📦 Check Delivery to Qatar</div>
-              <div className="delivery-row flex flex-col sm:flex-row gap-2 sm:gap-2">
-                <input
-                  value={pincode}
-                  onChange={e => setPincode(e.target.value.slice(0, 8))}
-                  placeholder="Area (e.g., Lusail, West Bay)"
-                  className="flex-1 rounded-full border-[1.5px] border-border bg-white px-3.5 py-2.5 text-xs outline-none"
-                />
-                <button type="button" className={`${tw.btnPrimarySm} px-4 py-2.5`}>Check</button>
-              </div>
-              {pincode.length > 4 && (
-                <div className="mt-2 text-xs font-medium text-gray-600">
-                  ✓ Delivery in 1–2 business days · Free installation included
+              {tab === "Specifications" && (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {[["SKU", product.sku || "—"], ["Category", product.category || "—"], ["In Stock", `${product.stock || "—"} units`], ["Warranty", "1 Year (Parts & Labour)"], ["Certification", "Qatar VAT Compliant"], ["Support", "24/7 Local Doha Team"], ["Interface", product.tags[0] || "USB"], ["Brand Origin", "Commercial Grade"]].map(([l, v]) => (
+                    <div key={l} className="flex flex-col gap-0.5 rounded-lg bg-gray-50 px-3 py-2.5">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">{l}</span>
+                      <span className="text-[13px] font-medium text-gray-800">{v}</span>
+                    </div>
+                  ))}
                 </div>
               )}
+              {tab === "Downloads" && (
+                <div className="flex flex-col gap-3">
+                  {["Product Datasheet", "Quick Start Guide", "Warranty Certificate", "VAT Compliance Certificate"].map(doc => (
+                    <div key={doc} className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
+                      <span className="flex items-center gap-2 text-[13px] font-medium text-gray-700"><span className="text-blue-600">📄</span> {doc}</span>
+                      <button type="button" className="text-[12px] font-bold text-blue-600 border-0 bg-transparent cursor-pointer hover:underline">Download PDF</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {tab === "Support" && (
+                <ul className="flex flex-col gap-3">
+                  {["Call +974 4431 1525 for 24/7 technical support", "Remote desktop support available for software issues", "On-site engineer visits for hardware faults (Doha)", "Replacement units within 24 hours under warranty", "Annual Maintenance Contracts (AMC) available"].map(tip => (
+                    <li key={tip} className="flex items-start gap-2.5">
+                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12" /></svg>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
-            {/* Trust badges */}
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5">
-              {[["🚚", "Free Installation", "All POS systems"], ["↩️", "1-Year Warranty", "Parts & labour"], ["🔒", "Qatar VAT Ready", "Auto-compliance"], ["📞", "24/7 Support", "Local Doha team"]].map(([icon, title, sub]) => (
-                <div key={title} className="flex gap-2.5 rounded-xl border border-border bg-white p-3">
-                  <span className="text-lg">{icon}</span>
-                  <div>
-                    <div className="text-[11px] font-bold text-primary">{title}</div>
-                    <div className="text-[10px] text-muted">{sub}</div>
+            {/* Feature bullets — right col */}
+            <div className="hidden lg:flex flex-col gap-2">
+              {["Fast & reliable printing", "Easy media loading", "Compact & space-saving", "High-quality 203 DPI resolution", "Compatible with major platforms"].map(f => (
+                <div key={f} className="flex items-center gap-2 text-[12.5px] text-gray-700">
+                  <svg className="h-3.5 w-3.5 shrink-0 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" />
+                  </svg>
+                  {f}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ─── Reviews ─── */}
+        <div className="mt-1 bg-white px-6 py-6 lg:px-10">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="font-display text-[19px] font-bold text-gray-900">Customer Reviews</h2>
+            <button type="button" className="text-[13px] font-semibold text-blue-600 hover:underline border-0 bg-transparent cursor-pointer">View All Reviews →</button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[200px_1fr]">
+            {/* Summary */}
+            <div>
+              <div className="flex items-end gap-2">
+                <span className="font-display text-[52px] font-extrabold leading-none text-gray-900">{product.rating}</span>
+                <div className="pb-1">
+                  <StarRating rating={product.rating} size={18} />
+                  <p className="mt-1 text-[11px] text-gray-500">Based on {product.reviews} reviews</p>
+                </div>
+              </div>
+              <div className="mt-4 flex flex-col gap-1.5">
+                {[5, 4, 3, 2, 1].map((star, idx) => {
+                  const ratios = [0.68, 0.16, 0.08, 0.05, 0.03];
+                  const count = Math.round(product.reviews * ratios[idx]);
+                  return (
+                    <div key={star} className="flex items-center gap-2">
+                      <span className="w-3 text-right text-[11px] font-semibold text-gray-600">{star}</span>
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                        <div className="h-full rounded-full" style={{ width: `${Math.round(ratios[idx] * 100)}%`, background: star >= 4 ? "#1d4ed8" : star === 3 ? "#94a3b8" : "#e2e8f0" }} />
+                      </div>
+                      <span className="w-7 text-right text-[11px] text-gray-400">{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <button type="button" className="mt-4 rounded-lg border border-blue-600 px-4 py-2 text-[12px] font-bold text-blue-600 cursor-pointer bg-transparent hover:bg-blue-50">
+                Write a Review
+              </button>
+            </div>
+
+            {/* Review cards */}
+            <div className="flex flex-col gap-4">
+              {[
+                { name: "Fatima H.", location: "Doha, Qatar", rating: 5, date: "Dec 15, 2024", title: "Reliable label printing for warehouse", body: "Runs 10+ hours daily in our warehouse. Labels are crisp at 203 DPI and setup with Skynet was same-day. Support answered every question quickly.", tags: ["Label Printing", "4 Inch • USB"], helpful: 87 },
+                { name: "Mohammed R.", location: "West Bay, Qatar", rating: 4, date: "Nov 28, 2024", title: "Great product, quick delivery", body: "Excellent build quality. Integration with our atACC ERP was smooth. Skynet's support team helped configure it remotely within 2 hours.", tags: ["USB", "Windows"], helpful: 43 },
+              ].map((rev, i) => (
+                <div key={i} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[14px] font-bold text-orange-600">
+                        {rev.name.split(" ").map(n => n[0]).join("")}
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-bold text-gray-900">{rev.name}</div>
+                        <div className="text-[11px] text-gray-500">{rev.location}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <StarRating rating={rev.rating} size={12} />
+                      <div className="mt-0.5 text-[10.5px] text-gray-400">{rev.date}</div>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className="mb-1.5 inline-block rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-600">✓ Verified Purchase</span>
+                    <p className="text-[13px] font-semibold text-gray-900">{rev.title}</p>
+                    <p className="mt-1 text-[12.5px] leading-relaxed text-gray-600">{rev.body}</p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {rev.tags.map(tag => (
+                        <span key={tag} className="rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-[10.5px] font-medium text-gray-600">{tag}</span>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-[11px] text-gray-400">👍 Helpful ({rev.helpful})</div>
                   </div>
                 </div>
               ))}
@@ -563,69 +472,59 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
           </div>
         </div>
 
-        {/* Description Tabs */}
-        <div className="mt-14 rounded-3xl border border-border overflow-hidden bg-white">
-          <div className="tab-row flex overflow-x-auto border-b border-border">
-            {(["desc", "details", "care"] as const).map(t => (
-              <button key={t} type="button" onClick={() => setTab(t)}
-                className={`shrink-0 flex-1 min-w-[110px] px-4 py-4 border-0 cursor-pointer text-sm transition-all ${
-                  tab === t
-                    ? "font-bold text-primary bg-accent-soft border-b-2 border-accent"
-                    : "font-medium text-muted bg-white border-b-2 border-transparent"
-                }`}>
-                {t === "desc" ? "Description" : t === "details" ? "Specs" : "Support"}
-              </button>
-            ))}
-          </div>
-          <div className="p-5 md:p-8">
-            {tab === "desc" && (
-              <p className="text-[15px] leading-[1.8] text-primary/80">
-                {product.description}<br /><br />
-                This product is backed by Skynet Solution Qatar&apos;s full implementation and support service. Includes professional installation, software configuration, staff training, and one year of priority technical support. All products are Qatar VAT compliant and integrate seamlessly with atACC ERP.
-              </p>
-            )}
-            {tab === "details" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-                {[["SKU", product.sku || "—"], ["Category", product.category || "—"], ["In Stock", `${product.stock || "—"} units`], ["Warranty", "1 Year (Parts & Labour)"], ["Certification", "Qatar VAT Compliant"], ["Support", "24/7 Local Doha Team"], ["Interface", product.tags[2] || "USB"], ["Origin", "Commercial Grade"]].map(([label, val]) => (
-                  <div key={label} className="flex flex-col gap-1">
-                    <span className="font-eyebrow text-[10px] tracking-wider text-muted">{label}</span>
-                    <span className="text-sm text-primary">{val}</span>
+        {/* ─── You Might Also Like ─── */}
+        <div className="mt-1 bg-white px-6 py-6 lg:px-10">
+          <h2 className="mb-4 font-display text-[18px] font-bold text-gray-900">You Might Also <span className="italic text-[#0a255dff]">Like</span></h2>
+          <div className="flex gap-3 overflow-x-auto scroll-smooth scrollbar-hide pb-2">
+            {relatedProducts.map(p => {
+              const pd = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : null;
+              return (
+                <div key={p.id}
+                  className="flex shrink-0 flex-col rounded-lg border border-gray-200 bg-white overflow-hidden"
+                  style={{ width: "170px" }}
+                >
+                  <div className="relative h-[110px] bg-gray-50 flex items-center justify-center overflow-hidden">
+                    {pd && <span className="absolute left-1.5 top-1.5 rounded px-1.5 py-0.5 text-[9px] font-bold text-white z-10" style={{ background: "#a70a1cff" }}>-{pd}% OFF</span>}
+                    {p.isNew && <span className="absolute right-1.5 top-1.5 rounded px-1.5 py-0.5 text-[9px] font-bold text-white z-10" style={{ background: "#10b981" }}>NEW</span>}
+                    <button type="button" onClick={() => onProductClick(p)} className="p-3 w-full h-full flex items-center justify-center border-0 bg-transparent cursor-pointer">
+                      <StoreImage src={p.images[0]} alt={p.name} className="max-h-full max-w-full object-contain" />
+                    </button>
                   </div>
-                ))}
-              </div>
-            )}
-            {tab === "care" && (
-              <div>
-                <p className="mb-4 text-sm leading-[1.8] text-primary/80">
-                  Skynet provides full support for all hardware and software products:
-                </p>
-                <ul className="flex list-none flex-col gap-2.5">
-                  {["Call +974 4431 1525 for 24/7 technical support", "Remote desktop support available for software issues", "On-site engineer visits for hardware faults (Doha)", "Replacement units provided within 24 hours under warranty", "Annual Maintenance Contracts (AMC) available", "Visit skynetqatar.com/support for knowledge base"].map(tip => (
-                    <li key={tip} className="flex gap-2.5 text-sm text-primary/80">
-                      <span className="text-accent font-bold shrink-0">✓</span> {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                  <div className="flex flex-1 flex-col px-2.5 pt-2 pb-2.5">
+                    <div className="mb-0.5 text-[8px] font-bold uppercase tracking-widest text-gray-400">{p.brand}</div>
+                    <div className="mb-1 flex items-center gap-px">
+                      {[1, 2, 3, 4, 5].map(s => <svg key={s} width="9" height="9" viewBox="0 0 24 24" fill={s <= Math.round(p.rating) ? "#F59E0B" : "#D1D5DB"}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" /></svg>)}
+                      <span className="ml-0.5 text-[9px] font-bold text-amber-500">{p.rating}</span>
+                      <span className="text-[9px] text-gray-400">({p.reviews})</span>
+                    </div>
+                    <button type="button" onClick={() => onProductClick(p)} className="mb-1 text-left border-0 bg-transparent cursor-pointer">
+                      <span className="line-clamp-2 text-[11px] font-semibold leading-snug text-gray-800">{p.name}</span>
+                    </button>
+                    <span className="mb-0.5 text-[10px] font-semibold text-green-600">In Stock</span>
+                    <div className="text-[13px] font-extrabold text-gray-900">{fmt(p.price)}</div>
+                    {p.originalPrice && <div className="text-[10px] text-gray-400 line-through">{fmt(p.originalPrice)}</div>}
+                    <div className="mt-2 flex items-center gap-1">
+                      <button type="button"
+                        onClick={() => onAddToCart(p, p.colors[0]?.name ?? "Default", p.sizes?.[0] ?? "")}
+                        className="flex flex-1 items-center justify-center gap-1 rounded py-1.5 text-[10px] font-bold text-white cursor-pointer hover:opacity-90"
+                        style={{ background: "#1e3a8a" }}
+                      >+ Add to Cart</button>
+                      <button type="button"
+                        onClick={() => onWishlistToggle({ id: p.id, name: p.name, brand: p.brand, price: p.price, img: p.images[0] })}
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-gray-200 bg-white cursor-pointer"
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill={wishlist.some(w => w.id === p.id) ? "#ef4444" : "none"} stroke={wishlist.some(w => w.id === p.id) ? "#ef4444" : "#9ca3af"} strokeWidth="2">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Reviews */}
-        <ReviewsSection productId={product.id} rating={product.rating} reviewCount={product.reviews} />
-
-        {/* Similar products */}
-        <div className="mt-[60px]">
-          <h2 className="font-display text-2xl md:text-[32px] font-bold text-primary mb-6 md:mb-7">
-            You Might Also <span className="italic text-accent">Like</span>
-          </h2>
-          <div className="product-grid-equal">
-            {similar.map(p => (
-              <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} onWishlistToggle={onWishlistToggle}
-                isWishlisted={wishlist.some(w => w.id === p.id)} onClick={onProductClick} />
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

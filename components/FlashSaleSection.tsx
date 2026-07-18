@@ -33,50 +33,65 @@ function useCountdown(targetHours = 8) {
 
 function pad(n: number) { return String(n).padStart(2, "0"); }
 
+function StarRating({ rating, reviews }: { rating: number; reviews: number }) {
+  return (
+    <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
+        {[1,2,3,4,5].map(i => (
+          <svg key={i} className="h-2.5 w-2.5" viewBox="0 0 24 24" fill={i <= Math.round(rating) ? "#F59E0B" : "#D1D5DB"}>
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        ))}
+      </div>
+      <span className="font-label text-[9px] text-gray-400">({reviews})</span>
+    </div>
+  );
+}
+
 export default function FlashSaleSection({ onProductClick, onViewAll }: FlashSaleSectionProps) {
-  const time = useCountdown(8);
+  const time = useCountdown(7);
   const deals = PRODUCTS.filter(p => p.originalPrice).slice(0, 8);
 
   return (
     <section className="mb-2 overflow-hidden" style={{ background: "#ffffff", borderRadius: "0" }}>
       {/* Header */}
       <div
-        className="flex flex-wrap items-center gap-3 px-5 py-4 md:px-6"
-        style={{ background: "linear-gradient(135deg, #111827 0%, #1F2937 60%, #374151 100%)" }}
+        className="flex flex-wrap items-center gap-3 px-10 py-3.5"
+        style={{ background: "linear-gradient(135deg, #0a255dff 0%, #1e293b 60%, #334155 100%)" }}
       >
         {/* Fire icon + title */}
         <div className="flex items-center gap-2">
           <motion.span
-            className="text-2xl"
+            className="text-xl"
             animate={{ rotate: [-5, 5, -5], scale: [1, 1.1, 1] }}
             transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
           >
             🔥
           </motion.span>
-          <h2 className="font-display text-xl font-extrabold text-white md:text-2xl">
+          <h2 className="font-display text-[17px] font-extrabold text-white md:text-xl">
             Deal of the Day
           </h2>
         </div>
 
-        {/* Countdown timer */}
-        <div className="flex items-center gap-1.5">
-          <span className="font-label text-xs font-semibold text-slate-300">Ends in</span>
+        {/* Countdown */}
+        <div className="flex items-center gap-2">
+          <span className="font-label text-[11px] font-medium text-slate-300">Ends in</span>
           <div className="flex items-center gap-1">
-            {[time.h, time.m, time.s].map((val, i) => (
-              <span key={i} className="flex items-center gap-1">
+            {[{ v: time.h, l: "H" }, { v: time.m, l: "M" }, { v: time.s, l: "S" }].map(({ v, l }, i) => (
+              <span key={l} className="flex items-center gap-1">
                 <AnimatePresence mode="popLayout">
                   <motion.span
-                    key={val}
-                    initial={{ y: -12, opacity: 0 }}
+                    key={v}
+                    initial={{ y: -10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 12, opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="flex h-8 min-w-[32px] items-center justify-center rounded-lg bg-white/15 px-1.5 font-mono text-[14px] font-extrabold text-white backdrop-blur-sm tabular-nums border border-white/20"
+                    exit={{ y: 10, opacity: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="flex h-7 min-w-[28px] flex-col items-center justify-center rounded-md bg-white/15 px-1.5 font-mono text-[13px] font-extrabold text-white tabular-nums border border-white/20"
                   >
-                    {pad(val)}
+                    {pad(v)}
                   </motion.span>
                 </AnimatePresence>
-                {i < 2 && <span className="font-bold text-white/70 text-sm">:</span>}
+                {i < 2 && <span className="font-bold text-white/60 text-sm">:</span>}
               </span>
             ))}
           </div>
@@ -85,16 +100,16 @@ export default function FlashSaleSection({ onProductClick, onViewAll }: FlashSal
         <motion.button
           type="button"
           onClick={onViewAll}
-          className="ml-auto flex items-center gap-1.5 rounded-full bg-white px-5 py-2 font-label text-[12px] font-bold text-gray-800"
+          className="ml-auto flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 font-label text-[12px] font-bold text-gray-800"
           whileHover={{ scale: 1.05, boxShadow: "0 4px 16px rgba(255,255,255,0.3)" }}
           whileTap={{ scale: 0.97 }}
         >
-          View All <Icons.ArrowRight />
+          View All Deals <Icons.ArrowRight />
         </motion.button>
       </div>
 
       {/* Cards */}
-      <div className="flex gap-3 overflow-x-auto scroll-smooth scrollbar-hide bg-gray-50 px-5 py-4 md:px-6">
+      <div className="flex gap-3 overflow-x-auto scroll-smooth scrollbar-hide bg-gray-50 px-10 py-4">
         {deals.map((product, i) => {
           const discount = product.originalPrice
             ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -107,35 +122,35 @@ export default function FlashSaleSection({ onProductClick, onViewAll }: FlashSal
               onClick={() => onProductClick(product)}
               className="group flex shrink-0 flex-col text-left"
               style={{
-                width: "clamp(150px, 20vw, 185px)",
+                width: "clamp(145px, 19vw, 178px)",
                 background: "#fff",
-                borderRadius: "16px",
+                borderRadius: "14px",
                 border: "1.5px solid #f0f0f0",
                 overflow: "hidden",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
               }}
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.07, duration: 0.4 }}
               whileHover={{
-                y: -5,
-                boxShadow: "0 16px 40px rgba(17,24,39,0.14)",
+                y: -4,
+                boxShadow: "0 14px 36px rgba(17,24,39,0.13)",
                 borderColor: "#9CA3AF",
               }}
               whileTap={{ scale: 0.97 }}
             >
-              {/* Image — fully rounded inner container */}
+              {/* Image */}
               <div
-                className="relative mx-2.5 mt-2.5 flex items-center justify-center overflow-hidden"
+                className="relative mx-2 mt-2 flex items-center justify-center overflow-hidden"
                 style={{
-                  borderRadius: "12px",
-                  height: "130px",
+                  borderRadius: "10px",
+                  height: "120px",
                   background: "linear-gradient(135deg, #f8f9fa, #f3f4f6)",
                 }}
               >
                 <motion.div
-                  className="h-full w-full flex items-center justify-center p-3"
-                  whileHover={{ scale: 1.1 }}
+                  className="h-full w-full flex items-center justify-center p-2.5"
+                  whileHover={{ scale: 1.08 }}
                   transition={{ duration: 0.3 }}
                 >
                   <StoreImage
@@ -147,31 +162,41 @@ export default function FlashSaleSection({ onProductClick, onViewAll }: FlashSal
 
                 {discount && (
                   <span
-                    className="absolute left-1.5 top-1.5 rounded-full px-2 py-0.5 font-label text-[10px] font-black text-white"
-                    style={{ background: "linear-gradient(135deg,#111827,#1F2937)", boxShadow: "0 1px 6px rgba(17,24,39,0.4)" }}
+                    className="absolute left-1.5 top-1.5 rounded-full px-1.5 py-0.5 font-label text-[9.5px] font-black text-white"
+                    style={{ background: "linear-gradient(135deg,#dc2626,#b91c1c)" }}
                   >
                     -{discount}%
+                  </span>
+                )}
+                {product.isNew && (
+                  <span
+                    className="absolute right-1.5 top-1.5 rounded-full px-1.5 py-0.5 font-label text-[9px] font-black text-white"
+                    style={{ background: "linear-gradient(135deg,#0891b2,#0e7490)" }}
+                  >
+                    NEW
                   </span>
                 )}
               </div>
 
               {/* Info */}
-              <div className="flex flex-1 flex-col px-3 pt-2.5 pb-3">
-                <div className="mb-1 line-clamp-2 font-sans text-[12px] font-semibold leading-snug text-gray-800">
+              <div className="flex flex-1 flex-col px-2.5 pt-2 pb-2.5">
+                <div className="mb-1 line-clamp-2 font-sans text-[11.5px] font-semibold leading-snug text-gray-800">
                   {product.name}
                 </div>
-                <div className="font-price text-[15px] font-extrabold text-gray-900">
+                <div className="mb-1">
+                  <StarRating rating={product.rating} reviews={product.reviews} />
+                </div>
+                <div className="font-price text-[14px] font-extrabold text-gray-900">
                   {fmt(product.price)}
                 </div>
                 {product.originalPrice && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <span className="font-price text-[10px] text-gray-400 line-through">{fmt(product.originalPrice)}</span>
                     {discount && (
-                      <span className="font-label text-[10px] font-bold text-gray-600">{discount}% off</span>
+                      <span className="font-label text-[9.5px] font-bold text-green-600">{discount}% off</span>
                     )}
                   </div>
                 )}
-                <span className="mt-1 font-label text-[9px] font-semibold text-gray-500">✓ Free Delivery</span>
               </div>
             </motion.button>
           );

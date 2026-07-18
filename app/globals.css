@@ -77,8 +77,8 @@
 html {
   scroll-behavior: smooth;
   /* JS overrides --header-height dynamically via Header.tsx */
-  --header-height: 120px;
-  --header-gap: 20px;
+  --header-height: 136px;
+  --header-gap: 12px;
   --page-top: calc(var(--header-height) + var(--header-gap));
 }
 
@@ -89,15 +89,15 @@ html {
 
 @media (max-width: 768px) {
   html {
-    --header-height: 110px;
-    --header-gap: 16px;
+    --header-height: 120px;
+    --header-gap: 8px;
   }
 }
 
 @media (max-width: 480px) {
   html {
-    --header-height: 100px;
-    --header-gap: 12px;
+    --header-height: 108px;
+    --header-gap: 6px;
   }
 }
 

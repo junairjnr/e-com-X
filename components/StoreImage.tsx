@@ -7,6 +7,7 @@ interface StoreImageProps {
   src: string;
   alt: string;
   className?: string;
+  style?: React.CSSProperties;
   fallback?: string;
   draggable?: boolean;
   "aria-hidden"?: boolean;
@@ -17,6 +18,7 @@ export default function StoreImage({
   src,
   alt,
   className = "",
+  style,
   fallback = IMAGE_FALLBACK,
   draggable,
   "aria-hidden": ariaHidden,
@@ -35,6 +37,7 @@ export default function StoreImage({
       aria-hidden={ariaHidden}
       draggable={draggable}
       className={className}
+      style={style}
       onError={() => {
         if (current !== fallback) setCurrent(fallback);
       }}
