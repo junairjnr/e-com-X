@@ -172,10 +172,10 @@ export default function Header({
 
   return (
     <>
-      <div className="fixed left-0 right-0 top-0 z-[150] pr-[50px] pl-[50px]">
+      <div className="fixed left-0 right-0 top-0 z-[150]">
 
         {/* ── Top Promo Bar ── */}
-        <div className="flex items-center justify-between py-1.5" style={{ background: `${Colors.base_color}` }}>
+        <div className="flex items-center justify-between py-1" style={{ background: `${Colors.base_color}` }}>
           <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-3 sm:px-5 md:px-8 lg:px-[50px]">
             <div className="flex items-center gap-5 text-[11px] text-white/85">
               <span className="flex items-center gap-1.5">🚚 Free Delivery on orders over QAR 299</span>
@@ -196,7 +196,7 @@ export default function Header({
           className="border-b border-gray-200 bg-white"
           style={{ boxShadow: scrolled ? "0 2px 12px rgba(0,0,0,0.08)" : "0 1px 3px rgba(0,0,0,0.04)" }}
         >
-          <div className="mx-auto flex max-w-[1440px] items-center gap-3 py-2.5 px-3 sm:px-5 md:px-8 md:gap-4 lg:px-[50px]">
+          <div className="mx-auto flex max-w-[1440px] items-center gap-3 py-1.5 px-3 sm:px-5 md:px-8 md:gap-4 lg:px-[50px]">
 
             {/* Logo */}
             <motion.button type="button" onClick={onNavigateHome}
@@ -212,7 +212,7 @@ export default function Header({
             {/* All Categories Dropdown */}
             <div className="relative hidden md:block shrink-0">
               <motion.button type="button" onClick={() => setCatDropOpen(v => !v)}
-                className="flex items-center gap-2 rounded-md px-3.5 py-2.5 font-label text-[13px] font-semibold text-white whitespace-nowrap"
+                className="flex items-center gap-2 rounded-md px-3 py-2 font-label text-[12.5px] font-semibold text-white whitespace-nowrap"
                 style={{ background: `${Colors.base_color}` }}
                 whileHover={{ background: "#334155" }} whileTap={{ scale: 0.97 }}
               >
@@ -247,9 +247,8 @@ export default function Header({
 
             {/* Search */}
             <motion.button type="button" onClick={onSearchOpen}
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-gray-200 bg-white px-3.5 py-2.5 text-left transition-all"
-              whileHover={{ borderColor: `${Colors.base_color}`, boxShadow: "0 0 0 2px rgba(59,130,246,0.15)" }}
-              aria-label="Search"
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-left transition-all hover:border-blue-400 hover:ring-1 hover:ring-blue-400 cursor-text"
+              whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
             >
               <span className="hidden min-w-0 flex-1 items-center text-[12.5px] text-gray-400 min-[480px]:flex">
                 <span className="shrink-0">Search for products, brands and more...</span>
