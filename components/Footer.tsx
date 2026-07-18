@@ -2,10 +2,10 @@
 
 export default function Footer() {
   return (
-    <footer style={{ background: "#0a1731ff" }} className="text-white">
-      <div className="mx-auto max-w-[1440px] px-6 pt-10 pb-6 lg:px-10">
+    <footer className="text-white pr-[50px] pl-[50px]">
+      <div  style={{ background: "#0a1731ff" }} className="mx-auto max-w-[1440px] px-3 sm:px-5 md:px-8 lg:px-[50px] pt-10 pb-6">
         {/* Main grid — Brand + 5 columns */}
-        <div className="mb-8 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-[220px_1fr_1fr_1fr_1fr_220px]">
+        <div  className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-[200px_1fr_1fr_1fr_1fr_200px] lg:mb-8">
 
           {/* Brand column */}
           <div className="col-span-2 sm:col-span-3 lg:col-span-1">
@@ -18,10 +18,10 @@ export default function Footer() {
             {/* Social icons */}
             <div className="flex gap-2">
               {[
-                { label: "f",  title: "Facebook" },
+                { label: "f", title: "Facebook" },
                 { label: "in", title: "LinkedIn" },
-                { label: "▣",  title: "Instagram" },
-                { label: "▶",  title: "YouTube" },
+                { label: "▣", title: "Instagram" },
+                { label: "▶", title: "YouTube" },
               ].map(s => (
                 <a key={s.label} href="#" title={s.title}
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-[10px] font-bold text-white/40 no-underline transition-colors hover:border-slate-400/50 hover:text-slate-200"
@@ -103,7 +103,7 @@ export default function Footer() {
               { icon: "🏆", text: "Qatar VAT Certified" },
               { icon: "✅", text: "ISO 9001:2015" },
               { icon: "🔒", text: "PCI-DSS Compliant" },
-              { icon: "◉",  text: "atACC Authorized" },
+              { icon: "◉", text: "atACC Authorized" },
               { icon: "🔐", text: "100% Secure Payments" },
             ].map(b => (
               <span key={b.text} className="flex items-center gap-1 text-[10px] text-white/30">

@@ -14,7 +14,7 @@ const FEATURES = [
 export default function FeaturesSection() {
   return (
     <section className={`py-24 ${tw.sectionBg}`}>
-      <div className="mx-auto max-w-[1200px] px-6">
+      <div className="w-full">
         <div className="mb-16 text-center">
           <div className="mb-4 font-eyebrow text-[11px] text-accent">
             Why Skynet Solution

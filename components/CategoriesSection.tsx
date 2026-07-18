@@ -30,9 +30,9 @@ const FALLBACK_IMAGE = "/images/categories/cat-pos.png";
 
 export default function CategoriesSection({ onCategoryClick, onViewAll }: CategoriesSectionProps) {
   return (
-    <section className="bg-white pb-1">
+    <section className="bg-white pb-4 px-4 sm:px-5 md:px-6 rounded-2xl shadow-sm border border-gray-100">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 lg:px-10">
+      <div className="flex flex-wrap items-center justify-between gap-2 py-3 sm:py-4">
         <div>
           <h2 className="font-display text-[19px] font-extrabold text-gray-900 md:text-[21px]">Shop by Category</h2>
           <p className="mt-0.5 font-label text-[11px] text-gray-500">Browse our wide range of product categories</p>
@@ -48,7 +48,7 @@ export default function CategoriesSection({ onCategoryClick, onViewAll }: Catego
       </div>
 
       {/* Category grid — 6 cols × 2 rows with beautiful product images */}
-      <div className="grid grid-cols-4 gap-3 px-6 pb-5 sm:grid-cols-5 md:grid-cols-6 lg:px-10">
+      <div className="grid grid-cols-3 gap-2 pb-4 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6 lg:pb-5">
         {CATEGORIES.map((cat, i) => {
           const count = getCategoryDisplayCount(cat);
           const img = CAT_IMAGES[cat.name] ?? FALLBACK_IMAGE;

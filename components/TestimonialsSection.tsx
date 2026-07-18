@@ -9,7 +9,7 @@ export default function TestimonialsSection() {
       <div className="pointer-events-none absolute -top-25 -right-25 h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-accent)_15%,transparent)_0%,transparent_70%)]" />
       <div className="pointer-events-none absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%)]" />
 
-      <div className="relative z-[1] mx-auto max-w-[1200px] px-6">
+      <div className="relative z-[1] w-full">
         <div className="mb-16 text-center">
           <div className="mb-4 font-eyebrow text-[11px] text-accent">
             Real Stories

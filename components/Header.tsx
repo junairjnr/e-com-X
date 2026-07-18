@@ -172,11 +172,11 @@ export default function Header({
 
   return (
     <>
-      <div className="fixed left-0 right-0 top-0 z-[150] mr-[50px] ml-[50px]">
+      <div className="fixed left-0 right-0 top-0 z-[150] pr-[50px] pl-[50px]">
 
         {/* ── Top Promo Bar ── */}
-        <div className="flex items-center justify-between px-10 py-1.5" style={{ background: `${Colors.base_color}` }}>
-          <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between">
+        <div className="flex items-center justify-between py-1.5" style={{ background: `${Colors.base_color}` }}>
+          <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-3 sm:px-5 md:px-8 lg:px-[50px]">
             <div className="flex items-center gap-5 text-[11px] text-white/85">
               <span className="flex items-center gap-1.5">🚚 Free Delivery on orders over QAR 299</span>
               <span className="hidden sm:flex items-center gap-1.5">🔒 Secure Payments</span>
@@ -196,7 +196,7 @@ export default function Header({
           className="border-b border-gray-200 bg-white"
           style={{ boxShadow: scrolled ? "0 2px 12px rgba(0,0,0,0.08)" : "0 1px 3px rgba(0,0,0,0.04)" }}
         >
-          <div className="mx-auto flex max-w-[1440px] items-center gap-3 px-10 py-2.5 md:gap-4">
+          <div className="mx-auto flex max-w-[1440px] items-center gap-3 py-2.5 px-3 sm:px-5 md:px-8 md:gap-4 lg:px-[50px]">
 
             {/* Logo */}
             <motion.button type="button" onClick={onNavigateHome}
@@ -327,8 +327,8 @@ export default function Header({
           animate={{ height: catVisible ? "auto" : 0, opacity: catVisible ? 1 : 0 }}
           transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
         >
-          <div className="mx-auto w-full">
-            <div className="flex items-center overflow-x-auto scroll-smooth scrollbar-hide px-6 lg:px-10 justify-between p-1">
+          <div className="mx-auto w-full max-w-[1440px] px-3 sm:px-5 md:px-8 lg:px-[50px]">
+            <div className="flex items-center overflow-x-auto scroll-smooth scrollbar-hide justify-between p-1">
               {cats.map((cat, i) => (
                 <motion.button
                   key={`${cat.label}-${i}`}

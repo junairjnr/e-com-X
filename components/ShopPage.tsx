@@ -18,12 +18,12 @@ const DEFAULT_FILTERS: FilterState = {
 };
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "relevance",   label: "Relevance" },
-  { value: "price-asc",   label: "Price: Low → High" },
-  { value: "price-desc",  label: "Price: High → Low" },
-  { value: "rating",      label: "Top Rated" },
-  { value: "newest",      label: "New Arrivals" },
-  { value: "bestseller",  label: "Best Sellers" },
+  { value: "relevance", label: "Relevance" },
+  { value: "price-asc", label: "Price: Low → High" },
+  { value: "price-desc", label: "Price: High → Low" },
+  { value: "rating", label: "Top Rated" },
+  { value: "newest", label: "New Arrivals" },
+  { value: "bestseller", label: "Best Sellers" },
 ];
 
 const ITEMS_PER_PAGE = 12;
@@ -76,7 +76,7 @@ export default function ShopPage({
       list = list.filter(p => p.category && filters.categories.includes(p.category));
     list = list.filter(
       p => p.price >= filters.priceRange[0] &&
-           p.price <= (filters.priceRange[1] >= PRICE_MAX ? Infinity : filters.priceRange[1])
+        p.price <= (filters.priceRange[1] >= PRICE_MAX ? Infinity : filters.priceRange[1])
     );
     if (filters.ratings.length) {
       const min = Math.min(...filters.ratings.map(Number));
@@ -90,10 +90,10 @@ export default function ShopPage({
       list = list.filter(p => filters.tags.some(t => p.tags.includes(t) || p.brand.toLowerCase().includes(t.toLowerCase())));
 
     switch (sort) {
-      case "price-asc":  list.sort((a, b) => a.price - b.price); break;
+      case "price-asc": list.sort((a, b) => a.price - b.price); break;
       case "price-desc": list.sort((a, b) => b.price - a.price); break;
-      case "rating":     list.sort((a, b) => b.rating - a.rating); break;
-      case "newest":     list = [...list.filter(p => p.isNew), ...list.filter(p => !p.isNew)]; break;
+      case "rating": list.sort((a, b) => b.rating - a.rating); break;
+      case "newest": list = [...list.filter(p => p.isNew), ...list.filter(p => !p.isNew)]; break;
       case "bestseller": list = [...list.filter(p => p.isBestSeller), ...list.filter(p => !p.isBestSeller)]; break;
     }
     return list;
@@ -117,7 +117,7 @@ export default function ShopPage({
       {/* ────────────────────────────────────────────────────
           MAIN CONTENT — Sidebar + Products
       ──────────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-[1440px] px-6 py-4 lg:px-10">
+      <div className="mx-auto max-w-[1440px] px-3 sm:px-5 md:px-8 lg:px-[50px] py-3 sm:py-4">
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1 text-[11.5px] text-gray-500 mb-4">
@@ -136,7 +136,7 @@ export default function ShopPage({
 
           {/* ── Sidebar ── */}
           <aside
-            className="hidden w-[220px] shrink-0 md:block"
+            className="hidden w-[200px] shrink-0 lg:block"
             style={{ position: "sticky", top: "calc(var(--header-height, 120px) + 20px)", maxHeight: "calc(100vh - var(--header-height, 120px) - 40px)", overflowY: "auto" }}
           >
             <div className="overflow-hidden rounded-lg bg-white" style={{ border: "1px solid #e5e7eb" }}>
@@ -190,7 +190,7 @@ export default function ShopPage({
                     title="Grid view"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>
+                      <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" /><rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
                     </svg>
                   </button>
                   <button
@@ -200,7 +200,7 @@ export default function ShopPage({
                     title="List view"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                      <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
                     </svg>
                   </button>
                 </div>
@@ -310,7 +310,7 @@ export default function ShopPage({
             ) : (
               /* ── GRID VIEW ── */
               <motion.div
-                className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
@@ -350,11 +350,10 @@ export default function ShopPage({
                         key={page}
                         type="button"
                         onClick={() => setCurrentPage(page)}
-                        className={`flex h-9 w-9 items-center justify-center rounded-lg border text-[12px] font-medium cursor-pointer transition-colors ${
-                          currentPage === page
-                            ? "border-blue-600 bg-blue-600 text-white"
-                            : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                        }`}
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg border text-[12px] font-medium cursor-pointer transition-colors ${currentPage === page
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                          }`}
                       >
                         {page}
                       </button>
@@ -367,11 +366,10 @@ export default function ShopPage({
                       <button
                         type="button"
                         onClick={() => setCurrentPage(totalPages)}
-                        className={`flex h-9 w-9 items-center justify-center rounded-lg border text-[12px] font-medium cursor-pointer transition-colors ${
-                          currentPage === totalPages
-                            ? "border-blue-600 bg-blue-600 text-white"
-                            : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                        }`}
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg border text-[12px] font-medium cursor-pointer transition-colors ${currentPage === totalPages
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                          }`}
                       >
                         {totalPages}
                       </button>

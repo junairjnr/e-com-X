@@ -65,11 +65,11 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
   const crumbs = ["Home", product.category || "Printers", "Label Printers", product.name];
 
   return (
-    <div className="page-top-offset min-h-screen" style={{ background: "#f1f3f6" }}>
-      <div className="mx-auto max-w-[1440px]">
+    <div className="page-top-offset min-h-screen pb-10" style={{ background: "#f1f3f6" }}>
+      <div className="mx-auto max-w-[1440px] px-3 sm:px-5 md:px-8 lg:px-[50px] pt-4 flex flex-col gap-3">
 
         {/* Breadcrumb */}
-        <div className="bg-white px-6 py-2 lg:px-10 pt-4">
+        <div className="bg-white py-3 px-4 sm:px-6 md:px-8 rounded-2xl shadow-sm border border-gray-100">
           <nav className="flex items-center gap-1 text-[11.5px] text-gray-500">
             {crumbs.map((crumb, i) => (
               <span key={crumb} className="flex items-center gap-1">
@@ -87,7 +87,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
         </div>
 
         {/* Main product section */}
-        <div className="mt-1 bg-white px-6 py-6 lg:px-10 lg:py-8">
+        <div className="bg-white py-6 lg:py-8 px-4 sm:px-6 md:px-8 rounded-2xl shadow-sm border border-gray-100">
           {/* SKU top-right */}
           <div className="mb-2 flex justify-end">
             {product.sku && <span className="text-[11px] text-gray-400">SKU: {product.sku}</span>}
@@ -323,8 +323,8 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
         </div>
 
         {/* ─── Tabs ─── */}
-        <div className="mt-1 bg-white ">
-          <div className="flex border-b border-gray-200 px-6 lg:px-10">
+        <div className="bg-white px-4 sm:px-6 md:px-8 rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="flex border-b border-gray-200">
             {TABS.map(t => (
               <button key={t} type="button" onClick={() => setTab(t)}
                 className={`relative shrink-0 px-5 py-3.5 border-0 cursor-pointer text-[13px] font-semibold transition-colors ${tab === t ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
@@ -336,7 +336,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
             ))}
           </div>
 
-          <div className="grid grid-cols-1 gap-6 px-6 py-6 lg:px-10 lg:grid-cols-[1fr_220px]">
+          <div className="grid grid-cols-1 gap-6 py-6 lg:grid-cols-[1fr_220px]">
             <div className="text-[13.5px] leading-relaxed text-gray-700">
               {tab === "Description" && (
                 <>
@@ -397,7 +397,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
         </div>
 
         {/* ─── Reviews ─── */}
-        <div className="mt-1 bg-white px-6 py-6 lg:px-10">
+        <div className="bg-white py-6 px-4 sm:px-6 md:px-8 rounded-2xl shadow-sm border border-gray-100">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="font-display text-[19px] font-bold text-gray-900">Customer Reviews</h2>
             <button type="button" className="text-[13px] font-semibold text-blue-600 hover:underline border-0 bg-transparent cursor-pointer">View All Reviews →</button>
@@ -473,7 +473,7 @@ export default function ProductPage({ product, onAddToCart, onWishlistToggle, is
         </div>
 
         {/* ─── You Might Also Like ─── */}
-        <div className="mt-1 bg-white px-6 py-6 lg:px-10">
+        <div className="bg-white py-6 px-4 sm:px-6 md:px-8 rounded-2xl shadow-sm border border-gray-100">
           <h2 className="mb-4 font-display text-[18px] font-bold text-gray-900">You Might Also <span className="italic text-[#0a255dff]">Like</span></h2>
           <div className="flex gap-3 overflow-x-auto scroll-smooth scrollbar-hide pb-2">
             {relatedProducts.map(p => {

@@ -89,14 +89,14 @@ html {
 
 @media (max-width: 768px) {
   html {
-    --header-height: 120px;
+    --header-height: 112px;
     --header-gap: 8px;
   }
 }
 
 @media (max-width: 480px) {
   html {
-    --header-height: 108px;
+    --header-height: 96px;
     --header-gap: 6px;
   }
 }

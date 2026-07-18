@@ -116,7 +116,6 @@ export default function NestStore() {
       />
 
       <main className="">{renderPage()}</main>
-
       <Footer />
 
       <SearchModal
@@ -179,8 +178,8 @@ function HomePage({
   const allProducts = PRODUCTS;
 
   return (
-    <div className="page-top-offset min-h-screen" style={{ background: "#f1f3f6" }}>
-      <div className="mx-auto max-w-[1440px]">
+    <div className="page-top-offset min-h-screen" >
+      <div className="mx-auto max-w-[1440px] px-3 sm:px-5 md:px-8 lg:px-[50px]" style={{ background: "#f1f3f6" }}>
 
         {/* 1. Full-width hero slider */}
         <div className="mb-2">
@@ -282,7 +281,7 @@ function CheckoutPage({ onBack, cart }: { onBack: () => void; cart: CartItem[] }
 
   return (
     <div className={`min-h-screen ${tw.sectionBg} pt-[100px] pb-20`}>
-      <div className="mx-auto max-w-[900px] px-6">
+      <div className="mx-auto max-w-[900px] px-3 sm:px-5 md:px-8 lg:px-[50px]">
         <button
           type="button"
           onClick={onBack}
@@ -299,9 +298,8 @@ function CheckoutPage({ onBack, cart }: { onBack: () => void; cart: CartItem[] }
               key={s}
               type="button"
               onClick={() => setStep(i + 1)}
-              className={`flex-1 border-0 py-3 text-[13px] font-semibold cursor-pointer transition-all ${
-                step === i + 1 ? "bg-primary text-white" : "bg-white text-muted"
-              } ${i < 2 ? "border-r border-border" : ""}`}
+              className={`flex-1 border-0 py-3 text-[13px] font-semibold cursor-pointer transition-all ${step === i + 1 ? "bg-primary text-white" : "bg-white text-muted"
+                } ${i < 2 ? "border-r border-border" : ""}`}
             >
               {i + 1}. {s}
             </button>
@@ -354,9 +352,8 @@ function CheckoutPage({ onBack, cart }: { onBack: () => void; cart: CartItem[] }
                     <button
                       key={m}
                       type="button"
-                      className={`min-w-[120px] flex-1 rounded-xl px-2 py-3 text-xs font-semibold cursor-pointer ${
-                        i === 0 ? "border-2 border-primary bg-primary text-white" : "border border-border bg-white text-primary/80"
-                      }`}
+                      className={`min-w-[120px] flex-1 rounded-xl px-2 py-3 text-xs font-semibold cursor-pointer ${i === 0 ? "border-2 border-primary bg-primary text-white" : "border border-border bg-white text-primary/80"
+                        }`}
                     >
                       {m}
                     </button>
@@ -400,7 +397,7 @@ function CheckoutPage({ onBack, cart }: { onBack: () => void; cart: CartItem[] }
                 ([l, v], i) => (
                   <div key={l} className={`flex justify-between ${i === 2 ? "mt-1 border-t border-border pt-2" : ""}`}>
                     <span className={`${i === 2 ? "text-sm font-bold text-primary" : "text-xs text-muted"}`}>{l}</span>
-                     <span className={`${i === 2 ? "font-price text-sm font-extrabold text-primary" : "text-xs font-medium"} ${i === 1 ? "text-gray-600" : "text-primary/80"}`}>
+                    <span className={`${i === 2 ? "font-price text-sm font-extrabold text-primary" : "text-xs font-medium"} ${i === 1 ? "text-gray-600" : "text-primary/80"}`}>
                       {v}
                     </span>
                   </div>

@@ -83,7 +83,7 @@ export default function HeroSection({ onViewAll }: { onViewAll?: () => void }) {
   };
 
   return (
-    <div className="px-3 pb-2 pt-4">
+    <div className="pb-2 pt-4">
       <div
         className="hero-slider relative w-full overflow-hidden rounded-2xl md:rounded-3xl"
         style={{

@@ -53,10 +53,10 @@ export default function FlashSaleSection({ onProductClick, onViewAll }: FlashSal
   const deals = PRODUCTS.filter(p => p.originalPrice).slice(0, 8);
 
   return (
-    <section className="mb-2 overflow-hidden" style={{ background: "#ffffff", borderRadius: "0" }}>
+    <section className="mb-4 overflow-hidden rounded-2xl shadow-sm border border-gray-100" style={{ background: "#ffffff" }}>
       {/* Header */}
       <div
-        className="flex flex-wrap items-center gap-3 px-10 py-3.5"
+        className="flex flex-wrap items-center gap-2 px-4 py-2.5 sm:gap-3 sm:px-5 md:px-6 sm:py-3.5"
         style={{ background: "linear-gradient(135deg, #0a255dff 0%, #1e293b 60%, #334155 100%)" }}
       >
         {/* Fire icon + title */}
@@ -68,7 +68,7 @@ export default function FlashSaleSection({ onProductClick, onViewAll }: FlashSal
           >
             🔥
           </motion.span>
-          <h2 className="font-display text-[17px] font-extrabold text-white md:text-xl">
+          <h2 className="font-display text-[14px] font-extrabold text-white sm:text-[17px] md:text-xl">
             Deal of the Day
           </h2>
         </div>
@@ -109,7 +109,7 @@ export default function FlashSaleSection({ onProductClick, onViewAll }: FlashSal
       </div>
 
       {/* Cards */}
-      <div className="flex gap-3 overflow-x-auto scroll-smooth scrollbar-hide bg-gray-50 px-10 py-4">
+      <div className="flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide bg-gray-50 px-4 py-3 sm:gap-3 sm:px-5 md:px-6 sm:py-4">
         {deals.map((product, i) => {
           const discount = product.originalPrice
             ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)

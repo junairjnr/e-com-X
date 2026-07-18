@@ -11,7 +11,7 @@ const SHOWCASE = PRODUCTS.slice(0, 3).map((p) => ({ img: p.images[0], name: p.na
 
 export default function HeroPromoBanner({ onExplore }: HeroPromoBannerProps) {
   return (
-    <div className="max-w-[1400px] mx-auto px-4 pt-5 md:pt-6">
+    <div className="w-full pt-5 md:pt-6">
       <div className="relative flex flex-col items-start gap-6 overflow-hidden rounded-3xl bg-primary px-6 py-8 shadow-[0_16px_44px_rgba(10,10,10,0.24)] sm:px-9 md:flex-row md:items-center md:justify-between md:px-12 md:py-10">
         {/* gold glow accents */}
         <span className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-accent)_50%,transparent),transparent_70%)]" />

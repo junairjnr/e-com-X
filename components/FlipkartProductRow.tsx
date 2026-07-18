@@ -47,11 +47,11 @@ export default function FlipkartProductRow({
   };
 
   return (
-    <section className="mb-2 overflow-hidden" style={{ background: bgColor, borderRadius: "0" }}>
+    <section className="mb-4 overflow-hidden rounded-2xl shadow-sm border border-gray-100" style={{ background: bgColor }}>
       {/* Section header */}
-      <div className="flex items-center justify-between px-10 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-5 md:px-6 sm:py-4">
         <div>
-          <h2 className="font-display text-[19px] font-extrabold text-gray-900 md:text-[21px]">{title}</h2>
+          <h2 className="font-display text-[16px] font-extrabold text-gray-900 sm:text-[19px] md:text-[21px]">{title}</h2>
           {subtitle && <p className="mt-0.5 font-label text-[11px] text-gray-500">{subtitle}</p>}
         </div>
         <motion.button
@@ -94,7 +94,7 @@ export default function FlipkartProductRow({
 
         <div
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scroll-smooth scrollbar-hide px-10 pb-5"
+          className="flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide px-4 pb-4 sm:gap-3 sm:px-5 md:px-6 sm:pb-5"
         >
           {products.map((product, i) => {
             const discount = product.originalPrice

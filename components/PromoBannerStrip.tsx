@@ -32,7 +32,7 @@ export default function PromoBannerStrip({ onCategoryClick }: PromoBannerStripPr
   ];
 
   return (
-    <div className="mb-2 grid grid-cols-1 gap-2 px-10 md:grid-cols-2">
+    <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
       {banners.map((b, i) => (
         <button
           key={i}

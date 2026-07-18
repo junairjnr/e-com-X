@@ -14,7 +14,7 @@ export default function HardwarePromoBanner({ onCategoryClick }: HardwarePromoBa
 
   return (
     <section className="w-full pb-10 md:pb-12">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+      <div className="w-full">
         <div className="relative grid grid-cols-1 overflow-hidden rounded-3xl border border-border bg-bg-soft shadow-[0_10px_40px_rgba(17,24,39,0.07)] md:grid-cols-2">
           {/* Decorative gold wash */}
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_85%_30%,color-mix(in_srgb,var(--color-accent)_14%,transparent),transparent_60%)]" />

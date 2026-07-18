@@ -16,9 +16,9 @@ export default function NewsletterSection() {
 
   return (
     <section className="mb-2 overflow-hidden" style={{ background: "#f8fafc" }}>
-      <div className="mx-auto max-w-[1440px] px-10 py-8 md:py-10">
+      <div className="w-full py-6 md:py-10">
         <div
-          className="flex flex-col items-center gap-6 rounded-2xl border border-gray-100 bg-white px-8 py-8 shadow-sm md:flex-row md:gap-8"
+          className="flex flex-col items-center gap-4 rounded-2xl border border-gray-100 bg-white px-4 py-6 shadow-sm sm:px-6 sm:py-8 md:flex-row md:gap-8"
         >
           {/* Icon */}
           <div className="flex shrink-0 items-center justify-center">
