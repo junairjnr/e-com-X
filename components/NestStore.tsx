@@ -178,8 +178,8 @@ function HomePage({
   const allProducts = PRODUCTS;
 
   return (
-    <div className="page-top-offset min-h-screen" >
-      <div className="mx-auto max-w-[1440px] px-3 sm:px-5 md:px-8 lg:px-[50px]" style={{ background: "#f1f3f6" }}>
+    <div className="page-top-offset min-h-screen" style={{ background: "#f1f3f6" }}>
+      <div className="mx-auto max-w-[1440px] px-3 sm:px-5 md:px-8 lg:px-[50px]" >
 
         {/* 1. Full-width hero slider */}
         <div className="mb-2">
