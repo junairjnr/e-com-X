@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import StoreImage from "./StoreImage";
 import { HERO_SLIDER_SLIDES } from "@/lib/data";
+import { type, tw } from "@/lib/theme";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 
 const SLIDES = HERO_SLIDER_SLIDES;
@@ -85,7 +86,7 @@ export default function HeroSection({ onViewAll }: { onViewAll?: () => void }) {
   return (
     <div className="pb-2 pt-1">
       <div
-        className="hero-slider relative w-full overflow-hidden rounded-2xl md:rounded-3xl"
+        className={`${tw.heroSlider} relative w-full overflow-hidden rounded-2xl md:rounded-3xl`}
         style={{
           background: "#ffffff",
           boxShadow: "0 2px 24px rgba(0,0,0,0.07), 0 0 0 1.5px rgba(0,0,0,0.05)",
@@ -152,7 +153,7 @@ export default function HeroSection({ onViewAll }: { onViewAll?: () => void }) {
                     <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: ac.color }} />
                   </span>
                   <span
-                    className="rounded-full border px-2.5 py-0.5 font-eyebrow text-[9px] tracking-[0.14em] sm:px-3 sm:py-1 sm:text-[10px]"
+                    className={`rounded-full border px-2.5 py-0.5 ${type.eyebrow} text-[9px] tracking-[0.14em] sm:px-3 sm:py-1 sm:text-[10px]`}
                     style={{ background: ac.soft, color: ac.dark, borderColor: `${ac.color}25` }}
                   >
                     {s.eyebrow}

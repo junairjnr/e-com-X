@@ -19,6 +19,10 @@ export interface ClientConfig {
   tagline: string;
   siteUrl: string;
   phone: string;
+  /** IANA timezone for admin navbar clock, e.g. Asia/Qatar */
+  timezone: string;
+  /** Short label shown next to the clock, e.g. Qatar */
+  timezoneLabel: string;
   theme: ClientTheme;
 }
 

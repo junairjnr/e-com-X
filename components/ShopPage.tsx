@@ -6,6 +6,7 @@ import type { FilterState, SortOption, WishlistItem, Product } from "@/lib/types
 import FilterSidebar from "./FilterSidebar";
 import ProductCard from "./ProductCard";
 import * as Icons from "./Icons";
+import { tw } from "@/lib/theme";
 
 /* ─── Constants ──────────────────────────────────────────────── */
 const DEFAULT_FILTERS: FilterState = {
@@ -111,7 +112,7 @@ export default function ShopPage({
 
   return (
     <div
-      className="page-top-offset min-h-screen"
+      className={`${tw.pageTopOffset} min-h-screen`}
       style={{ background: "#f3f4f6" }}
     >
       {/* ────────────────────────────────────────────────────

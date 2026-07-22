@@ -1,6 +1,6 @@
 "use client";
 import * as Icons from "./Icons";
-import { tw } from "@/lib/theme";
+import { tw, type } from "@/lib/theme";
 
 const FEATURES = [
   { icon: <Icons.Shield />, title: "Qatar VAT Certified", desc: "All hardware and software solutions are fully Qatar VAT compliant. Generate VAT returns in minutes — not days." },
@@ -16,7 +16,7 @@ export default function FeaturesSection() {
     <section className={`py-24 ${tw.sectionBg}`}>
       <div className="w-full">
         <div className="mb-16 text-center">
-          <div className="mb-4 font-eyebrow text-[11px] text-accent">
+          <div className={`mb-4 ${type.eyebrow} text-[11px] text-accent`}>
             Why Skynet Solution
           </div>
           <h2 className="font-display text-[clamp(36px,4vw,52px)] font-bold leading-tight text-primary">

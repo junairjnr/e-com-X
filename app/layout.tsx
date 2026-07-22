@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
-import { Urbanist } from "next/font/google";
 import ThemeProvider from "@/components/ThemeProvider";
+import QueryProvider from "@/components/QueryProvider";
+import AuthInitializer from "@/components/AuthInitializer";
 import { getClientConfig } from "@/config/clients";
 import { themeToCssProperties } from "@/lib/theme-css";
 import "./globals.css";
-
-const urbanist = Urbanist({
-  subsets: ["latin"],
-  variable: "--font-urbanist",
-  display: "swap",
-});
 
 const client = getClientConfig();
 
@@ -32,12 +27,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`h-full ${urbanist.variable}`}
+      className="h-full"
       data-client={client.id}
       style={themeToCssProperties(client.theme)}
     >
-      <body className="min-h-full flex flex-col overflow-x-hidden " style={{ background: "#f1f3f6" }}>
-        <ThemeProvider clientId={client.id}>{children}</ThemeProvider>  
+      <body className="min-h-full flex flex-col overflow-x-hidden font-sans antialiased" style={{ background: "#f1f3f6" }}>
+        <QueryProvider>
+          <AuthInitializer>
+            <ThemeProvider clientId={client.id}>{children}</ThemeProvider>
+          </AuthInitializer>
+        </QueryProvider>
       </body>
     </html>
   );

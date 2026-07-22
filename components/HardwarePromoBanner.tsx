@@ -3,6 +3,7 @@
 import { HARDWARE_SHOWCASE } from "@/lib/data";
 import StoreImage from "./StoreImage";
 import * as Icons from "./Icons";
+import { type } from "@/lib/theme";
 
 interface HardwarePromoBannerProps {
   onCategoryClick?: (category: string) => void;
@@ -22,7 +23,7 @@ export default function HardwarePromoBanner({ onCategoryClick }: HardwarePromoBa
           {/* Copy side */}
           <div className="relative z-[1] flex flex-col justify-center gap-4 px-6 py-8 sm:px-9 sm:py-10 md:py-12">
             <div className="flex items-center gap-2">
-              <span className="font-eyebrow rounded-full bg-accent/12 px-3 py-1 text-[10px] text-accent">
+              <span className={`${type.eyebrow} rounded-full bg-accent/12 px-3 py-1 text-[10px] text-accent`}>
                 {eyebrow}
               </span>
               {offer && (
@@ -38,9 +39,9 @@ export default function HardwarePromoBanner({ onCategoryClick }: HardwarePromoBa
             <p className="max-w-md text-sm leading-relaxed text-muted md:text-[15px]">{description}</p>
 
             <div className="flex items-end gap-2.5">
-              <span className="font-price text-2xl font-bold text-primary sm:text-3xl">{price}</span>
+              <span className={`${type.price} text-2xl font-bold text-primary sm:text-3xl`}>{price}</span>
               {oldPrice && (
-                <span className="font-price pb-1 text-sm text-muted line-through">{oldPrice}</span>
+                <span className={`${type.price} pb-1 text-sm text-muted line-through`}>{oldPrice}</span>
               )}
             </div>
 

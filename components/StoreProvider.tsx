@@ -10,6 +10,7 @@ import {
 } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PRODUCTS } from "@/lib/data";
+import { authUserToStoreUser } from "@/lib/auth-utils";
 import {
   pageToPath,
   pathToPage,
@@ -17,6 +18,7 @@ import {
   ROUTES,
   type StorePage,
 } from "@/lib/routes";
+import { useAuthStore } from "@/store/auth.store";
 import type { CartItem, Product, StoreUser, WishlistItem } from "@/lib/types";
 
 interface StoreContextValue {
@@ -70,7 +72,20 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [user, setUser] = useState<StoreUser | null>(null);
+
+  const authUser = useAuthStore((s) => s.user);
+  const isAuthHydrated = useAuthStore((s) => s.isHydrated);
+
+  const user = useMemo<StoreUser | null>(() => {
+    if (!isAuthHydrated || !authUser) return null;
+    return authUserToStoreUser(authUser);
+  }, [authUser, isAuthHydrated]);
+
+  const setUser = useCallback((next: StoreUser | null) => {
+    if (next === null) {
+      useAuthStore.getState().clearAuth();
+    }
+  }, []);
 
   const scrollTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });

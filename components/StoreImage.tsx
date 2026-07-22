@@ -11,6 +11,8 @@ interface StoreImageProps {
   fallback?: string;
   draggable?: boolean;
   "aria-hidden"?: boolean;
+  /** Set true for above-the-fold hero images */
+  priority?: boolean;
 }
 
 /** Image with local fallback — no external CDN dependency at runtime */
@@ -22,6 +24,7 @@ export default function StoreImage({
   fallback = IMAGE_FALLBACK,
   draggable,
   "aria-hidden": ariaHidden,
+  priority = false,
 }: StoreImageProps) {
   const [current, setCurrent] = useState(src);
 
@@ -38,6 +41,9 @@ export default function StoreImage({
       draggable={draggable}
       className={className}
       style={style}
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
+      fetchPriority={priority ? "high" : "auto"}
       onError={() => {
         if (current !== fallback) setCurrent(fallback);
       }}

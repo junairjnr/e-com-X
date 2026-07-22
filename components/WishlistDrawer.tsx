@@ -1,6 +1,6 @@
 "use client";
 import { fmt } from "@/lib/data";
-import { tw } from "@/lib/theme";
+import { tw, type } from "@/lib/theme";
 import type { WishlistItem } from "@/lib/types";
 import * as Icons from "./Icons";
 
@@ -34,7 +34,7 @@ export default function WishlistDrawer({ wishlist, open, onClose, onRemove, onAd
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+        <div className={`flex-1 overflow-y-auto p-6 ${tw.scrollbarThin}`}>
           {wishlist.length === 0 ? (
             <div className="px-6 py-15 text-center">
               <div className="mb-4 text-5xl">🤍</div>
@@ -47,7 +47,7 @@ export default function WishlistDrawer({ wishlist, open, onClose, onRemove, onAd
               <img src={item.img} alt={item.name} className="h-[72px] w-[72px] shrink-0 rounded-xl object-cover" />
               <div className="flex-1">
                 <div className="mb-1 text-sm font-semibold text-primary">{item.name}</div>
-                <div className="mb-2.5 font-price text-[13px] font-bold text-accent">{fmt(item.price)}</div>
+                <div className={`mb-2.5 ${type.price} text-[13px] font-bold text-accent`}>{fmt(item.price)}</div>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <button type="button" className={`${tw.btnPrimarySm} w-full min-w-0 justify-center px-3 py-2 sm:flex-1 sm:px-3.5`} onClick={() => onAddToCart(item)}>
                     Add to Cart

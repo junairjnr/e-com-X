@@ -7,6 +7,8 @@ export const skynetClient: ClientConfig = {
   tagline: "Qatar",
   siteUrl: "https://www.skynetqatar.com/",
   phone: "+974 4431 1525",
+  timezone: "Asia/Qatar",
+  timezoneLabel: "Qatar",
   theme: {
     bg: "#FFFFFF",
     bgSoft: "#F0F0F8",

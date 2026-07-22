@@ -3,7 +3,11 @@ import { useState } from "react";
 import Avatar from "./Avatar";
 import type { StoreUser } from "@/lib/types";
 import { tw } from "@/lib/theme";
+import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/auth.store";
+import { getErrorMessage } from "@/lib/utils";
 import * as Icons from "./Icons";
+import { useRouter } from "next/navigation";
 
 interface LoginModalProps {
   open: boolean;
@@ -23,37 +27,63 @@ const linkBtnClass =
   "cursor-pointer border-0 bg-transparent font-bold text-accent";
 
 export default function LoginModal({ open, onClose, onSuccess, onLogout, user }: LoginModalProps) {
+
+  const router = useRouter();
+  const { login, register } = useAuth();
+  const clearAuth = useAuthStore((s) => s.clearAuth);
   const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
   const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>();
 
   if (!open) return null;
 
   const displayName = form.name || user?.name || "Guest";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+
+    try {
+      let storeUser: StoreUser;
+
+      if (mode === "register") {
+        const result = await register(
+          {
+            name: form.name,
+            email: form.email,
+            password: form.password,
+            phone: form.phone || undefined,
+          },
+          null
+        );
+        storeUser = { ...result.storeUser, avatarUrl: avatarPreview ?? result.storeUser.avatarUrl };
+      } else if (mode === "login") {
+        const result = await login({ email: form.email, password: form.password }, null);
+        storeUser = { ...result.storeUser, avatarUrl: avatarPreview ?? result.storeUser.avatarUrl };
+      } else {
+        setLoading(false);
+        return;
+      }
+
       setSuccess(true);
-      const signedInUser: StoreUser = {
-        name: mode === "register" ? form.name : (form.email.split("@")[0] || "User"),
-        email: form.email,
-        avatarUrl: avatarPreview,
-      };
       setTimeout(() => {
         setSuccess(false);
-        onSuccess?.(signedInUser);
+        onSuccess?.(storeUser);
         onClose();
         setForm({ name: "", email: "", phone: "", password: "" });
         setAvatarPreview(undefined);
         setMode("login");
       }, 1400);
-    }, 1200);
+    } catch (err) {
+      setError(getErrorMessage(err, "Authentication failed"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,6 +93,11 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
     reader.onload = () => setAvatarPreview(reader.result as string);
     reader.readAsDataURL(file);
   };
+
+  const onAdminPanelClick = () => {
+    onClose();
+    router.push("/admin/dashboard");
+  }
 
   return (
     <div
@@ -133,9 +168,15 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
                 <button className={`${tw.btnPrimary} w-full justify-center`} onClick={onClose}>
                   ← Continue Shopping <Icons.ArrowRight />
                 </button>
+                <button className={`${tw.btnPrimary} w-full justify-center`} onClick={onAdminPanelClick}>
+                  ← Go to Admin Panel <Icons.ArrowRight />
+                </button>
                 <button
                   className={`${tw.btnOutline} w-full justify-center`}
-                  onClick={() => { onLogout?.(); }}
+                  onClick={() => {
+                    clearAuth();
+                    onLogout?.();
+                  }}
                 >
                   Sign Out
                 </button>
@@ -220,6 +261,10 @@ export default function LoginModal({ open, onClose, onSuccess, onLogout, user }:
                       Forgot password?
                     </button>
                   </div>
+                )}
+
+                {error && (
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>
                 )}
 
                 <button

@@ -7,7 +7,7 @@ import type { CartItem, WishlistItem, StoreUser } from "@/lib/types";
 import Avatar from "./Avatar";
 import { useClientTheme } from "./ThemeProvider";
 import { HERO_CATEGORY_STRIP } from "@/lib/data";
-import { Colors } from "@/lib/theme";
+import { Colors, type, tw } from "@/lib/theme";
 
 interface HeaderProps {
   cart: CartItem[];
@@ -206,7 +206,7 @@ export default function Header({
               <span className="font-display text-[20px] font-extrabold leading-none tracking-tight text-gray-900 sm:text-[22px]">
                 {client.name.split(" ")[0]}<span className="text-[11px] font-black text-gray-400">™</span>
               </span>
-              <span className="hidden font-eyebrow text-[7px] tracking-[0.22em] text-gray-400 sm:block">{client.tagline}</span>
+              <span className={`hidden ${type.eyebrow} text-[7px] tracking-[0.22em] text-gray-400 sm:block`}>{client.tagline}</span>
             </motion.button>
 
             {/* All Categories Dropdown */}
@@ -327,7 +327,7 @@ export default function Header({
           transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
         >
           <div className="mx-auto w-full max-w-[1440px] px-3 sm:px-5 md:px-8 lg:px-[50px]">
-            <div className="flex items-center overflow-x-auto scroll-smooth scrollbar-hide justify-between p-1">
+            <div className={`flex items-center overflow-x-auto scroll-smooth ${tw.scrollbarHide} justify-between p-1`}>
               {cats.map((cat, i) => (
                 <motion.button
                   key={`${cat.label}-${i}`}
@@ -368,7 +368,7 @@ export default function Header({
               <div className="flex items-center justify-between px-5 py-4" style={{ background: "#0f172a" }}>
                 <div>
                   <div className="font-display text-lg font-extrabold text-white">{client.name.split(" ")[0]}<span className="text-slate-300 text-sm">™</span></div>
-                  <div className="font-eyebrow text-[7.5px] tracking-widest text-slate-400/70">{client.tagline}</div>
+                  <div className={`${type.eyebrow} text-[7.5px] tracking-widest text-slate-400/70`}>{client.tagline}</div>
                 </div>
                 <motion.button type="button" onClick={() => setMobileOpen(false)}
                   className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white" whileTap={{ scale: 0.9 }}
@@ -390,7 +390,7 @@ export default function Header({
                 ))}
               </div>
               <nav className="flex-1 p-4">
-                <p className="mb-2 px-1 font-eyebrow text-[9px] text-gray-400">NAVIGATION</p>
+                <p className={`mb-2 px-1 ${type.eyebrow} text-[9px] text-gray-400`}>NAVIGATION</p>
                 {NAV_LINKS.map(item => (
                   <motion.button key={item.label} type="button"
                     onClick={() => { setPage(item.page); setMobileOpen(false); }}

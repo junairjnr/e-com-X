@@ -1,6 +1,7 @@
 "use client";
 
 import { NAV_MENUS } from "@/lib/data";
+import { type } from "@/lib/theme";
 import StoreImage from "./StoreImage";
 
 interface MegaMenuProps {
@@ -69,7 +70,7 @@ export default function MegaMenu({ section, onClose }: MegaMenuProps) {
 
 function ColLabel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`mb-3 font-eyebrow text-[10px] tracking-[0.13em] text-accent ${className}`}>
+    <div className={`mb-3 ${type.eyebrow} text-[10px] tracking-[0.13em] text-accent ${className}`}>
       {children}
     </div>
   );

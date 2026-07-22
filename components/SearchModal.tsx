@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { PRODUCTS, fmt } from "@/lib/data";
-import { tw } from "@/lib/theme";
+import { tw, type } from "@/lib/theme";
 import StoreImage from "./StoreImage";
 import type { Product } from "@/lib/types";
 import * as Icons from "./Icons";
@@ -59,7 +59,7 @@ export default function SearchModal({ open, onClose, onProductSelect }: SearchMo
         </div>
 
         {query.length > 1 && (
-          <div className="max-h-[400px] overflow-y-auto scrollbar-thin">
+          <div className={`max-h-[400px] overflow-y-auto ${tw.scrollbarThin}`}>
             {results.length === 0 ? (
               <div className="p-8 text-center text-muted">
                 No results for &ldquo;{query}&rdquo;
@@ -75,7 +75,7 @@ export default function SearchModal({ open, onClose, onProductSelect }: SearchMo
                 <div>
                   <div className="text-[15px] font-semibold text-primary">{p.name}</div>
                   <div className="mt-0.5 text-[13px] text-muted">{p.tags.join(" · ")}</div>
-                  <div className="font-price mt-1 text-sm font-bold text-accent">{fmt(p.price)}</div>
+                  <div className={`${type.price} mt-1 text-sm font-bold text-accent`}>{fmt(p.price)}</div>
                 </div>
               </button>
             ))}
@@ -84,7 +84,7 @@ export default function SearchModal({ open, onClose, onProductSelect }: SearchMo
 
         {query.length === 0 && (
           <div className="px-6 py-5">
-            <div className="mb-4 font-eyebrow text-[11px] tracking-[0.12em] text-muted">
+            <div className={`mb-4 ${type.eyebrow} text-[11px] tracking-[0.12em] text-muted`}>
               Popular Searches
             </div>
             <div className="flex flex-wrap gap-2">

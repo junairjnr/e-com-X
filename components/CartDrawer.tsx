@@ -1,6 +1,6 @@
 "use client";
 import { fmt } from "@/lib/data";
-import { tw } from "@/lib/theme";
+import { tw, type } from "@/lib/theme";
 import type { CartItem } from "@/lib/types";
 import * as Icons from "./Icons";
 
@@ -43,7 +43,7 @@ export default function CartDrawer({ cart, open, onClose, onUpdate, onRemove, se
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+        <div className={`flex-1 overflow-y-auto p-6 ${tw.scrollbarThin}`}>
           {cart.length === 0 ? (
             <div className="px-6 py-15 text-center">
               <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-accent-soft shadow-[inset_2px_2px_6px_color-mix(in_srgb,var(--color-primary)_8%,transparent)]">
@@ -72,7 +72,7 @@ export default function CartDrawer({ cart, open, onClose, onUpdate, onRemove, se
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-price font-bold text-primary">{fmt(item.price * item.qty)}</span>
+                    <span className={`${type.price} font-bold text-primary`}>{fmt(item.price * item.qty)}</span>
                     <button type="button" onClick={() => onRemove(item.id)} className="border-0 bg-transparent p-1 text-muted cursor-pointer hover:text-red-500 transition-colors">
                       <Icons.Trash />
                     </button>

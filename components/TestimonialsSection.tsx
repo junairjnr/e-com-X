@@ -2,6 +2,7 @@
 import { TESTIMONIALS } from "@/lib/data";
 import Avatar from "./Avatar";
 import * as Icons from "./Icons";
+import { type } from "@/lib/theme";
 
 export default function TestimonialsSection() {
   return (
@@ -11,7 +12,7 @@ export default function TestimonialsSection() {
 
       <div className="relative z-[1] w-full">
         <div className="mb-16 text-center">
-          <div className="mb-4 font-eyebrow text-[11px] text-accent">
+          <div className={`mb-4 ${type.eyebrow} text-[11px] text-accent`}>
             Real Stories
           </div>
           <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold leading-tight text-primary">

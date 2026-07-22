@@ -18,10 +18,11 @@
   --color-footer: #111827;
   --color-sale: #E53935;
 
-  --font-sans: var(--font-urbanist), "Urbanist", ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-urbanist), "Urbanist", ui-sans-serif, system-ui, sans-serif;
-  --font-label: var(--font-urbanist), "Urbanist", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-urbanist), "Urbanist", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman No9 L", serif;
+  --font-display: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman No9 L", serif;
+  --font-label: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman No9 L", serif;
+  --font-heading: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman No9 L", serif;
+  --font-mono: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman No9 L", serif;
 
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
   --animate-fade-in: fade-in 0.25s ease;
@@ -91,7 +92,6 @@
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0) rotate(0deg);
@@ -126,15 +126,11 @@
 
 html {
   scroll-behavior: smooth;
+  font-family: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman No9 L", serif;
   /* JS overrides --header-height dynamically via Header.tsx */
   --header-height: 136px;
   --header-gap: 12px;
   --page-top: calc(var(--header-height) + var(--header-gap));
-}
-
-.page-top-offset {
-  padding-top: var(--page-top);
-  transition: padding-top 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 768px) {
@@ -155,273 +151,17 @@ body {
   @apply min-h-full font-sans text-primary antialiased bg-bg;
 }
 
-/* Hero slider — stable height that scales smoothly across breakpoints */
-.hero-slider {
-  min-height: 320px;
-}
-
-@media (min-width: 640px) {
-  .hero-slider {
-    min-height: 340px;
-  }
-}
-
-@media (min-width: 768px) {
-  .hero-slider {
-    min-height: 380px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .hero-slider {
-    min-height: 420px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .hero-slider {
-    min-height: 460px;
-  }
-}
-
-/* Typography roles — each UI layer uses a distinct family */
-.font-eyebrow {
-  @apply font-label font-bold uppercase tracking-[0.14em];
-}
-
-.font-price {
-  @apply font-mono tabular-nums;
-}
-
-.font-nav {
-  @apply font-label tracking-wide;
-}
-
 h1,
 h2,
 h3 {
   @apply font-display;
 }
 
-.scrollbar-thin::-webkit-scrollbar {
-  width: 5px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: var(--color-bg-soft);
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
-  border-radius: 10px;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
-
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-.product-cta-row {
-  @apply flex flex-col gap-3 items-stretch;
-}
-
-@media (min-width: 640px) {
-  .product-cta-row {
-    @apply flex-row;
-  }
-}
-
-.product-cta-row>button,
-.cta-row>button {
-  @apply inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-full border-0 cursor-pointer font-label font-bold transition-all;
-  @apply h-12 px-4 text-sm sm:h-[52px] sm:px-5 sm:text-[15px];
-}
-
-@media (min-width: 640px) {
-
-  .product-cta-row>button,
-  .cta-row>button {
-    @apply flex-1;
-  }
-}
-
-.product-grid-equal {
-  @apply grid grid-cols-2 gap-3 items-stretch;
-}
-
-@media (min-width: 768px) {
-  .product-grid-equal {
-    @apply grid-cols-2 gap-4;
-  }
-}
-
-@media (min-width: 1024px) {
-  .product-grid-equal {
-    @apply grid-cols-3 gap-5;
-  }
-}
-
-@media (min-width: 1280px) {
-  .product-grid-equal {
-    @apply grid-cols-4 gap-5;
-  }
-}
-
-.viewer-toolbar-btn {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-.clay-button {
-  @apply rounded-full font-label text-white transition-all duration-300;
-  background: linear-gradient(135deg, #111827 0%, #374151 100%);
-  box-shadow: 0 4px 16px rgba(17, 24, 39, 0.35);
-}
-
-.clay-button:hover {
-  @apply -translate-y-0.5;
-  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.45);
-  background: linear-gradient(135deg, #1F2937 0%, #4B5563 100%);
-}
-
-.clay-button:active {
-  @apply translate-y-0;
-}
-
-.glass-panel {
-  @apply bg-white/65 backdrop-blur-xl border border-white/80;
-  box-shadow: 0 8px 32px color-mix(in srgb, var(--color-primary) 7%, transparent);
-}
-
-.nav-icon-btn {
-  @apply flex shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent text-primary cursor-pointer;
-  transition:
-    color 0.3s ease,
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.25s ease;
-}
-
-.nav-icon-btn:hover {
-  @apply border-accent/30 text-accent bg-accent-soft/80;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 8px color-mix(in srgb, var(--color-accent) 14%, transparent);
-  transform: translateY(-1px);
-}
-
-.nav-link {
-  @apply relative whitespace-nowrap rounded-full border border-transparent px-4 py-2 font-label tracking-wide text-[13px] font-medium text-primary;
-  transition:
-    color 0.3s ease,
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.25s ease;
-}
-
-.nav-link:hover {
-  @apply border-accent/40 bg-accent-soft text-accent;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 2px 12px color-mix(in srgb, var(--color-accent) 16%, transparent);
-  transform: translateY(-1px);
-}
-
-.nav-link--active,
-.nav-link--open {
-  @apply border-accent/45 bg-accent-soft font-bold text-accent;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    0 2px 12px color-mix(in srgb, var(--color-accent) 18%, transparent);
-}
-
-.nav-link__indicator {
-  @apply absolute bottom-1.5 left-1/2 h-0.5 w-0 -translate-x-1/2 rounded-full bg-gradient-to-r from-accent via-accent-light to-accent;
-  transition: width 0.3s ease, opacity 0.3s ease;
-}
-
-.nav-link:hover .nav-link__indicator,
-.nav-link--active .nav-link__indicator,
-.nav-link--open .nav-link__indicator {
-  @apply w-[50%] opacity-100;
-}
-
-/* Flash sale coupon ticket */
-.coupon-ticket {
-  position: relative;
-  display: flex;
-  overflow: hidden;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9eaf0 48%, #d1d5db 100%);
-  border: 1.5px dashed color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
-  box-shadow:
-    0 8px 28px rgba(17, 24, 39, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.coupon-ticket::before,
-.coupon-ticket::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  z-index: 3;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--color-bg);
-  border: 1.5px dashed color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
-  transform: translateY(-50%);
-}
-
-.coupon-ticket::before {
-  left: -10px;
-}
-
-.coupon-ticket::after {
-  right: -10px;
-}
-
-.coupon-divider {
-  position: relative;
-  width: 0;
-  flex-shrink: 0;
-  align-self: stretch;
-  border-left: 2px dashed color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
-  margin: 10px 0;
-}
-
-.coupon-divider::before,
-.coupon-divider::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--color-bg);
-  border: 1.5px dashed color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
-  transform: translateX(-50%);
-}
-
-.coupon-divider::before {
-  top: -18px;
-}
-
-.coupon-divider::after {
-  bottom: -18px;
 }

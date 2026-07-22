@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { fmt } from "@/lib/data";
 import StoreImage from "./StoreImage";
 import * as Icons from "./Icons";
+import { type, tw } from "@/lib/theme";
 import type { Product } from "@/lib/types";
 
 interface FlipkartProductRowProps {
@@ -94,7 +95,7 @@ export default function FlipkartProductRow({
 
         <div
           ref={scrollRef}
-          className="flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide px-4 pb-4 sm:gap-3 sm:px-5 md:px-6 sm:pb-5"
+          className={`flex gap-2 overflow-x-auto scroll-smooth ${tw.scrollbarHide} px-4 pb-4 sm:gap-3 sm:px-5 md:px-6 sm:pb-5`}
         >
           {products.map((product, i) => {
             const discount = product.originalPrice
@@ -167,7 +168,7 @@ export default function FlipkartProductRow({
 
                 {/* Info */}
                 <div className="flex flex-1 flex-col px-2.5 pt-2 pb-2.5">
-                  <div className="mb-0.5 font-eyebrow text-[7.5px] tracking-widest text-gray-400 uppercase">
+                  <div className={`mb-0.5 ${type.eyebrow} text-[7.5px] tracking-widest text-gray-400 uppercase`}>
                     {product.brand}
                   </div>
                   <div className="mb-1.5 line-clamp-2 font-sans text-[11.5px] font-semibold leading-snug text-gray-800">
@@ -180,10 +181,10 @@ export default function FlipkartProductRow({
                   </div>
 
                   {/* Price */}
-                  <div className="font-price text-[13.5px] font-extrabold text-gray-900">{fmt(product.price)}</div>
+                  <div className={`${type.price} text-[13.5px] font-extrabold text-gray-900`}>{fmt(product.price)}</div>
                   {product.originalPrice && (
                     <div className="flex items-center gap-1.5">
-                      <span className="font-price text-[10px] text-gray-400 line-through">{fmt(product.originalPrice)}</span>
+                      <span className={`${type.price} text-[10px] text-gray-400 line-through`}>{fmt(product.originalPrice)}</span>
                       {discount && (
                         <span className="font-label text-[9.5px] font-bold text-green-600">{discount}% off</span>
                       )}

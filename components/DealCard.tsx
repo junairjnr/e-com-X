@@ -1,6 +1,6 @@
 "use client";
 import { fmt } from "@/lib/data";
-import { tw } from "@/lib/theme";
+import { tw, type } from "@/lib/theme";
 import StoreImage from "./StoreImage";
 import type { Product } from "@/lib/types";
 import * as Icons from "./Icons";
@@ -32,14 +32,14 @@ export default function DealCard({ product, onClick }: DealCardProps) {
           </span>
         )}
         {product.badge && (
-          <span className="absolute right-2 top-2 rounded-md bg-primary-mid px-2 py-0.5 font-eyebrow text-[10px] font-bold text-white">
+          <span className={`absolute right-2 top-2 rounded-md bg-primary-mid px-2 py-0.5 ${type.eyebrow} text-[10px] font-bold text-white`}>
             {product.badge}
           </span>
         )}
       </div>
 
       <div className="flex flex-1 flex-col p-3 md:p-4">
-        <p className="mb-0.5 font-eyebrow text-xs  tracking-wider text-accent">
+        <p className={`mb-0.5 ${type.eyebrow} text-xs tracking-wider text-accent`}>
           {product.brand}
         </p>
         <h3 className="mb-2 line-clamp-2 min-h-[2.5rem] font-display text-lg font-semibold leading-snug text-primary">
@@ -56,9 +56,9 @@ export default function DealCard({ product, onClick }: DealCardProps) {
         </div>
 
         <div className="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <span className="font-price text-md font-bold text-primary">{fmt(product.price)}</span>
+          <span className={`${type.price} text-md font-bold text-primary`}>{fmt(product.price)}</span>
           {product.originalPrice && (
-            <span className="font-price text-xs text-muted line-through">{fmt(product.originalPrice)}</span>
+            <span className={`${type.price} text-xs text-muted line-through`}>{fmt(product.originalPrice)}</span>
           )}
         </div>
 

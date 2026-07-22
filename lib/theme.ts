@@ -1,8 +1,8 @@
 /** Tailwind class strings — use theme CSS variables via @theme tokens */
 export const type = {
-  eyebrow: "font-eyebrow",
-  price: "font-price",
-  nav: "font-nav",
+  eyebrow: "font-label font-bold uppercase tracking-[0.14em]",
+  price: "font-mono tabular-nums",
+  nav: "font-label tracking-wide",
   display: "font-display",
   body: "font-sans",
   label: "font-label",
@@ -10,6 +10,18 @@ export const type = {
 } as const;
 
 export const tw = {
+  pageTopOffset:
+    "pt-[var(--page-top)] transition-[padding-top] duration-[280ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+  heroSlider:
+    "min-h-[320px] sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] xl:min-h-[460px]",
+  scrollbarHide:
+    "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+  scrollbarThin:
+    "[&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-bg-soft [&::-webkit-scrollbar-thumb]:rounded-[10px] [&::-webkit-scrollbar-thumb]:bg-[color-mix(in_srgb,var(--color-accent)_40%,var(--color-border))]",
+  clayButton:
+    "rounded-full font-label text-white transition-all duration-300 bg-gradient-to-br from-[#111827] to-[#374151] shadow-[0_4px_16px_rgba(17,24,39,0.35)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(17,24,39,0.45)] hover:from-[#1F2937] hover:to-[#4B5563] active:translate-y-0",
+  glassPanel:
+    "bg-white/65 backdrop-blur-xl border border-white/80 shadow-[0_8px_32px_color-mix(in_srgb,var(--color-primary)_7%,transparent)]",
   btnPrimary:
     "inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 font-label text-sm font-bold text-white transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-[#0a255dff] to-accent shadow-[0_4px_20px_color-mix(in_srgb,var(--color-accent)_35%,transparent)] hover:from-accent-hover hover:to-primary-light",
   btnPrimarySm:

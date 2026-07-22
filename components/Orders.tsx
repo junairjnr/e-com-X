@@ -1,6 +1,6 @@
 "use client";
 
-import { tw } from "@/lib/theme";
+import { tw, type } from "@/lib/theme";
 import * as Icons from "./Icons";
 
 export const ORDERS = [
@@ -18,7 +18,7 @@ const STATUS_CLASS: Record<string, string> = {
 };
 
 const OrdersPage = ({ onBack }: { onBack: () => void }) => (
-  <div className={`min-h-screen ${tw.sectionBg} pb-24 pt-[120px]`}>
+  <div className={`${tw.pageTopOffset} min-h-screen ${tw.sectionBg} pb-24`}>
     <div className="mx-auto max-w-[900px] px-6">
       <button
         type="button"
@@ -29,7 +29,7 @@ const OrdersPage = ({ onBack }: { onBack: () => void }) => (
       </button>
 
       <div className={`mb-8 rounded-3xl bg-footer px-8 py-10 text-white shadow-[0_12px_40px_rgba(0,0,0,0.15)]`}>
-        <div className="mb-2 font-eyebrow text-[11px] text-accent">
+        <div className={`mb-2 ${type.eyebrow} text-[11px] text-accent`}>
           Order History
         </div>
         <h1 className="font-display text-[32px] font-bold">My Orders</h1>
@@ -50,7 +50,7 @@ const OrdersPage = ({ onBack }: { onBack: () => void }) => (
               <div className="text-[13px] text-muted">{order.items} item{order.items > 1 ? "s" : ""}</div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <span className="font-price text-lg font-extrabold text-accent">{formatPrice(order.total)}</span>
+              <span className={`${type.price} text-lg font-extrabold text-accent`}>{formatPrice(order.total)}</span>
               <span className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${STATUS_CLASS[order.status] ?? "bg-bg-soft text-muted"}`}>
                 {order.status}
               </span>

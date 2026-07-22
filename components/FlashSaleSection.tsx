@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PRODUCTS, fmt } from "@/lib/data";
 import StoreImage from "./StoreImage";
 import * as Icons from "./Icons";
+import { type, tw } from "@/lib/theme";
 import type { Product } from "@/lib/types";
 
 interface FlashSaleSectionProps {
@@ -109,7 +110,7 @@ export default function FlashSaleSection({ onProductClick, onViewAll }: FlashSal
       </div>
 
       {/* Cards */}
-      <div className="flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide bg-gray-50 px-4 py-3 sm:gap-3 sm:px-5 md:px-6 sm:py-4">
+      <div className={`flex gap-2 overflow-x-auto scroll-smooth ${tw.scrollbarHide} bg-gray-50 px-4 py-3 sm:gap-3 sm:px-5 md:px-6 sm:py-4`}>
         {deals.map((product, i) => {
           const discount = product.originalPrice
             ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -186,12 +187,12 @@ export default function FlashSaleSection({ onProductClick, onViewAll }: FlashSal
                 <div className="mb-1">
                   <StarRating rating={product.rating} reviews={product.reviews} />
                 </div>
-                <div className="font-price text-[14px] font-extrabold text-gray-900">
+                <div className={`${type.price} text-[14px] font-extrabold text-gray-900`}>
                   {fmt(product.price)}
                 </div>
                 {product.originalPrice && (
                   <div className="flex items-center gap-1">
-                    <span className="font-price text-[10px] text-gray-400 line-through">{fmt(product.originalPrice)}</span>
+                    <span className={`${type.price} text-[10px] text-gray-400 line-through`}>{fmt(product.originalPrice)}</span>
                     {discount && (
                       <span className="font-label text-[9.5px] font-bold text-green-600">{discount}% off</span>
                     )}
